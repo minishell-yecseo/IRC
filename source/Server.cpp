@@ -39,6 +39,7 @@ void	Server::kqueue_init(void)
 		error_handling("kqueue() error\n");
 	struct kevent	server_event;
 	EV_SET(&server_event, sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	chlist.push_back(server_event);
 	timeout.tv_sec = FT_TIMEOUT_SEC;
 	timeout.tv_nsec = FT_TIMEOUT_NSEC;
 }
@@ -99,6 +100,7 @@ void	Server::handle_client_event(struct kevent event)
 			buff[n] = 0;
 			clients[event.ident].buffer += buff;
 			std::cout << "received data from " << event.ident << ": " << clients[event.ident].buffer << "\n";
+			write(event.ident, buff, n);
 		}
 	}
 }
@@ -132,7 +134,7 @@ bool	Server::authenticate_client(Client& client)
 	//		1. client가 보낸 password 와 Server의 password 의 일치
 	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
 	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
-	std::cout << "client authenticate call: " << client.sock << "\n";
+	std::cout << RED << "client authenticate call: " << client.sock << RESET << "\n";
 	return true;
 }
 

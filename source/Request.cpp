@@ -1,12 +1,5 @@
 #include "Request.hpp"
 
-/*
-Request::Request(std::string request)
-{
-	SplitRequest(request);
-}
-*/
-
 std::vector<Command*> Request::ParseRequest(std::string request)
 {
 	SplitRequest(request);
@@ -145,7 +138,7 @@ std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &t
 			//JoinCommand(token_list);
 			break ;
 		case KICK:
-			std::cout << "KICK IN\n";
+		std::cout << "KICK IN\n";
 			//KickCommand(token_list);
 			break ;
 		case NICK:
