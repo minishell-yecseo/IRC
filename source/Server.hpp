@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/event.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -15,6 +16,7 @@
 #include <vector>
 #include <string>
 #include "Utils.hpp"
+#include "Client.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
@@ -22,8 +24,6 @@
 #define FT_TIMEOUT_NSEC 0
 #define FT_BUFF_SIZE 1024
 
-class Client;
-class Channel;
 class Server {
 	private:
 		int	socket;
@@ -53,6 +53,10 @@ class Server {
 		void	disconnect_client(struct kevent event);
 		void	connect_client(void);
 		void	add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+
+	/* Authentication */
+	public:
+		bool	authenticate_client(Client& client);
 	
 	/* wooseoki functions */
 	private:
