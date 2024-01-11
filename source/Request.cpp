@@ -1,43 +1,61 @@
 #include "Request.hpp"
 
-Request::Request(std::string request)
+std::vector<Command*> Request::ParseRequest(std::string request)
 {
 	SplitRequest(request);
+	std::vector<Command *> temp;
+	return temp;
 }
 
-void	Request::SplitRequest(std::string request)
+void	Request::SplitRequest(const std::string &request)
 {
-	static std::string	delimiter = "\r\n";
+	static const std::string	delimiter = "\r\n";
     size_t start = 0, end = 0;
+	std::vector<std::string> message_list;
+
     while ((end = request.find(delimiter, start)) != std::string::npos) 
 	{
-        this->message_list_.push_back(request.substr(start, end - start));
+        message_list.push_back(request.substr(start, end - start));
         start = end + delimiter.length();
     }
 	// Need log file
 	if (start != request.length())
 		std::cerr << "Unvalid message format\n";
     //this->message_list_.push_back(request.substr(start));
-	SplitMessage();
+	SplitMessage(message_list);
 }
 
-// if message_list.size() == 0 case not happend anything
-void	Request::SplitMessage(void)
+// The colon not prefix is mean last parameter and doesn't need remove white spaces
+void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list)
 {
-	std::vector<std::string>	&message_list = this->message_list_;
-    std::string token;
+	static const char delimiter = ' ';
+	bool	isMessage = false;
+	size_t	start = 0, end = 0;
+
+	while ((end = str.find(delimiter, start)) != std::string::npos)
+	{
+		token_list.push_back(str.substr(start, end - start));
+		start = end + 1;
+		if (start < str.length() && str[start] == ':')
+			break ;
+	}
+	token_list.push_back(str.substr(start));
+}
+
+
+void	Request::SplitMessage(const std::vector<std::string> &message_list)
+{
+	std::vector<std::string>	token_list;
+	std::string ss;
 
 	for (size_t i = 0; i < message_list.size(); ++i)
 	{
-    	std::stringstream ss(RemoveDuplicateSpace(message_list[i]));
-		std::vector<std::string>	token_list;
-		// first token can be whitespace
-		while (std::getline(ss, token, ' '))
-		{
-			std::cout << "Token : " << token << "\n";
-			token_list.push_back(token);
-		}
-		ParseRequest(token_list);
+		if (message_list[i][0] == ' ')
+			continue ;
+    	ss = RemoveDuplicateSpace(message_list[i]);
+		token_list.clear();
+		SeperateWhiteSpace(ss, token_list);
+		CommandFactory(token_list);
     }
 }
 
@@ -46,10 +64,12 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
 {
     std::string result;
     bool isSpace = false;
+	bool isColon = false;
+
 
     for (size_t i = 0; i < str.size(); ++i)
 	{
-        if (str[i] == ' ')
+        if (isColon == false && str[i] == ' ')
 		{
             if (isSpace == false)
 			{
@@ -57,6 +77,10 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
                 isSpace = true;
             }
         }
+		else if (i != 0 && str[i] == ':')
+		{
+			isColon = true;
+		}
 		else
 		{
             result += str[i];
@@ -66,7 +90,7 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
     return result;
 }
 
-int	Request::AlphaBaseNumber(const std::string &token)
+int	Request::BaseAlphaToNumber(const std::string &token)
 {
 	int		index = 0;
 	size_t	acc = 0;
@@ -87,79 +111,92 @@ int	Request::AlphaBaseNumber(const std::string &token)
 			return 0;
 		++index;
 	}
-	return acc % INTMAX;
+	std::cout << "acc : " << acc << "\n";
+	return acc % static_cast<size_t>(INTMAX);
 }
 
-void	Request::ParseRequest(const std::vector<std::string> &token_list)
+std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &token_list)
 {
 	int	acc = 0;
 
-	if (token_list[0][0] == ':')
-		;
+	// first token is <prefix> and second is <command>
+	if (token_list[0][0] == ':' && token_list.size() > 1)
+		acc = BaseAlphaToNumber(token_list[1]);
 	else
+		acc = BaseAlphaToNumber(token_list[0]);
+
+	std::vector<Command *> command_list;
+	Command *c;
+	switch (acc)
 	{
-		acc = AlphaBaseNumber(token_list[0]);
-		switch (acc)
-		{
-			case JOIN:
-				std::cout << "JOIN IN\n";
-				break ;
-			case KICK:
-				std::cout << "KICK IN\n";
-				break ;
-			case NICK:
-				std::cout << "NICK IN\n";
-				break ;
-			case PING:
-				std::cout << "PING IN\n";
-				break ;
-			case PASS:
-				std::cout << "PASS IN\n";
-				break ;
-			case PARK:
-				std::cout << "PARK IN\n";
-				break ;
-			case PONG:
-				std::cout << "PONG IN\n";
-				break ;
-			case USER:
-				std::cout << "USER IN\n";
-				break ;
-			case QUIT:
-				std::cout << "QUIT IN\n";
-				break ;
-			case TOPIC:
-				std::cout << "TOPIC IN\n";
-				break ;
-			case NOTICE:
-				std::cout << "NOTICE IN\n";
-				break ;
-			case PRIVMSG:
-				std::cout << "PRIVMSG IN\n";
-				break ;
-			default:
-				std::cout << "Command not found :" << token_list[0] << "\n";
-		}
+		case CAP:
+			std::cout << "CAP IN\n";
+			c = new CapCommand(token_list);
+			break ;
+		case JOIN:
+			std::cout << "JOIN IN\n";
+			//JoinCommand(token_list);
+			break ;
+		case KICK:
+		std::cout << "KICK IN\n";
+			//KickCommand(token_list);
+			break ;
+		case NICK:
+			std::cout << "NICK IN\n";		
+			break ;
+		case PING:
+			std::cout << "PING IN\n";
+			break ;
+		case PASS:
+			std::cout << "PASS IN\n";
+			break ;
+		case PARK:
+			std::cout << "PARK IN\n";
+			break ;
+		case PONG:
+			std::cout << "PONG IN\n";
+			break ;
+		case USER:
+			std::cout << "USER IN\n";
+			break ;
+		case QUIT:
+			std::cout << "QUIT IN\n";
+			break ;
+		case TOPIC:
+			std::cout << "TOPIC IN\n";
+			break ;
+		case NOTICE:
+			std::cout << "NOTICE IN\n";
+			break ;
+		case PRIVMSG:
+			std::cout << "PRIVMSG IN\n";
+			break ;
+		default:
+			std::cout << "Command not found : ";
 	}
+	if (c != NULL)
+		command_list.push_back(c);
+	return command_list;
 }
 
-/*
+
 int main()
 {
-	Request	a("            HOBK          abc cde\r\n");
-	Request	b("PONG 123\r\nPING 456\r\n");
-	Request	c("PASS\r\n");
-	Request	d("NICK\r\n");
-	Request	e("USER\r\n");
-	Request	f("JOIN\r\n");
-	Request	g("QUIT\r\n");
-	Request	h("PRIVMSG\r\n");
-	Request	i("KICK\r\n");
-	Request	j("PARK\r\n");
-	Request	k("TOPIC\r\n");
-	Request	p("NOTICE\r\n");
-	Request	q("a\r\n");
-	Request	z("ab\r\n");
+	Request::ParseRequest("CAP\r\n");
+	Request::ParseRequest(":priv PRIVMSG :a asdf asdf s           asdf\r\n:p PRIVMSG :a             b\r\n");
+	Request::ParseRequest("PONG 123\r\nPING 456\r\n");
+	Request::ParseRequest("PASS\r\n");
+	Request::ParseRequest("NICK\r\n");
+	Request::ParseRequest("USER\r\n");
+	Request::ParseRequest("JOIN\r\n");
+	Request::ParseRequest("QUIT\r\n");
+	Request::ParseRequest("PRIVMSG\r\n");
+	Request::ParseRequest("KICK\r\n");
+	Request::ParseRequest("PARK\r\n");
+	Request::ParseRequest("TOPIC\r\n");
+	Request::ParseRequest("NOTICE\r\n");
+	Request::ParseRequest("a\r\n");
+	Request::ParseRequest("ab\r\n");
 	return 0;
 }
-*/
+

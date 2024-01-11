@@ -4,10 +4,14 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+
+#include "Command.hpp"
+
 # define INTMAX 2147483647
 
-enum Commands
+enum CommandNumbers
 {
+	CAP = 2070,
 	JOIN = 186148,
 	KICK = 199509,
 	NICK = 252237,
@@ -25,14 +29,19 @@ enum Commands
 class	Request
 {
 	public:
-		Request(std::string request);
-		void	SplitRequest(std::string request);
-		void	SplitMessage();
-		void	ParseRequest(const std::vector<std::string> &token_list);
-		std::string	RemoveDuplicateSpace(const std::string &str);
-		int		AlphaBaseNumber(const std::string &token);
-	protected:
-		std::vector<std::string>	message_list_;
+		//Request(std::string request);
+		static std::vector<Command *> ParseRequest(std::string request);
+		static void	SplitRequest(const std::string &request);
+		static void	SplitMessage(const std::vector<std::string> &message_list);
+		static std::vector<Command *>	CommandFactory(const std::vector<std::string> &token_list);
+		static std::string	RemoveDuplicateSpace(const std::string &str);
+		static int		BaseAlphaToNumber(const std::string &token);
+		static void	SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list);
+
+		//virtual	void	CommandRun() = 0;
+
+	//protected:
+		//std::vector<std::string>	message_list_;
 };
 
 #endif
