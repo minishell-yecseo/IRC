@@ -2,10 +2,22 @@
 # define SERVER_HPP
 
 #include <sys/socket.h>
+#include <sys/event.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <map>
+#include <vector>
 #include <string>
 #include "Utils.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
@@ -13,22 +25,20 @@
 #define FT_TIMEOUT_NSEC 0
 #define FT_BUFF_SIZE 1024
 
-class Client;
-class Channel;
 class Server {
 	private:
-		int							socket;
-		struct sockaddr_in			addr;
-		int							port;
-		std::string					password;
-		struct timespec				timeout;
+		int	sock;
+		int	port;
+		struct sockaddr_in	addr;
+		std::string	password;
+		struct timespec	timeout;
 	
-		int							kq;
-		struct kevent				evlist[FT_KQ_EVENT_SIZE];
-		vector<struct kevent>		chlist;
+		int	kq;
+		struct kevent	evlist[FT_KQ_EVENT_SIZE];
+		std::vector<struct kevent>	chlist;
 
-		map<int, Client>			clients;//일단, socket fd 를 key로 지정
-		map<std::string, Channel>	channels;
+		std::map<int, Client>	clients;//일단, socket fd 를 key로 지정
+		std::map<std::string, Channel>	channels;
 
 	public:
 		Server(int argc, char **argv);
@@ -44,6 +54,10 @@ class Server {
 		void	disconnect_client(struct kevent event);
 		void	connect_client(void);
 		void	add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+
+	/* Authentication */
+	public:
+		bool	authenticate_client(Client& client);
 	
 	/* wooseoki functions */
 	private:
