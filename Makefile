@@ -9,7 +9,6 @@ OBJ_DIR = ./object/
 
 # --------------------
 # Need fix
-FILENAME = *
 SRC_FILES := $(wildcard $(SRC_DIR)*.cpp)
 OBJ_FILES := $(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.o,$(SRC_FILES))
 DEP_FILES := $(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.d,$(SRC_FILES))
@@ -23,7 +22,7 @@ DEP_FILES := $(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.d,$(SRC_FILES))
 
 -include $(DEP_FILES)
 
-$(OBJ_FILES) : $(SRC_FILES)
+$(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
 	$(CXX)  $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I $(INC_DIR)
 
 $(NAME) : $(OBJ_FILES)
