@@ -17,6 +17,7 @@
 #include <string>
 #include "Utils.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
@@ -26,7 +27,7 @@
 
 class Server {
 	private:
-		int	socket;
+		int	sock;
 		int	port;
 		struct sockaddr_in	addr;
 		std::string	password;
