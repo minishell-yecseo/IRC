@@ -27,7 +27,7 @@
 
 class Server {
 	private:
-		int	socket;
+		int	sock;
 		int	port;
 		struct sockaddr_in	addr;
 		std::string	password;

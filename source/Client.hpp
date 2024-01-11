@@ -12,7 +12,7 @@ class Client {
 	friend class Server;
 	private:
 		int	id;//UNIQUE
-		int	socket;
+		int	sock;
 		std::string	nick;//UNIQUE
 		std::string	user;
 		struct sockaddr_in	addr;
