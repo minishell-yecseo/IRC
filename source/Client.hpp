@@ -11,7 +11,7 @@ class Server;
 class Client {
 	friend class Server;
 	private:
-		int	id;//UNIQUE
+		//int	id;//UNIQUE
 		int	sock;
 		std::string	nick;//UNIQUE
 		std::string	user;
