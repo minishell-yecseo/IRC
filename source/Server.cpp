@@ -49,7 +49,7 @@ bool	Server::run(void)
 	int nev;
 	while (true)
 	{
-		nev = kevent(kq, &chlist[0], FT_KQ_EVENT_SIZE, evlist, FT_KQ_EVENT_SIZE, &timeout);
+		nev = kevent(kq, &(chlist[0]), chlist.size(), evlist, FT_KQ_EVENT_SIZE, &timeout);
 		chlist.clear();//why should I write this line?
 		if (nev == -1)
 			error_handling("kevent() error\n");
