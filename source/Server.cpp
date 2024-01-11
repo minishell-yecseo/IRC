@@ -168,7 +168,7 @@ void	Server::handle_timeout(void)
 }
 
 /* wooseoki functions */
-void	print_event(struct kevent *event, int i)
+void	Server::print_event(struct kevent *event, int i)
 {
 	std::cout << "=============================\n";
 	std::cout << "index : " << i << "\n";
