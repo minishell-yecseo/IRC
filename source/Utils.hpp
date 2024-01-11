@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <unistd.h>
+#include "Colors.hpp"
 
 # ifndef ERR_WRITE
 #  define ERR_WRITE 2

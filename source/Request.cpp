@@ -27,7 +27,7 @@ void	Request::SplitMessage(void)
 	std::vector<std::string>	&message_list = this->message_list_;
     std::string token;
 
-	for (int i = 0; i < message_list.size(); ++i)
+	for (size_t i = 0; i < message_list.size(); ++i)
 	{
     	std::stringstream ss(RemoveDuplicateSpace(message_list[i]));
 		std::vector<std::string>	token_list;
@@ -47,7 +47,7 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
     std::string result;
     bool isSpace = false;
 
-    for (int i = 0; i < str.size(); ++i)
+    for (size_t i = 0; i < str.size(); ++i)
 	{
         if (str[i] == ' ')
 		{
@@ -69,7 +69,6 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
 int	Request::AlphaBaseNumber(const std::string &token)
 {
 	int		index = 0;
-	int		power = 0;
 	size_t	acc = 0;
 
 	while (token[index])
