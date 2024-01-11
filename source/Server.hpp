@@ -2,8 +2,17 @@
 # define SERVER_HPP
 
 #include <sys/socket.h>
+#include <sys/event.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <map>
+#include <vector>
 #include <string>
 #include "Utils.hpp"
 
@@ -17,18 +26,18 @@ class Client;
 class Channel;
 class Server {
 	private:
-		int							socket;
-		struct sockaddr_in			addr;
-		int							port;
-		std::string					password;
-		struct timespec				timeout;
+		int	socket;
+		int	port;
+		struct sockaddr_in	addr;
+		std::string	password;
+		struct timespec	timeout;
 	
-		int							kq;
-		struct kevent				evlist[FT_KQ_EVENT_SIZE];
-		vector<struct kevent>		chlist;
+		int	kq;
+		struct kevent	evlist[FT_KQ_EVENT_SIZE];
+		std::vector<struct kevent>	chlist;
 
-		map<int, Client>			clients;//일단, socket fd 를 key로 지정
-		map<std::string, Channel>	channels;
+		std::map<int, Client>	clients;//일단, socket fd 를 key로 지정
+		std::map<std::string, Channel>	channels;
 
 	public:
 		Server(int argc, char **argv);
