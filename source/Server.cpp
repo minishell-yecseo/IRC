@@ -46,7 +46,7 @@ bool	Server::run(void)
 	int nev;
 	while (true)
 	{
-		nev = kevent(kq, chlist, FT_KQ_EVENT_SIZE, evlist, FT_KQ_EVENT_SIZE, &timeout);
+		nev = kevent(kq, &chlist[0], FT_KQ_EVENT_SIZE, evlist, FT_KQ_EVENT_SIZE, &timeout);
 		chlist.clear();//why should I write this line?
 		if (nev == -1)
 			error_handling("kevent() error\n");
@@ -69,7 +69,7 @@ void	Server::handle_events(int nev)
 			handle_event_error(event);
 		else if (event.flags & EV_EOF)
 			disconnect_client(event);//need to implement
-		else if (event.filter == EVFILT_READ && event.ident == socket)
+		else if (event.filter == EVFILT_READ && event.ident == (uintptr_t)socket)
 			connect_client();
 		else if (event.filter == EVFILT_READ)
 			handle_client_event(event);
@@ -82,14 +82,14 @@ void	Server::handle_events(int nev)
 
 void	Server::handle_client_event(struct kevent event)
 {
-	map<int, Client>::iterator	it = clients.find(event.ident);
+	std::map<int, Client>::iterator	it = clients.find(event.ident);
 	if (it != clients.end())
 	{
 		char buff[FT_BUFF_SIZE];
 		int n = read(event.ident, buff, sizeof(buff));
 		if (n == -1)
 			std::cerr << "client read error\n";
-		else (n == 0)
+		else if (n == 0)
 			disconnect_client(event);
 		else
 		{
@@ -102,14 +102,35 @@ void	Server::handle_client_event(struct kevent event)
 
 void	Server::connect_client(void)
 {
-	int	client_socket;
-	if ((client_socket = accept(socket, NULL, NULL)) == -1)
+	Client	client;
+	if ((client.socket = accept(socket, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
 		error_handling("accept() error\n");
 
 	/* Authenticate client password */
-	std::cout << "accent new client: " << client_socket << "\n";
-	add_event(client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	add_event(client_socket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	if (!authenticate_client(client))
+	{
+		/* handle when the client connection rejected */
+		std::cout << "authentification failed with: " << client.socket << "\n";
+		close(client.socket);
+	}
+	else
+	{
+		/* handle new client */
+		std::cout << "accent new client: " << client.socket << "\n";
+		add_event(client.socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+		add_event(client.socket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+		clients[client.socket] = client;
+	}
+}
+
+bool	Server::authenticate_client(Client& client)
+{
+	// client가 보낸 메시지를 확인한다.
+	//		1. client가 보낸 password 와 Server의 password 의 일치
+	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
+	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
+	std::cout << "client authenticate call: " << client.socket << "\n";
+	return true;
 }
 
 void	Server::add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata)
@@ -121,7 +142,7 @@ void	Server::add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t
 
 void	Server::handle_event_error(struct kevent event)
 {
-	if (event.ident == this->socket)
+	if (event.ident == (uintptr_t)this->socket)
 		error_handling("server socket event error\n");
 	else
 	{
@@ -134,7 +155,7 @@ void	Server::disconnect_client(struct kevent event)
 {
 	struct kevent delete_event;
 	EV_SET(&delete_event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-	kevent(kq, &delete_devent, 1, NULL, 0, NULL);
+	kevent(kq, &delete_event, 1, NULL, 0, NULL);
 	close(event.ident);
 	clients.erase(event.ident);
 	/* channel.. clients... etc */

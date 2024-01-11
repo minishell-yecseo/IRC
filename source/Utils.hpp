@@ -16,6 +16,6 @@
 # endif
 
 void error_handling(std::string);
-void error_handling(char *);
+void error_handling(const char *);
 
 #endif
