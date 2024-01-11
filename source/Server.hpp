@@ -17,6 +17,7 @@
 #include <string>
 #include "Utils.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
