@@ -115,7 +115,7 @@ int	Request::BaseAlphaToNumber(const std::string &token)
 	return acc % static_cast<size_t>(INTMAX);
 }
 
-std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &token_list)
+int	Request::SearchCommand(const std::vector<std::string> &token_list)
 {
 	int	acc = 0;
 
@@ -124,6 +124,12 @@ std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &t
 		acc = BaseAlphaToNumber(token_list[1]);
 	else
 		acc = BaseAlphaToNumber(token_list[0]);
+	return acc;
+}
+
+std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &token_list)
+{
+	int	acc = 0;
 
 	std::vector<Command *> command_list;
 	Command *c;
