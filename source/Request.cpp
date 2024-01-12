@@ -1,17 +1,19 @@
 #include "Request.hpp"
 
-std::vector<Command*> Request::ParseRequest(std::string request)
+std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
 {
-	SplitRequest(request);
-	std::vector<Command *> temp;
-	return temp;
+	std::vector<std::string> message_list;
+	std::vector<Command *> command_list;
+	
+   	SplitRequest(request, message_list);
+	SplitMessage(message_list, command_list);
+	return command_list;
 }
 
-void	Request::SplitRequest(const std::string &request)
+void	Request::SplitRequest(const std::string &request, std::vector<std::string> &message_list)
 {
 	static const std::string	delimiter = "\r\n";
     size_t start = 0, end = 0;
-	std::vector<std::string> message_list;
 
     while ((end = request.find(delimiter, start)) != std::string::npos) 
 	{
@@ -21,41 +23,24 @@ void	Request::SplitRequest(const std::string &request)
 	// Need log file
 	if (start != request.length())
 		std::cerr << "Unvalid message format\n";
-    //this->message_list_.push_back(request.substr(start));
-	SplitMessage(message_list);
 }
 
-// The colon not prefix is mean last parameter and doesn't need remove white spaces
-void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list)
-{
-	static const char delimiter = ' ';
-	bool	isMessage = false;
-	size_t	start = 0, end = 0;
-
-	while ((end = str.find(delimiter, start)) != std::string::npos)
-	{
-		token_list.push_back(str.substr(start, end - start));
-		start = end + 1;
-		if (start < str.length() && str[start] == ':')
-			break ;
-	}
-	token_list.push_back(str.substr(start));
-}
-
-
-void	Request::SplitMessage(const std::vector<std::string> &message_list)
+void	Request::SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> &command_list)
 {
 	std::vector<std::string>	token_list;
-	std::string ss;
+	std::string msg;
+	Command	*c;
 
 	for (size_t i = 0; i < message_list.size(); ++i)
 	{
 		if (message_list[i][0] == ' ')
 			continue ;
-    	ss = RemoveDuplicateSpace(message_list[i]);
+    	msg = RemoveDuplicateSpace(message_list[i]);
 		token_list.clear();
-		SeperateWhiteSpace(ss, token_list);
-		CommandFactory(token_list);
+		SeperateWhiteSpace(msg, token_list);
+		c = CommandFactory(token_list);
+		if (c != NULL)
+			command_list.push_back(c);
     }
 }
 
@@ -88,6 +73,22 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
         }
     }
     return result;
+}
+
+// The colon not prefix is mean last parameter and doesn't need remove white spaces
+void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list)
+{
+	static const char delimiter = ' ';
+	size_t	start = 0, end = 0;
+
+	while ((end = str.find(delimiter, start)) != std::string::npos)
+	{
+		token_list.push_back(str.substr(start, end - start));
+		start = end + 1;
+		if (start < str.length() && str[start] == ':')
+			break ;
+	}
+	token_list.push_back(str.substr(start));
 }
 
 int	Request::BaseAlphaToNumber(const std::string &token)
@@ -127,10 +128,9 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list)
 	return acc;
 }
 
-std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &token_list)
+Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
 {
-	std::vector<Command *> command_list;
-	Command *c;
+	Command *c = NULL;
 
 	switch (SearchCommand(token_list))
 	{
@@ -179,9 +179,7 @@ std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &t
 		default:
 			std::cout << "Command not found : ";
 	}
-	if (c != NULL)
-		command_list.push_back(c);
-	return command_list;
+	return c;
 }
 
 /*
