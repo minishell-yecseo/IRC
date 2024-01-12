@@ -129,11 +129,10 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list)
 
 std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &token_list)
 {
-	int	acc = 0;
-
 	std::vector<Command *> command_list;
 	Command *c;
-	switch (acc)
+
+	switch (SearchCommand(token_list))
 	{
 		case CAP:
 			std::cout << "CAP IN\n";
@@ -185,7 +184,7 @@ std::vector<Command *>	Request::CommandFactory(const std::vector<std::string> &t
 	return command_list;
 }
 
-
+/*
 int main()
 {
 	Request::ParseRequest("CAP\r\n");
@@ -205,4 +204,4 @@ int main()
 	Request::ParseRequest("ab\r\n");
 	return 0;
 }
-
+*/
