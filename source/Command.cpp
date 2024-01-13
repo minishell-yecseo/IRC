@@ -1,8 +1,12 @@
 #include "Command.hpp"
 
+#include <vector>
+
 Command::Command(const std::vector<std::string> &token_list)
 {
-	std::cout << "Need init of command\n";
+	token_list.size();
+	//std::cout << token_list.length() << "Need init of command\n";
+
 	/*
 	if (token_list[0][0] == ':')
 	{
