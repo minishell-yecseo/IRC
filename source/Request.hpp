@@ -30,7 +30,7 @@ class	Request
 {
 	public:
 		static std::vector<Command *> ParseRequest(std::string request, int &offset);
-		static void	SplitRequest(const std::string &request, std::vector<std::string> &message_list);
+		static int	SplitRequest(const std::string &request, std::vector<std::string> &message_list);
 		static void	SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> &command_list);
 		static Command *	CommandFactory(const std::vector<std::string> &token_list);
 		static std::string	RemoveDuplicateSpace(const std::string &str);
