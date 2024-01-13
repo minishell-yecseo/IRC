@@ -5,7 +5,7 @@ std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
 {
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
-	
+
 	offset = SplitRequest(request, message_list);
 	SplitMessage(message_list, command_list);
 	return command_list;
@@ -14,13 +14,13 @@ std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
 int	Request::SplitRequest(const std::string &request, std::vector<std::string> &message_list)
 {
 	static const std::string	delimiter = "\r\n";
-    size_t start = 0, end = 0;
+	size_t start = 0, end = 0;
 
-    while ((end = request.find(delimiter, start)) != std::string::npos) 
+	while ((end = request.find(delimiter, start)) != std::string::npos) 
 	{
-        message_list.push_back(request.substr(start, end - start));
-        start = end + delimiter.length();
-    }
+		message_list.push_back(request.substr(start, end - start));
+		start = end + delimiter.length();
+	}
 	// Need log file
 	if (start != request.length())
 		std::cerr << "Unvalid message format\n";
@@ -37,43 +37,43 @@ void	Request::SplitMessage(const std::vector<std::string> &message_list, std::ve
 	{
 		if (message_list[i][0] == ' ')
 			continue ;
-    msg = RemoveDuplicateSpace(message_list[i]);
-    token_list.clear();
-    SeperateWhiteSpace(msg, token_list);
+		msg = RemoveDuplicateSpace(message_list[i]);
+		token_list.clear();
+		SeperateWhiteSpace(msg, token_list);
 		c = CommandFactory(token_list);
 		if (c != NULL)
-      command_list.push_back(c);
-    }
+			command_list.push_back(c);
+	}
 }
 
 // Message can be seperated one or more whitespace
 std::string Request::RemoveDuplicateSpace(const std::string& str)
 {
-  std::string result;
-  bool isSpace = false;
-  bool isColon = false;
+	std::string result;
+	bool isSpace = false;
+	bool isColon = false;
 
-  for (size_t i = 0; i < str.size(); ++i)
-  {
-    if (isColon == false && str[i] == ' ')
+	for (size_t i = 0; i < str.size(); ++i)
+	{
+		if (isColon == false && str[i] == ' ')
 		{
-      if (isSpace == false)
+			if (isSpace == false)
 			{
-        result += ' ';
-        isSpace = true;
-      }
-    }
+				result += ' ';
+				isSpace = true;
+			}
+		}
 		else if (i != 0 && str[i] == ':')
 		{
 			isColon = true;
 		}
 		else
 		{
-      result += str[i];
-      isSpace = false;
-    }
-  }
-  return result;
+			result += str[i];
+			isSpace = false;
+		}
+	}
+	return result;
 }
 
 // The colon not prefix is mean last parameter and doesn't need remove white spaces
@@ -135,7 +135,6 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
 	Command *c = NULL;
 
 	switch (SearchCommand(token_list))
-
 	{
 		case CAP:
 			std::cout << "CAP IN\n";
