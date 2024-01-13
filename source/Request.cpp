@@ -6,12 +6,12 @@ std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 	
-  SplitRequest(request, message_list);
+	offset = SplitRequest(request, message_list);
 	SplitMessage(message_list, command_list);
 	return command_list;
 }
 
-void	Request::SplitRequest(const std::string &request, std::vector<std::string> &message_list)
+int	Request::SplitRequest(const std::string &request, std::vector<std::string> &message_list)
 {
 	static const std::string	delimiter = "\r\n";
     size_t start = 0, end = 0;
@@ -24,6 +24,7 @@ void	Request::SplitRequest(const std::string &request, std::vector<std::string> 
 	// Need log file
 	if (start != request.length())
 		std::cerr << "Unvalid message format\n";
+	return start;
 }
 
 void	Request::SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> &command_list)
@@ -183,25 +184,3 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
 	}
 	return c;
 }
-
-
-int main()
-{
-	Request::ParseRequest("CAP\r\n");
-	Request::ParseRequest(":priv PRIVMSG :a asdf asdf s           asdf\r\n:p PRIVMSG :a             b\r\n");
-	Request::ParseRequest("PONG 123\r\nPING 456\r\n");
-	Request::ParseRequest("PASS\r\n");
-	Request::ParseRequest("NICK\r\n");
-	Request::ParseRequest("USER\r\n");
-	Request::ParseRequest("JOIN\r\n");
-	Request::ParseRequest("QUIT\r\n");
-	Request::ParseRequest("PRIVMSG\r\n");
-	Request::ParseRequest("KICK\r\n");
-	Request::ParseRequest("PARK\r\n");
-	Request::ParseRequest("TOPIC\r\n");
-	Request::ParseRequest("NOTICE\r\n");
-	Request::ParseRequest("a\r\n");
-	Request::ParseRequest("ab\r\n");
-	return 0;
-}
-
