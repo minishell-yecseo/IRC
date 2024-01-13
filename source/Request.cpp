@@ -1,11 +1,12 @@
 #include "Request.hpp"
 
+
 std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
 {
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 	
-   	SplitRequest(request, message_list);
+  SplitRequest(request, message_list);
 	SplitMessage(message_list, command_list);
 	return command_list;
 }
@@ -35,44 +36,43 @@ void	Request::SplitMessage(const std::vector<std::string> &message_list, std::ve
 	{
 		if (message_list[i][0] == ' ')
 			continue ;
-    	msg = RemoveDuplicateSpace(message_list[i]);
-		token_list.clear();
-		SeperateWhiteSpace(msg, token_list);
+    msg = RemoveDuplicateSpace(message_list[i]);
+    token_list.clear();
+    SeperateWhiteSpace(msg, token_list);
 		c = CommandFactory(token_list);
 		if (c != NULL)
-			command_list.push_back(c);
+      command_list.push_back(c);
     }
 }
 
 // Message can be seperated one or more whitespace
 std::string Request::RemoveDuplicateSpace(const std::string& str)
 {
-    std::string result;
-    bool isSpace = false;
-	bool isColon = false;
+  std::string result;
+  bool isSpace = false;
+  bool isColon = false;
 
-
-    for (size_t i = 0; i < str.size(); ++i)
-	{
-        if (isColon == false && str[i] == ' ')
+  for (size_t i = 0; i < str.size(); ++i)
+  {
+    if (isColon == false && str[i] == ' ')
 		{
-            if (isSpace == false)
+      if (isSpace == false)
 			{
-                result += ' ';
-                isSpace = true;
-            }
-        }
+        result += ' ';
+        isSpace = true;
+      }
+    }
 		else if (i != 0 && str[i] == ':')
 		{
 			isColon = true;
 		}
 		else
 		{
-            result += str[i];
-            isSpace = false;
-        }
+      result += str[i];
+      isSpace = false;
     }
-    return result;
+  }
+  return result;
 }
 
 // The colon not prefix is mean last parameter and doesn't need remove white spaces
@@ -125,6 +125,7 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list)
 		acc = BaseAlphaToNumber(token_list[1]);
 	else
 		acc = BaseAlphaToNumber(token_list[0]);
+
 	return acc;
 }
 
@@ -133,6 +134,7 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
 	Command *c = NULL;
 
 	switch (SearchCommand(token_list))
+
 	{
 		case CAP:
 			std::cout << "CAP IN\n";
@@ -182,7 +184,7 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
 	return c;
 }
 
-/*
+
 int main()
 {
 	Request::ParseRequest("CAP\r\n");
@@ -202,4 +204,4 @@ int main()
 	Request::ParseRequest("ab\r\n");
 	return 0;
 }
-*/
+

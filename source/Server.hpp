@@ -59,6 +59,10 @@ class Server {
 	public:
 		bool	authenticate_client(Client& client);
 	
+	/* debugging functions */
+	void	p_event_filter(struct kevent *event);
+	void	p_event_flags(struct kevent*event);
+
 	/* wooseoki functions */
 	private:
 		void	print_event(struct kevent *event, int i);

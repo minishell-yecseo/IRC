@@ -80,6 +80,7 @@ void	Server::handle_events(int nev)
 		else if (event.filter == EVFILT_WRITE)
 		{
 			/* handle write event ... */
+			std::cout << "event.filter write, socket fd : " << event.ident << "\n";
 		}
 	}
 }
@@ -99,7 +100,7 @@ void	Server::handle_client_event(struct kevent event)
 		{
 			buff[n] = 0;
 			clients[event.ident].buffer += buff;
-			std::cout << "received data from " << event.ident << ": " << clients[event.ident].buffer << "\n";
+			std::cout << BLUE << "received data from " << event.ident << ": " << buff << RESET << "\n";
 			write(event.ident, buff, n);
 		}
 	}
@@ -123,7 +124,7 @@ void	Server::connect_client(void)
 		/* handle new client */
 		std::cout << "accent new client: " << client.sock << "\n";
 		add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-		add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+		add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
 		clients[client.sock] = client;
 	}
 }
@@ -158,6 +159,7 @@ void	Server::handle_event_error(struct kevent event)
 
 void	Server::disconnect_client(struct kevent event)
 {
+	std::cout << RED << "client " << event.ident << " disconnected\n" << RESET;
 	struct kevent delete_event;
 	EV_SET(&delete_event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq, &delete_event, 1, NULL, 0, NULL);
@@ -178,7 +180,37 @@ void	Server::print_event(struct kevent *event, int i)
 	std::cout << "=============================\n";
 	std::cout << "index : " << i << "\n";
 	std::cout << "ident : " << event->ident << "\n";
-	std::cout << "flags : " << event->flags << "\n";
-	std::cout << "filter : " << event->filter << "\n";
+	p_event_filter(event);
+	p_event_flags(event);
 	std::cout << "=============================\n";
+}
+
+void	Server::p_event_filter(struct kevent *event)
+{
+	std::cout << "filter : " << GREEN;
+	if (event->filter == EVFILT_READ) std::cout << "EVFILT_READ";
+	else if (event->filter == EVFILT_WRITE) std::cout << "EVFILT_WRITE";
+	else if (event->filter == EVFILT_AIO) std::cout << "EVFILT_AIO";
+	else if (event->filter == EVFILT_VNODE) std::cout << "EVFILT_VNODE";
+	else if (event->filter == EVFILT_PROC) std::cout << "EVFILT_PROC";
+	else if (event->filter == EVFILT_SIGNAL) std::cout << "EVFILT_SIGNAL";
+	else if (event->filter == EVFILT_EXCEPT) std::cout << "EVFILT_EXCEPT";
+	else std::cout << "unknown EVFILT";
+	std::cout << "\n" << RESET;
+}
+
+void	Server::p_event_flags(struct kevent *event)
+{
+	std::cout << "flags : " << GREEN;
+	if (event->flags & EV_ADD) std::cout << "EV_ADD | ";
+	if (event->flags & EV_DELETE) std::cout << "EV_DELETE | ";
+	if (event->flags & EV_ENABLE) std::cout << "EV_ENABLE | ";
+	if (event->flags & EV_DISABLE) std::cout << "EV_DISABLE | ";
+	if (event->flags & EV_ONESHOT) std::cout << "EV_ONESHOT | ";
+	if (event->flags & EV_CLEAR) std::cout << "EV_CLEAR | ";
+	if (event->flags & EV_RECEIPT) std::cout << "EV_RECEIPT | ";
+	if (event->flags & EV_OOBAND) std::cout << "EV_OOBAND | ";
+	if (event->flags & EV_ERROR) std::cout << "EV_ERROR | ";
+	if (event->flags & EV_EOF) std::cout << "EV_EOF | ";
+	std::cout << RESET << "\n";
 }

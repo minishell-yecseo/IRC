@@ -37,7 +37,6 @@ class	Request
 		static int		BaseAlphaToNumber(const std::string &token);
 		static void	SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list);
 		static int	SearchCommand(const std::vector<std::string> &token_list);
-
 };
 
 #endif
