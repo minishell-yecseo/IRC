@@ -1,8 +1,5 @@
 #include "Channel.hpp"
 
-Channel::Channel() {
-}
-
 bool	Channel::Kick(Client& client)
 {
 	std::set<Client>::iterator	it = members_.find(client);
@@ -54,7 +51,7 @@ bool	Channel::set_mode(const int& flag, const bool& enable) {
 		mode_ &= !flag;
 		return true;
 	}
-	else if (!(mode_ & flag) && enalbe)
+	else if (!(mode_ & flag) && enable)
 	{
 		mode_ |= flag;
 		return true;
