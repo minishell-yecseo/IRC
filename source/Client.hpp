@@ -19,6 +19,11 @@ class Client {
 		socklen_t	addr_size;
 		std::string	password;//sent from client at first access
 		std::string	buffer;
+	
+	public:
+		bool operator < (const Client& client) const;
+		bool operator > (const Client& client) const;
+		bool operator == (const Client& client) const;
 };
 
 #endif
