@@ -3,6 +3,27 @@
 Channel::Channel() {
 }
 
+bool	Channel::Kick(Client& client)
+{
+	std::set<Client>::iterator	it = members_.find(client);
+	if (it != members_.end())
+	{
+		members_.erase(it);
+		return true;
+	}
+	return false;
+}
+
+void	Channel::Join(Client& client)
+{
+	members_.insert(client);
+}
+
+void	Channel::PromoteMember(Client& client)
+{
+	operators_.insert(client);
+}
+
 bool	Channel::AuthPassword(const std::string& password)
 {
 	if (password.compare(password_) == 0)

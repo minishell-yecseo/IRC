@@ -27,6 +27,9 @@ class Channel {
 		bool	IsMember(const Client& client);
 		bool	IsOperator(const Client& client);
 		bool	AuthPassword(const std::string& pw);
+		bool	Kick(Client& client);
+		void	Join(Client& client);
+		void	PromoteMember(Client& client);
 
 	public:
 		bool	set_mode(const int& flag, const bool& enable);
