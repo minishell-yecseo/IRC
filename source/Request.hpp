@@ -29,19 +29,14 @@ enum CommandNumbers
 class	Request
 {
 	public:
-		//Request(std::string request);
-		static std::vector<Command *> ParseRequest(std::string request);
-		static void	SplitRequest(const std::string &request);
-		static void	SplitMessage(const std::vector<std::string> &message_list);
-		static std::vector<Command *>	CommandFactory(const std::vector<std::string> &token_list);
+		static std::vector<Command *> ParseRequest(std::string request, int &offset);
+		static int	SplitRequest(const std::string &request, std::vector<std::string> &message_list);
+		static void	SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> &command_list);
+		static Command *	CommandFactory(const std::vector<std::string> &token_list);
 		static std::string	RemoveDuplicateSpace(const std::string &str);
 		static int		BaseAlphaToNumber(const std::string &token);
 		static void	SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list);
-
-		//virtual	void	CommandRun() = 0;
-
-	//protected:
-		//std::vector<std::string>	message_list_;
+		static int	SearchCommand(const std::vector<std::string> &token_list);
 };
 
 #endif
