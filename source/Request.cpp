@@ -1,24 +1,24 @@
 #include "Request.hpp"
 
 
-std::vector<Command*> Request::ParseRequest(std::string request, int &offset)
+std::vector<Command*> Request::ParseRequest(std::string request, int *offset)
 {
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 
-	offset = SplitRequest(request, message_list);
-	SplitMessage(message_list, command_list);
+	*offset = SplitRequest(request, &message_list);
+	SplitMessage(message_list, &command_list);
 	return command_list;
 }
 
-int	Request::SplitRequest(const std::string &request, std::vector<std::string> &message_list)
+int	Request::SplitRequest(const std::string &request, std::vector<std::string> *message_list)
 {
 	static const std::string	delimiter = "\r\n";
 	size_t start = 0, end = 0;
 
 	while ((end = request.find(delimiter, start)) != std::string::npos) 
 	{
-		message_list.push_back(request.substr(start, end - start));
+		message_list->push_back(request.substr(start, end - start));
 		start = end + delimiter.length();
 	}
 	// Need log file
@@ -27,7 +27,7 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> &
 	return start;
 }
 
-void	Request::SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> &command_list)
+void	Request::SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> *command_list)
 {
 	std::vector<std::string>	token_list;
 	std::string msg;
@@ -39,10 +39,10 @@ void	Request::SplitMessage(const std::vector<std::string> &message_list, std::ve
 			continue ;
 		msg = RemoveDuplicateSpace(message_list[i]);
 		token_list.clear();
-		SeperateWhiteSpace(msg, token_list);
+		SeperateWhiteSpace(msg, &token_list);
 		c = CommandFactory(token_list);
 		if (c != NULL)
-			command_list.push_back(c);
+			command_list->push_back(c);
 	}
 }
 
@@ -77,19 +77,19 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
 }
 
 // The colon not prefix is mean last parameter and doesn't need remove white spaces
-void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> &token_list)
+void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> *token_list)
 {
 	static const char delimiter = ' ';
 	size_t	start = 0, end = 0;
 
 	while ((end = str.find(delimiter, start)) != std::string::npos)
 	{
-		token_list.push_back(str.substr(start, end - start));
+		token_list->push_back(str.substr(start, end - start));
 		start = end + 1;
 		if (start < str.length() && str[start] == ':')
 			break ;
 	}
-	token_list.push_back(str.substr(start));
+	token_list->push_back(str.substr(start));
 }
 
 int	Request::BaseAlphaToNumber(const std::string &token)
