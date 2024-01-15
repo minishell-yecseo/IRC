@@ -4,6 +4,7 @@
 //#include "Server.hpp"
 //#include "Client.hpp"
 #include <iostream>
+#include <vector>
 
 class Command
 {
@@ -12,9 +13,9 @@ class Command
 		virtual void	Run() = 0;
 
 	protected:
-		std::string	prefix_;
-		std::string	command_;
-		std::string	params_;
+		std::string					prefix_;
+		std::string					command_;
+		std::vector<std::string>	params_;
 		//Server	s_;
 		//Client	c_;
 };
@@ -25,5 +26,5 @@ class CapCommand: public Command
 		CapCommand(const std::vector<std::string> &token_list);
 		void	Run();
 };
-
+[
 #endif

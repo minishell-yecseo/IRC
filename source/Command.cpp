@@ -4,21 +4,23 @@
 
 Command::Command(const std::vector<std::string> &token_list)
 {
-	token_list.size();
-	//std::cout << token_list.length() << "Need init of command\n";
+	size_t	param_index;
 
-	/*
 	if (token_list[0][0] == ':')
 	{
 		this->prefix_ = token_list[0];
 		this->command_ = token_list[1];
+		param_index = 2;
 	}
 	else
 	{
 		this->command_ = token_list[0];
-		this->params_ = &token_list[1];
+		param_index = 1;
 	}
-	*/
+	for (size_t index = param_index; index < token_list.size(); ++index)
+	{
+		this->params_.push_back(token_list[index]);
+	}
 }
 
 CapCommand::CapCommand(const std::vector<std::string> &token_list) : Command(token_list)
