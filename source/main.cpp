@@ -2,8 +2,7 @@
 #include <arpa/inet.h>
 
 void leaks();
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	atexit(leaks);
 	Server server(argc, argv);
 	struct sockaddr_in addr = server.get_addr();
@@ -13,7 +12,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void	leaks()
-{
+void	leaks() {
 	system("leaks --list -- $PPID");
 }
