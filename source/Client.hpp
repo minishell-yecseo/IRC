@@ -11,6 +11,13 @@
 class Server;
 class Client {
 	friend class Server;
+	public:
+		Client(void);
+		int set_sock(int fd);
+		bool operator < (const Client& client) const;
+		bool operator > (const Client& client) const;
+		bool operator == (const Client& client) const;
+
 	private:
 		//int	id;//UNIQUE
 		bool auth_;
@@ -21,13 +28,6 @@ class Client {
 		socklen_t	addr_size_;
 		std::string	password_;//sent from client at first access
 		std::string	buffer_;
-	
-	public:
-		Client(void);
-		int set_sock(int fd);
-		bool operator < (const Client& client) const;
-		bool operator > (const Client& client) const;
-		bool operator == (const Client& client) const;
 };
 
 #endif
