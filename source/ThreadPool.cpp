@@ -1,5 +1,23 @@
 #include "ThreadPool.hpp"
 
+ThreadPool::ThreadPool()
+{
+}
+
+ThreadPool::ThreadPool(int size)
+{
+	this->thread_count = size;
+	pthread_mutex_init(&(this->lock), NULL);
+	pthread_cond_init(&(this->notify), NULL);
+
+	this->threads.resize(size);
+	for (int i = 0; i < this->thread_count; ++i)
+	{
+		pthread_create(&(this->threads[i]), NULL,
+					ThreadPool::Worker, (void *)this);
+	}
+}
+
 ThreadPool::~ThreadPool()
 {
 	pthread_mutex_lock(&(this->lock));
@@ -64,18 +82,4 @@ void	*ThreadPool::Worker(void *arg)
 	pthread_mutex_unlock(&(pool->lock));
 	pthread_exit(NULL);
 	return NULL;
-}
-
-ThreadPool::ThreadPool(int size)
-{
-	this->thread_count = size;
-	pthread_mutex_init(&(this->lock), NULL);
-	pthread_cond_init(&(this->notify), NULL);
-
-	this->threads.resize(size);
-	for (int i = 0; i < this->thread_count; ++i)
-	{
-		pthread_create(&(this->threads[i]), NULL,
-					ThreadPool::Worker, (void *)this);
-	}
 }

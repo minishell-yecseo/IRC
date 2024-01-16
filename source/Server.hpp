@@ -18,15 +18,18 @@
 #include "Utils.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "ThreadPool.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
 #define FT_TIMEOUT_SEC 5
 #define FT_TIMEOUT_NSEC 0
 #define FT_BUFF_SIZE 1024
+#define FT_THREAD_POOL_SIZE 10
 
 class Server {
 	private:
+		ThreadPool	pool;
 		int	sock;
 		int	port;
 		struct sockaddr_in	addr;

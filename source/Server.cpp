@@ -9,7 +9,7 @@ Server::Server(int argc, char **argv)
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
-
+	pool = ThreadPool(FT_THREAD_POOL_SIZE);
 	port = atoi(argv[1]);
 	password = argv[2];
 	server_socket_init();
