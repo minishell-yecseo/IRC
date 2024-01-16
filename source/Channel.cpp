@@ -1,5 +1,20 @@
 #include "Channel.hpp"
 
+void	Channel::set_topic(const std::string& topic)
+{
+	this->topic_ = topic;
+}
+
+void	Channel::set_password(const std::string& password)
+{
+	this->password_ = password;
+}
+
+void	Channel::set_name(const std::string& name)
+{
+	this->name_ = name;
+}
+
 bool	Channel::Kick(Client client)
 {
 	std::set<Client>::iterator	it = members_.find(client);
