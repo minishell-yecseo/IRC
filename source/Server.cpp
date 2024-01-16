@@ -135,7 +135,6 @@ void	Server::connect_client(void)
 	/* handle new client */
 	std::cout << "accent new client: " << client.sock << "\n";
 	add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
 	clients[client.sock] = client;
 }
 
