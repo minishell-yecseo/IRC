@@ -1,7 +1,7 @@
 NAME = ircserv
 CXX = c++
 CPPFLAGS = -MMD -MP
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=thread
 RMFLAGS = -rf
 INC_DIR = ./source/
 SRC_DIR = ./source/
