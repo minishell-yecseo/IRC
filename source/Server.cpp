@@ -14,11 +14,27 @@ Server::Server(int argc, char **argv)
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
+	name_ = FT_SERVER_NAME;
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
 	password_ = argv[2];
 	ServerSocketInit();
 	KqueueInit();
+}
+
+const std::string&	Server::get_name(void)
+{
+	return this->name_;
+}
+
+const int& Server::get_port(void)
+{
+	return this->port_;
+}
+
+const struct sockaddr_in&	Server::get_addr(void)
+{
+	return this->addr_;
 }
 
 void	Server::ServerSocketInit(void)
@@ -55,7 +71,8 @@ bool	Server::Run(void)
 {
 	// main loop of ircserv with kqueue
 	int nev;
-	while (true)
+	int i = 0;
+	while (i < 5)
 	{
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();//why should I write this line?
@@ -65,6 +82,7 @@ bool	Server::Run(void)
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
+		i++;
 	}
 	return true;
 }
