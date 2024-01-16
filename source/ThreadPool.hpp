@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <queue>
-#include "Command.hpp"
+#include "Request.hpp"
 
+class Command;
 class ThreadPool
 {
 	public:
