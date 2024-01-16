@@ -3,27 +3,27 @@
 Client::Client(void)
 {
 	auth_ = false;
-	sock = -1;
-	memset(&addr, 0, sizeof(addr));
+	sock_ = -1;
+	memset(&addr_, 0, sizeof(addr_));
 }
 
 int	Client::set_sock(int fd)
 {
 	if (fd > 0)
-		sock = fd;
-	return sock;
+		sock_ = fd;
+	return sock_;
 }
 
 bool Client::operator < (const Client& client) const {
-	return (this->sock < client.sock);
+	return (this->sock_ < client.sock_);
 }
 
 bool Client::operator > (const Client& client) const {
-	return (this->sock > client.sock);
+	return (this->sock_ > client.sock_);
 }
 
 bool Client::operator == (const Client& client) const {
-	if ((this->nick).compare(client.nick) == 0)
+	if ((this->nick_).compare(client.nick_) == 0)
 		return true;
 	return false;
 }

@@ -11,13 +11,13 @@ class Command;
 class ThreadPool
 {
 	public:
-		std::vector<pthread_t>	threads;
-		std::queue<Command*> 	queue;
-		pthread_mutex_t			lock;
-		pthread_cond_t			notify;
-		int						thread_count;
-		int						count;
-		bool					shutdown;
+		std::vector<pthread_t>	threads_;
+		std::queue<Command*> 	queue_;
+		pthread_mutex_t			lock_;
+		pthread_cond_t			notify_;
+		int						thread_count_;
+		int						count_;
+		bool					shutdown_;
 
 		ThreadPool(void);
 		ThreadPool(int size);

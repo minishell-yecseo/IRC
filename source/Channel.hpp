@@ -24,6 +24,9 @@ class Channel {
 		/* getter & setter */
 		bool	set_mode(const int& flag, const bool& enable);
 		const char&	get_mode(void);
+		void	set_topic(const std::string& topic);
+		void	set_password(const std::string& password);
+		void	set_name(const std::string& name);
 
 	private:
 		std::string	name_;
