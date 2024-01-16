@@ -1,14 +1,12 @@
 #include "Client.hpp"
 
-Client::Client(void)
-{
+Client::Client(void) {
 	auth_ = false;
 	sock_ = -1;
 	memset(&addr_, 0, sizeof(addr_));
 }
 
-int	Client::set_sock(int fd)
-{
+int	Client::set_sock(int fd) {
 	if (fd > 0)
 		sock_ = fd;
 	return sock_;

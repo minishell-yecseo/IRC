@@ -1,19 +1,17 @@
 #include "Server.hpp"
 
-Server::~Server()
-{
+Server::~Server() {
 	delete pool_;
 }
 
-Server::Server(int argc, char **argv)
-{
-	if (argc != 3)
-	{
+Server::Server(int argc, char **argv) {
+	if (argc != 3) {
 		std::string error_message;
 		std::string program_name = argv[0];
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
+	name_ = FT_SERVER_NAME;
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
 	password_ = argv[2];
@@ -21,8 +19,19 @@ Server::Server(int argc, char **argv)
 	KqueueInit();
 }
 
-void	Server::ServerSocketInit(void)
-{
+const std::string&	Server::get_name(void) {
+	return this->name_;
+}
+
+const int& Server::get_port(void) {
+	return this->port_;
+}
+
+const struct sockaddr_in&	Server::get_addr(void) {
+	return this->addr_;
+}
+
+void	Server::ServerSocketInit(void) {
 	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
 		error_handling("socket() error\n");
 
@@ -40,8 +49,7 @@ void	Server::ServerSocketInit(void)
 	fcntl(sock_, F_SETFL, O_NONBLOCK);
 }
 
-void	Server::KqueueInit(void)
-{
+void	Server::KqueueInit(void) {
 	if ((kq_ = kqueue()) == -1)
 		error_handling("kqueue() error\n");
 	struct kevent	server_event;
@@ -51,12 +59,11 @@ void	Server::KqueueInit(void)
 	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
 }
 
-bool	Server::Run(void)
-{
+bool	Server::Run(void) {
 	// main loop of ircserv with kqueue
 	int nev;
-	while (true)
-	{
+	int i = 0;
+	while (i < 5) {
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();//why should I write this line?
 		if (nev == -1)
@@ -65,15 +72,14 @@ bool	Server::Run(void)
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
+		i++;
 	}
 	return true;
 }
 
-void	Server::HandleEvents(int nev)
-{
+void	Server::HandleEvents(int nev) {
 	struct kevent	event;
-	for (int i = 0; i < nev; ++i)
-	{
+	for (int i = 0; i < nev; ++i) {
 		event = evlist_[i];
 		print_event(&event, i);
 		if (event.flags & EV_ERROR)
@@ -84,21 +90,14 @@ void	Server::HandleEvents(int nev)
 			ConnectClient();
 		else if (event.filter == EVFILT_READ)
 			HandleClientEvent(event);
-		else if (event.filter == EVFILT_WRITE)
-		{
-			/* handle write event ... */
-			std::cout << "event.filter write, socket fd : " << event.ident << "\n";
-		}
 	}
 }
 
-void	Server::HandleClientEvent(struct kevent event)
-{
+void	Server::HandleClientEvent(struct kevent event) {
 	std::map<int, Client>::iterator	it = clients_.find(event.ident);
 	Client client;
 
-	if (it != clients_.end())
-	{
+	if (it != clients_.end()) {
 		client = it->second;
 		char buff[FT_BUFF_SIZE];
 		int n = read(event.ident, buff, sizeof(buff));
@@ -106,15 +105,13 @@ void	Server::HandleClientEvent(struct kevent event)
 			std::cerr << "client read error\n";
 		else if (n == 0)
 			DisconnectClient(event);
-		else
-		{
+		else {
 			buff[n] = 0;
 			client.buffer_ += buff;
 			std::vector<Command *> cmds;
 			int	offset;
 			cmds = Request::ParseRequest(this, &client, client.buffer_, &offset);
-			for (size_t i = 0; i < cmds.size(); ++i)
-			{
+			for (size_t i = 0; i < cmds.size(); ++i) {
 				std::cout << "index : " << i << "\n";
 				pool_->Enqueue(cmds[i]);
 			}
@@ -128,8 +125,7 @@ void	Server::HandleClientEvent(struct kevent event)
 	}
 }
 
-void	Server::ConnectClient(void)
-{
+void	Server::ConnectClient(void) {
 	Client	client;
 	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr_, &client.addr_size_)) == -1)
 		error_handling("accept() error\n");
@@ -140,8 +136,7 @@ void	Server::ConnectClient(void)
 	clients_[client.sock_] = client;
 }
 
-bool	Server::AuthClient(Client& client)
-{
+bool	Server::AuthClient(Client& client) {
 	// client가 보낸 메시지를 확인한다.
 	//		1. client가 보낸 password 와 Server의 password 의 일치
 	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
@@ -150,15 +145,13 @@ bool	Server::AuthClient(Client& client)
 	return true;
 }
 
-void	Server::AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata)
-{
+void	Server::AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata) {
 	struct kevent	event;
 	EV_SET(&event, ident, filter, flags, fflags, data, udata);
 	chlist_.push_back(event);
 }
 
-void	Server::HandleEventError(struct kevent event)
-{
+void	Server::HandleEventError(struct kevent event) {
 	if (event.ident == (uintptr_t)this->sock_)
 		error_handling("server socket event error\n");
 	else
@@ -168,8 +161,7 @@ void	Server::HandleEventError(struct kevent event)
 	}
 }
 
-void	Server::DisconnectClient(struct kevent event)
-{
+void	Server::DisconnectClient(struct kevent event) {
 	std::cout << RED << "client " << event.ident << " disconnected\n" << RESET;
 	struct kevent delete_event;
 	EV_SET(&delete_event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
@@ -179,15 +171,13 @@ void	Server::DisconnectClient(struct kevent event)
 	/* channel.. clients... etc */
 }
 
-void	Server::HandleTimeout(void)
-{
+void	Server::HandleTimeout(void) {
 	/* handle timeout */
 	std::cout << "time out!\n";
 }
 
 /* wooseoki functions */
-void	Server::print_event(struct kevent *event, int i)
-{
+void	Server::print_event(struct kevent *event, int i) {
 	std::cout << "=============================\n";
 	std::cout << "index : " << i << "\n";
 	std::cout << "ident : " << event->ident << "\n";
@@ -196,8 +186,7 @@ void	Server::print_event(struct kevent *event, int i)
 	std::cout << "=============================\n";
 }
 
-void	Server::p_event_filter(struct kevent *event)
-{
+void	Server::p_event_filter(struct kevent *event) {
 	std::cout << "filter : " << GREEN;
 	if (event->filter == EVFILT_READ) std::cout << "EVFILT_READ";
 	else if (event->filter == EVFILT_WRITE) std::cout << "EVFILT_WRITE";
@@ -210,8 +199,7 @@ void	Server::p_event_filter(struct kevent *event)
 	std::cout << "\n" << RESET;
 }
 
-void	Server::p_event_flags(struct kevent *event)
-{
+void	Server::p_event_flags(struct kevent *event) {
 	std::cout << "flags : " << GREEN;
 	if (event->flags & EV_ADD) std::cout << "EV_ADD | ";
 	if (event->flags & EV_DELETE) std::cout << "EV_DELETE | ";

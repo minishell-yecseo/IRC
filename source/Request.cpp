@@ -1,8 +1,7 @@
 #include "Request.hpp"
 
 
-std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std::string request, int *offset)
-{
+std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std::string request, int *offset) {
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 
@@ -11,13 +10,11 @@ std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std:
 	return command_list;
 }
 
-int	Request::SplitRequest(const std::string &request, std::vector<std::string> *message_list)
-{
+int	Request::SplitRequest(const std::string &request, std::vector<std::string> *message_list) {
 	static const std::string	delimiter = "\r\n";
 	size_t start = 0, end = 0;
 
-	while ((end = request.find(delimiter, start)) != std::string::npos) 
-	{
+	while ((end = request.find(delimiter, start)) != std::string::npos) {
 		message_list->push_back(request.substr(start, end - start));
 		start = end + delimiter.length();
 	}
@@ -27,22 +24,19 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> *
 	return start;
 }
 
-void	Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list)
-{
+void	Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list) {
 	std::vector<std::string>	token_list;
 	std::string msg;
 	Command	*c;
 
-	for (size_t i = 0; i < message_list.size(); ++i)
-	{
+	for (size_t i = 0; i < message_list.size(); ++i) {
 		if (message_list[i][0] == ' ')
 			continue ;
 		msg = RemoveDuplicateSpace(message_list[i]);
 		token_list.clear();
 		SeperateWhiteSpace(msg, &token_list);
 		c = CommandFactory(token_list);
-		if (c != NULL)
-		{
+		if (c != NULL) {
 			c->set_server(server);
 			c->set_client(client);
 			command_list->push_back(c);
@@ -51,28 +45,20 @@ void	Request::SplitMessage(Server *server, Client *client, const std::vector<std
 }
 
 // Message can be seperated one or more whitespace
-std::string Request::RemoveDuplicateSpace(const std::string& str)
-{
+std::string Request::RemoveDuplicateSpace(const std::string& str) {
 	std::string result;
 	bool isSpace = false;
 	bool isColon = false;
 
-	for (size_t i = 0; i < str.size(); ++i)
-	{
-		if (isColon == false && str[i] == ' ')
-		{
-			if (isSpace == false)
-			{
+	for (size_t i = 0; i < str.size(); ++i) {
+		if (isColon == false && str[i] == ' ') {
+			if (isSpace == false) {
 				result += ' ';
 				isSpace = true;
 			}
-		}
-		else if (i != 0 && str[i] == ':')
-		{
+		} else if (i != 0 && str[i] == ':') {
 			isColon = true;
-		}
-		else
-		{
+		} else {
 			result += str[i];
 			isSpace = false;
 		}
@@ -81,13 +67,11 @@ std::string Request::RemoveDuplicateSpace(const std::string& str)
 }
 
 // The colon not prefix is mean last parameter and doesn't need remove white spaces
-void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> *token_list)
-{
+void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string> *token_list) {
 	static const char delimiter = ' ';
 	size_t	start = 0, end = 0;
 
-	while ((end = str.find(delimiter, start)) != std::string::npos)
-	{
+	while ((end = str.find(delimiter, start)) != std::string::npos) {
 		token_list->push_back(str.substr(start, end - start));
 		start = end + 1;
 		if (start < str.length() && str[start] == ':')
@@ -96,24 +80,18 @@ void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string
 	token_list->push_back(str.substr(start));
 }
 
-int	Request::BaseAlphaToNumber(const std::string &token)
-{
+int	Request::BaseAlphaToNumber(const std::string &token) {
 	int		index = 0;
 	size_t	acc = 0;
 
-	while (token[index])
-	{
-		if (token[index] >= 'a' && token[index] <= 'z')
-		{
+	while (token[index]) {
+		if (token[index] >= 'a' && token[index] <= 'z') {
 			acc *= 26;
 			acc += token[index] - 'a' + 1;
-		}	
-		else if (token[index] >= 'A' && token[index] <= 'Z')
-		{
+		} else if (token[index] >= 'A' && token[index] <= 'Z') {
 			acc *= 26;
 			acc += token[index] - 'A' + 1;
-		}
-		else
+		} else
 			return 0;
 		++index;
 	}
@@ -121,8 +99,7 @@ int	Request::BaseAlphaToNumber(const std::string &token)
 	return acc % static_cast<size_t>(INTMAX);
 }
 
-int	Request::SearchCommand(const std::vector<std::string> &token_list)
-{
+int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 	int	acc = 0;
 
 	// first token is <prefix> and second is <command>
@@ -134,12 +111,10 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list)
 	return acc;
 }
 
-Command *	Request::CommandFactory(const std::vector<std::string> &token_list)
-{
+Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 	Command *c = NULL;
 
-	switch (SearchCommand(token_list))
-	{
+	switch (SearchCommand(token_list)) {
 		case CAP:
 			std::cout << "CAP IN\n";
 			c = new CapCommand(token_list);

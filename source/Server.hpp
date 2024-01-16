@@ -27,6 +27,9 @@
 #define FT_TIMEOUT_NSEC 0
 #define FT_BUFF_SIZE 1024
 #define FT_THREAD_POOL_SIZE 10
+# ifndef FT_SERVER_NAME
+#  define FT_SERVER_NAME "ft_irc"
+# endif
 
 class ThreadPool;
 class Server {
@@ -35,8 +38,13 @@ class Server {
 		Server(int argc, char **argv);
 		bool	Run(void);
 
+		const std::string& get_name(void);
+		const int&	get_port(void);
+		const struct sockaddr_in&	get_addr(void);
+
 	/* private member variables */
 	private:
+		std::string	name_;
 		ThreadPool	*pool_;
 		int	sock_;
 		int	port_;

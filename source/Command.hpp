@@ -9,6 +9,7 @@
 class Command
 {
 	public:
+		virtual ~Command(void);
 		Command(const std::vector<std::string> &token);
 		virtual void	Run() = 0;
 		void set_server(Server *server);
