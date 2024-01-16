@@ -109,10 +109,10 @@ void	Server::HandleClientEvent(struct kevent event)
 		else
 		{
 			buff[n] = 0;
-			client.buffer += buff;
+			client.buffer_ += buff;
 			std::vector<Command *> cmds;
 			int	offset;
-			cmds = Request::ParseRequest(this, &client, client.buffer, &offset);
+			cmds = Request::ParseRequest(this, &client, client.buffer_, &offset);
 			for (size_t i = 0; i < cmds.size(); ++i)
 			{
 				std::cout << "index : " << i << "\n";
@@ -131,7 +131,7 @@ void	Server::HandleClientEvent(struct kevent event)
 void	Server::ConnectClient(void)
 {
 	Client	client;
-	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
+	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr_, &client.addr_size_)) == -1)
 		error_handling("accept() error\n");
 
 	/* handle new client */

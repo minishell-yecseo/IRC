@@ -15,12 +15,12 @@ class Client {
 		//int	id;//UNIQUE
 		bool auth_;
 		int	sock_;
-		std::string	nick;//UNIQUE
-		std::string	user;
-		struct sockaddr_in	addr;
-		socklen_t	addr_size;
-		std::string	password;//sent from client at first access
-		std::string	buffer;
+		std::string	nick_;//UNIQUE
+		std::string	user_;
+		struct sockaddr_in	addr_;
+		socklen_t	addr_size_;
+		std::string	password_;//sent from client at first access
+		std::string	buffer_;
 	
 	public:
 		Client(void);

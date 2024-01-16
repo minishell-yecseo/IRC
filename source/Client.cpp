@@ -4,7 +4,7 @@ Client::Client(void)
 {
 	auth_ = false;
 	sock_ = -1;
-	memset(&addr, 0, sizeof(addr));
+	memset(&addr_, 0, sizeof(addr_));
 }
 
 int	Client::set_sock(int fd)
@@ -23,7 +23,7 @@ bool Client::operator > (const Client& client) const {
 }
 
 bool Client::operator == (const Client& client) const {
-	if ((this->nick).compare(client.nick) == 0)
+	if ((this->nick_).compare(client.nick_) == 0)
 		return true;
 	return false;
 }
