@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-bool	Channel::Kick(Client& client)
+bool	Channel::Kick(Client client)
 {
 	std::set<Client>::iterator	it = members_.find(client);
 	if (it != members_.end())
@@ -11,12 +11,12 @@ bool	Channel::Kick(Client& client)
 	return false;
 }
 
-void	Channel::Join(Client& client)
+void	Channel::Join(Client client)
 {
 	members_.insert(client);
 }
 
-void	Channel::PromoteMember(Client& client)
+void	Channel::PromoteMember(Client client)
 {
 	operators_.insert(client);
 }
