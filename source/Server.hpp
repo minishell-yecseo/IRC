@@ -30,47 +30,47 @@
 
 class ThreadPool;
 class Server {
-	private:
-		ThreadPool	*pool;
-		int	sock;
-		int	port;
-		struct sockaddr_in	addr;
-		std::string	password;
-		struct timespec	timeout;
-	
-		int	kq;
-		struct kevent	evlist[FT_KQ_EVENT_SIZE];
-		std::vector<struct kevent>	chlist;
-
-		std::map<int, Client>	clients;//일단, socket fd 를 key로 지정
-		std::map<std::string, Channel>	channels;
-
 	public:
 		~Server();
 		Server(int argc, char **argv);
-		bool	run(void);
-	
+		bool	Run(void);
+
+	/* private member variables */
 	private:
-		void	server_socket_init(void);
-		void	kqueue_init(void);
-		void	handle_events(int nev);
-		void	handle_timeout(void);
-		void	handle_event_error(struct kevent event);
-		void	handle_client_event(struct kevent event);
-		void	disconnect_client(struct kevent event);
-		void	connect_client(void);
-		void	add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+		ThreadPool	*pool_;
+		int	sock_;
+		int	port_;
+		struct sockaddr_in	addr_;
+		std::string	password_;
+		struct timespec	timeout_;
+	
+		int	kq_;
+		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
+		std::vector<struct kevent>	chlist_;
+
+		std::map<int, Client>	clients_;//일단, socket fd 를 key로 지정
+		std::map<std::string, Channel>	channels_;
+
+	/* private member functions*/
+	private:
+		void	ServerSocketInit(void);
+		void	KqueueInit(void);
+		void	HandleEvents(int nev);
+		void	HandleTimeout(void);
+		void	HandleEventError(struct kevent event);
+		void	HandleClientEvent(struct kevent event);
+		void	DisconnectClient(struct kevent event);
+		void	ConnectClient(void);
+		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 
 	/* Authentication */
-	public:
-		bool	authenticate_client(Client& client);
+		bool	AuthClient(Client& client);
 	
 	/* debugging functions */
-	void	p_event_filter(struct kevent *event);
-	void	p_event_flags(struct kevent*event);
+		void	p_event_filter(struct kevent *event);
+		void	p_event_flags(struct kevent*event);
 
 	/* wooseoki functions */
-	private:
 		void	print_event(struct kevent *event, int i);
 };
 

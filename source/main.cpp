@@ -5,7 +5,7 @@ int main(int argc, char **argv)
 {
 	atexit(leaks);
 	Server server(argc, argv);
-	server.run();
+	server.Run();
 	return 0;
 }
 

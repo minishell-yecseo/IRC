@@ -2,7 +2,7 @@
 
 Server::~Server()
 {
-	delete pool;
+	delete pool_;
 }
 
 Server::Server(int argc, char **argv)
@@ -14,76 +14,76 @@ Server::Server(int argc, char **argv)
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
-	pool = new ThreadPool(FT_THREAD_POOL_SIZE);
-	port = atoi(argv[1]);
-	password = argv[2];
-	server_socket_init();
-	kqueue_init();
+	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
+	port_ = atoi(argv[1]);
+	password_ = argv[2];
+	ServerSocketInit();
+	KqueueInit();
 }
 
-void	Server::server_socket_init(void)
+void	Server::ServerSocketInit(void)
 {
-	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
 		error_handling("socket() error\n");
 
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(port);
+	memset(&addr_, 0, sizeof(addr_));
+	addr_.sin_family = AF_INET;
+	addr_.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr_.sin_port = htons(port_);
 	int reuse = 1;
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+	setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
-	if (bind(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
+	if (bind(sock_, (struct sockaddr*)&addr_, sizeof(addr_)) == -1)
 		error_handling("socket bind() error\n");
-	if (listen(sock, FT_SOCK_QUEUE_SIZE) == -1)
+	if (listen(sock_, FT_SOCK_QUEUE_SIZE) == -1)
 		error_handling("socket listen() error\n");
-	fcntl(sock, F_SETFL, O_NONBLOCK);
+	fcntl(sock_, F_SETFL, O_NONBLOCK);
 }
 
-void	Server::kqueue_init(void)
+void	Server::KqueueInit(void)
 {
-	if ((kq = kqueue()) == -1)
+	if ((kq_ = kqueue()) == -1)
 		error_handling("kqueue() error\n");
 	struct kevent	server_event;
-	EV_SET(&server_event, sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	chlist.push_back(server_event);
-	timeout.tv_sec = FT_TIMEOUT_SEC;
-	timeout.tv_nsec = FT_TIMEOUT_NSEC;
+	EV_SET(&server_event, sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	chlist_.push_back(server_event);
+	timeout_.tv_sec = FT_TIMEOUT_SEC;
+	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
 }
 
-bool	Server::run(void)
+bool	Server::Run(void)
 {
 	// main loop of ircserv with kqueue
 	int nev;
 	while (true)
 	{
-		nev = kevent(kq, &(chlist[0]), chlist.size(), evlist, FT_KQ_EVENT_SIZE, &timeout);
-		chlist.clear();//why should I write this line?
+		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
+		chlist_.clear();//why should I write this line?
 		if (nev == -1)
 			error_handling("kevent() error\n");
 		else if (nev == 0)
-			handle_timeout();
+			HandleTimeout();
 		else if (nev > 0)
-			handle_events(nev);
+			HandleEvents(nev);
 	}
 	return true;
 }
 
-void	Server::handle_events(int nev)
+void	Server::HandleEvents(int nev)
 {
 	struct kevent	event;
 	for (int i = 0; i < nev; ++i)
 	{
-		event = evlist[i];
+		event = evlist_[i];
 		print_event(&event, i);
 		if (event.flags & EV_ERROR)
-			handle_event_error(event);
+			HandleEventError(event);
 		else if (event.flags & EV_EOF)
-			disconnect_client(event);//need to implement
-		else if (event.filter == EVFILT_READ && event.ident == (uintptr_t)sock)
-			connect_client();
+			DisconnectClient(event);//need to implement
+		else if (event.filter == EVFILT_READ && event.ident == (uintptr_t)sock_)
+			ConnectClient();
 		else if (event.filter == EVFILT_READ)
-			handle_client_event(event);
+			HandleClientEvent(event);
 		else if (event.filter == EVFILT_WRITE)
 		{
 			/* handle write event ... */
@@ -92,12 +92,12 @@ void	Server::handle_events(int nev)
 	}
 }
 
-void	Server::handle_client_event(struct kevent event)
+void	Server::HandleClientEvent(struct kevent event)
 {
-	std::map<int, Client>::iterator	it = clients.find(event.ident);
+	std::map<int, Client>::iterator	it = clients_.find(event.ident);
 	Client client;
 
-	if (it != clients.end())
+	if (it != clients_.end())
 	{
 		client = it->second;
 		char buff[FT_BUFF_SIZE];
@@ -105,7 +105,7 @@ void	Server::handle_client_event(struct kevent event)
 		if (n == -1)
 			std::cerr << "client read error\n";
 		else if (n == 0)
-			disconnect_client(event);
+			DisconnectClient(event);
 		else
 		{
 			buff[n] = 0;
@@ -116,7 +116,7 @@ void	Server::handle_client_event(struct kevent event)
 			for (size_t i = 0; i < cmds.size(); ++i)
 			{
 				std::cout << "index : " << i << "\n";
-				pool->Enqueue(cmds[i]);
+				pool_->Enqueue(cmds[i]);
 			}
 		//	if (client.auth_)
 		//	{
@@ -128,58 +128,58 @@ void	Server::handle_client_event(struct kevent event)
 	}
 }
 
-void	Server::connect_client(void)
+void	Server::ConnectClient(void)
 {
 	Client	client;
-	if (client.set_sock(accept(sock, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
+	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
 		error_handling("accept() error\n");
 
 	/* handle new client */
-	std::cout << "accent new client: " << client.sock << "\n";
-	add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	clients[client.sock] = client;
+	std::cout << "accent new client: " << client.sock_ << "\n";
+	AddEvent(client.sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	clients_[client.sock_] = client;
 }
 
-bool	Server::authenticate_client(Client& client)
+bool	Server::AuthClient(Client& client)
 {
 	// client가 보낸 메시지를 확인한다.
 	//		1. client가 보낸 password 와 Server의 password 의 일치
 	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
 	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
-	std::cout << RED << "client authenticate call: " << client.sock << RESET << "\n";
+	std::cout << RED << "client authenticate call: " << client.sock_ << RESET << "\n";
 	return true;
 }
 
-void	Server::add_event(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata)
+void	Server::AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata)
 {
 	struct kevent	event;
 	EV_SET(&event, ident, filter, flags, fflags, data, udata);
-	chlist.push_back(event);
+	chlist_.push_back(event);
 }
 
-void	Server::handle_event_error(struct kevent event)
+void	Server::HandleEventError(struct kevent event)
 {
-	if (event.ident == (uintptr_t)this->sock)
+	if (event.ident == (uintptr_t)this->sock_)
 		error_handling("server socket event error\n");
 	else
 	{
 		std::cerr << "client socket event error\n";
-		disconnect_client(event);//need to implement fucntion
+		DisconnectClient(event);//need to implement fucntion
 	}
 }
 
-void	Server::disconnect_client(struct kevent event)
+void	Server::DisconnectClient(struct kevent event)
 {
 	std::cout << RED << "client " << event.ident << " disconnected\n" << RESET;
 	struct kevent delete_event;
 	EV_SET(&delete_event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-	kevent(kq, &delete_event, 1, NULL, 0, NULL);
+	kevent(kq_, &delete_event, 1, NULL, 0, NULL);
 	close(event.ident);
-	clients.erase(event.ident);
+	clients_.erase(event.ident);
 	/* channel.. clients... etc */
 }
 
-void	Server::handle_timeout(void)
+void	Server::HandleTimeout(void)
 {
 	/* handle timeout */
 	std::cout << "time out!\n";

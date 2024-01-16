@@ -14,7 +14,7 @@ class Client {
 	private:
 		//int	id;//UNIQUE
 		bool auth_;
-		int	sock;
+		int	sock_;
 		std::string	nick;//UNIQUE
 		std::string	user;
 		struct sockaddr_in	addr;
