@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <queue>
-#include "Command.hpp"
+#include "Request.hpp"
 
+class Command;
 class ThreadPool
 {
 	public:
@@ -17,7 +18,8 @@ class ThreadPool
 		int						thread_count;
 		int						count;
 		bool					shutdown;
-			
+
+		ThreadPool(void);
 		ThreadPool(int size);
 		~ThreadPool();
 

@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <cstring>
 #include <string>
 #include <iostream>
 
@@ -12,6 +13,7 @@ class Client {
 	friend class Server;
 	private:
 		//int	id;//UNIQUE
+		bool auth_;
 		int	sock;
 		std::string	nick;//UNIQUE
 		std::string	user;
@@ -21,6 +23,8 @@ class Client {
 		std::string	buffer;
 	
 	public:
+		Client(void);
+		int set_sock(int fd);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;

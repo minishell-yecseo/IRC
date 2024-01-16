@@ -1,5 +1,10 @@
 #include "Server.hpp"
 
+Server::~Server()
+{
+	delete pool;
+}
+
 Server::Server(int argc, char **argv)
 {
 	if (argc != 3)
@@ -9,7 +14,7 @@ Server::Server(int argc, char **argv)
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
-
+	pool = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port = atoi(argv[1]);
 	password = argv[2];
 	server_socket_init();
@@ -88,8 +93,11 @@ void	Server::handle_events(int nev)
 void	Server::handle_client_event(struct kevent event)
 {
 	std::map<int, Client>::iterator	it = clients.find(event.ident);
+	Client client;
+
 	if (it != clients.end())
 	{
+		client = it->second;
 		char buff[FT_BUFF_SIZE];
 		int n = read(event.ident, buff, sizeof(buff));
 		if (n == -1)
@@ -99,9 +107,21 @@ void	Server::handle_client_event(struct kevent event)
 		else
 		{
 			buff[n] = 0;
-			clients[event.ident].buffer += buff;
-			std::cout << BLUE << "received data from " << event.ident << ": " << buff << RESET << "\n";
-			write(event.ident, buff, n);
+			client.buffer += buff;
+			std::vector<Command *> cmds;
+			int	offset;
+			cmds = Request::ParseRequest(this, &client, client.buffer, &offset);
+			for (size_t i = 0; i < cmds.size(); ++i)
+			{
+				std::cout << "index : " << i << "\n";
+				pool->Enqueue(cmds[i]);
+			}
+		//	if (client.auth_)
+		//	{
+		//		/* Authorized Clients event handle */
+		//	} else {
+		//		/* Unauthorized Clients event handle */
+		//	}
 		}
 	}
 }
@@ -109,24 +129,14 @@ void	Server::handle_client_event(struct kevent event)
 void	Server::connect_client(void)
 {
 	Client	client;
-	if ((client.sock = accept(sock, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
+	if (client.set_sock(accept(sock, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
 		error_handling("accept() error\n");
 
-	/* Authenticate client password */
-	if (!authenticate_client(client))
-	{
-		/* handle when the client connection rejected */
-		std::cout << "authentification failed with: " << client.sock << "\n";
-		close(client.sock);
-	}
-	else
-	{
-		/* handle new client */
-		std::cout << "accent new client: " << client.sock << "\n";
-		add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-		add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
-		clients[client.sock] = client;
-	}
+	/* handle new client */
+	std::cout << "accent new client: " << client.sock << "\n";
+	add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
+	clients[client.sock] = client;
 }
 
 bool	Server::authenticate_client(Client& client)

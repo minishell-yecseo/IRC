@@ -1,13 +1,13 @@
 #include "Request.hpp"
 
 
-std::vector<Command*> Request::ParseRequest(std::string request, int *offset)
+std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std::string request, int *offset)
 {
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 
 	*offset = SplitRequest(request, &message_list);
-	SplitMessage(message_list, &command_list);
+	SplitMessage(server, client, message_list, &command_list);
 	return command_list;
 }
 
@@ -27,7 +27,7 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> *
 	return start;
 }
 
-void	Request::SplitMessage(const std::vector<std::string> &message_list, std::vector<Command *> *command_list)
+void	Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list)
 {
 	std::vector<std::string>	token_list;
 	std::string msg;
@@ -42,7 +42,11 @@ void	Request::SplitMessage(const std::vector<std::string> &message_list, std::ve
 		SeperateWhiteSpace(msg, &token_list);
 		c = CommandFactory(token_list);
 		if (c != NULL)
+		{
+			c->set_server(server);
+			c->set_client(client);
 			command_list->push_back(c);
+		}
 	}
 }
 
