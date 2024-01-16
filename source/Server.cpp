@@ -103,13 +103,20 @@ void	Server::handle_client_event(struct kevent event)
 		{
 			buff[n] = 0;
 			client.buffer += buff;
-		
-			if (client.auth_)
+			std::vector<Command *> cmds;
+			int	offset;
+			cmds = Request::ParseRequest(client.buffer, &offset);
+			for (size_t i = 0; i < cmds.size(); ++i)
 			{
-				/* Authorized Clients event handle */
-			} else {
-				/* Unauthorized Clients event handle */
+				std::cout << "index : " << i << "\n";
+				pool.Enqueue(cmds[i]);
 			}
+		//	if (client.auth_)
+		//	{
+		//		/* Authorized Clients event handle */
+		//	} else {
+		//		/* Unauthorized Clients event handle */
+		//	}
 		}
 	}
 }
