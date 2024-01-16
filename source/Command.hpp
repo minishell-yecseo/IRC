@@ -26,5 +26,4 @@ class CapCommand: public Command
 		CapCommand(const std::vector<std::string> &token_list);
 		void	Run();
 };
-[
 #endif
