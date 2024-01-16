@@ -24,12 +24,4 @@ class Command
 		Server	*server_;
 		Client	*client_;
 };
-
-class CapCommand: public Command
-{
-	public:
-		CapCommand(const std::vector<std::string> &token_list);
-		void	Run();
-};
-
 #endif
