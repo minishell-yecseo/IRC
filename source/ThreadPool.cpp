@@ -42,7 +42,7 @@ void	ThreadPool::Enqueue(void *arg)
 	pthread_mutex_lock(&(this->lock));
 	if (this->shutdown == true)
 		return ;
-	std::cout << "Enque\n";
+	//std::cout << "Enque\n";
 	this->queue.push(c);
 	this->count += 1;
 	pthread_cond_signal(&(this->notify));
@@ -68,7 +68,7 @@ void	*ThreadPool::Worker(void *arg)
 			break ;
 		}
 
-		std::cout << "Run\n";
+		//std::cout << "Run\n";
 		c = pool->queue.front();
 		pool->queue.pop();
 		pool->count -= 1;
