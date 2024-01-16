@@ -84,11 +84,6 @@ void	Server::HandleEvents(int nev)
 			ConnectClient();
 		else if (event.filter == EVFILT_READ)
 			HandleClientEvent(event);
-		else if (event.filter == EVFILT_WRITE)
-		{
-			/* handle write event ... */
-			std::cout << "event.filter write, socket fd : " << event.ident << "\n";
-		}
 	}
 }
 
