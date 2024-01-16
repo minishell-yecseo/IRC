@@ -1,5 +1,10 @@
 #include "Server.hpp"
 
+Server::~Server()
+{
+	delete pool;
+}
+
 Server::Server(int argc, char **argv)
 {
 	if (argc != 3)
@@ -9,7 +14,7 @@ Server::Server(int argc, char **argv)
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
-	pool = ThreadPool(FT_THREAD_POOL_SIZE);
+	pool = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port = atoi(argv[1]);
 	password = argv[2];
 	server_socket_init();
@@ -105,11 +110,11 @@ void	Server::handle_client_event(struct kevent event)
 			client.buffer += buff;
 			std::vector<Command *> cmds;
 			int	offset;
-			cmds = Request::ParseRequest(client.buffer, &offset);
+			cmds = Request::ParseRequest(this, &client, client.buffer, &offset);
 			for (size_t i = 0; i < cmds.size(); ++i)
 			{
 				std::cout << "index : " << i << "\n";
-				pool.Enqueue(cmds[i]);
+				pool->Enqueue(cmds[i]);
 			}
 		//	if (client.auth_)
 		//	{

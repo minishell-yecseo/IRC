@@ -28,9 +28,10 @@
 #define FT_BUFF_SIZE 1024
 #define FT_THREAD_POOL_SIZE 10
 
+class ThreadPool;
 class Server {
 	private:
-		ThreadPool	pool;
+		ThreadPool	*pool;
 		int	sock;
 		int	port;
 		struct sockaddr_in	addr;
@@ -45,6 +46,7 @@ class Server {
 		std::map<std::string, Channel>	channels;
 
 	public:
+		~Server();
 		Server(int argc, char **argv);
 		bool	run(void);
 	
