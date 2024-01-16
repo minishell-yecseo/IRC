@@ -88,8 +88,11 @@ void	Server::handle_events(int nev)
 void	Server::handle_client_event(struct kevent event)
 {
 	std::map<int, Client>::iterator	it = clients.find(event.ident);
+	Client client;
+
 	if (it != clients.end())
 	{
+		client = it->second;
 		char buff[FT_BUFF_SIZE];
 		int n = read(event.ident, buff, sizeof(buff));
 		if (n == -1)
@@ -99,9 +102,14 @@ void	Server::handle_client_event(struct kevent event)
 		else
 		{
 			buff[n] = 0;
-			clients[event.ident].buffer += buff;
-			std::cout << BLUE << "received data from " << event.ident << ": " << buff << RESET << "\n";
-			write(event.ident, buff, n);
+			client.buffer += buff;
+		
+			if (client.auth_)
+			{
+				/* Authorized Clients event handle */
+			} else {
+				/* Unauthorized Clients event handle */
+			}
 		}
 	}
 }
@@ -109,24 +117,14 @@ void	Server::handle_client_event(struct kevent event)
 void	Server::connect_client(void)
 {
 	Client	client;
-	if ((client.sock = accept(sock, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
+	if (client.set_sock(accept(sock, (struct sockaddr*)&client.addr, &client.addr_size)) == -1)
 		error_handling("accept() error\n");
 
-	/* Authenticate client password */
-	if (!authenticate_client(client))
-	{
-		/* handle when the client connection rejected */
-		std::cout << "authentification failed with: " << client.sock << "\n";
-		close(client.sock);
-	}
-	else
-	{
-		/* handle new client */
-		std::cout << "accent new client: " << client.sock << "\n";
-		add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-		add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
-		clients[client.sock] = client;
-	}
+	/* handle new client */
+	std::cout << "accent new client: " << client.sock << "\n";
+	add_event(client.sock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	add_event(client.sock, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, NULL);
+	clients[client.sock] = client;
 }
 
 bool	Server::authenticate_client(Client& client)
