@@ -76,6 +76,7 @@ void	*ThreadPool::Worker(void *arg)
 		pthread_mutex_unlock(&(pool->lock_));
 
 		c->Run();
+		delete c;
 	}
 
 

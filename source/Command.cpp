@@ -1,7 +1,9 @@
 #include "Command.hpp"
 
-Command::Command(const std::vector<std::string> &token_list)
-{
+Command::~Command(void){
+}
+
+Command::Command(const std::vector<std::string> &token_list) {
 	size_t	param_index;
 
 	if (token_list[0][0] == ':')
@@ -21,22 +23,18 @@ Command::Command(const std::vector<std::string> &token_list)
 	}
 }
 
-void	Command::set_server(Server *server)
-{
+void	Command::set_server(Server *server) {
 	this->server_ = server;
 }
 
-void	Command::set_client(Client *client)
-{
+void	Command::set_client(Client *client) {
 	this->client_ = client;
 }
 
-Server*	Command::get_server(void)
-{
+Server*	Command::get_server(void) {
 	return server_;
 }
 
-Client*	Command::get_client(void)
-{
+Client*	Command::get_client(void) {
 	return client_;
 }
