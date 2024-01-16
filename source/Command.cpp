@@ -1,7 +1,5 @@
 #include "Command.hpp"
 
-#include <vector>
-
 Command::Command(const std::vector<std::string> &token_list)
 {
 	size_t	param_index;
@@ -23,13 +21,22 @@ Command::Command(const std::vector<std::string> &token_list)
 	}
 }
 
-CapCommand::CapCommand(const std::vector<std::string> &token_list) : Command(token_list)
+void	Command::set_server(Server *server)
 {
-	;
+	this->server_ = server;
 }
 
-void	CapCommand::Run()
+void	Command::set_client(Client *client)
 {
+	this->client_ = client;
+}
 
-	;
+Server*	Command::get_server(void)
+{
+	return server_;
+}
+
+Client*	Command::get_client(void)
+{
+	return client_;
 }
