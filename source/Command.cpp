@@ -26,6 +26,7 @@ void	Command::set_server(Server *server) {
 
 void	Command::set_client(Client *client) {
 	this->client_ = client;
+	this->client_sock_ = client->get_sock();
 }
 
 Server*	Command::get_server(void) {

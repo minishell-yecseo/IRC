@@ -1,7 +1,7 @@
 #ifndef CAPCOMMAND_HPP
 #define CAPCOMMAND_HPP
 
-#include "Command.hpp"
+#include "Response.hpp"
 
 class CapCommand: public Command {
 	public:
