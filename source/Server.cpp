@@ -199,7 +199,6 @@ void	Server::DisconnectClient(struct kevent event) {
 
 	pool_->DeleteClientMutex(client.get_sock());
 	close(client.get_sock());
-	system("lsof -p $PPID");
 
 	/* Channel 에서 Client 삭제 */
 	if (client.channel_name_.size() > 0) {
