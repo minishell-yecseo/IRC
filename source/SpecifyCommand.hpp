@@ -16,4 +16,5 @@
 #include "NoticeCommand.hpp"
 #include "UserCommand.hpp"
 #include "PartCommand.hpp"
+#include "WhoisCommand.hpp"
 #endif
