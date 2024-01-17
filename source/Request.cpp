@@ -107,8 +107,6 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 		acc = BaseAlphaToNumber(token_list[1]);
 	else
 		acc = BaseAlphaToNumber(token_list[0]);
-
-	std::cout << "token : " << token_list[0] << "\n";
 	return acc;
 }
 
