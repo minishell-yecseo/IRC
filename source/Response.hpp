@@ -3,4 +3,8 @@
 
 #include "NumericDefine.hpp"
 #define CRLF "\r\n"
+
+class Response {
+};
+
 #endif
