@@ -142,9 +142,9 @@ void	Server::ConnectClient(void) {
 	/* handle new client */
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	std::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
-	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
+	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	clients_[client.get_sock()] = client;
-	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 	std::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
 	buffers_[client.get_sock()] = "";
 	std::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";

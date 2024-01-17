@@ -8,6 +8,7 @@ class	Client;
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <map>
 #include <queue>
 #include <map>
 
@@ -19,8 +20,8 @@ class ThreadPool
 		std::vector<pthread_t>	threads_;
 		std::queue<Command*> 	queue_;
 		pthread_mutex_t			list_mutex_;
-		pthread_mutex_t			server_clients_mutex_;
-		pthread_mutex_t			server_channels_mutex_;
+		pthread_mutex_t			s_clients_mutex_;
+		pthread_mutex_t			s_channels_mutex_;
 		pthread_mutex_t			lock_;
 		pthread_cond_t			notify_;
 		int						thread_count_;
