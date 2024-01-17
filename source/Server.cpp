@@ -102,8 +102,10 @@ void	Server::HandleClientEvent(struct kevent event) {
 	std::string& buffer = buffers_[client.get_sock()];
 
 	int read_byte = read(event.ident, buff, sizeof(buff));
-	if (read_byte == -1)
+	if (read_byte == -1) {
+		pool_->UnlockClientMutex(event.ident);//unlock
 		std::cerr << "client read error\n";
+	}
 	else if (read_byte == 0) {
 		pool_->UnlockClientMutex(event.ident);//unlock
 		DisconnectClient(event);
