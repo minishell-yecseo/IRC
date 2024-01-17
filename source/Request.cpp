@@ -95,7 +95,6 @@ int	Request::BaseAlphaToNumber(const std::string &token) {
 			return 0;
 		++index;
 	}
-	std::cout << "acc : " << acc << "\n";
 	return acc % static_cast<size_t>(INTMAX);
 }
 
@@ -107,7 +106,6 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 		acc = BaseAlphaToNumber(token_list[1]);
 	else
 		acc = BaseAlphaToNumber(token_list[0]);
-
 	return acc;
 }
 
@@ -153,6 +151,9 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 			break ;
 		case TOPIC:
 			std::cout << "TOPIC IN\n";
+			break ;
+		case WHOIS:
+			std::cout << "WHOIS IN\n";
 			break ;
 		case INVITE:
 			std::cout << "INVITE IN\n";

@@ -2,9 +2,6 @@
 #define CAPCOMMAND_HPP
 
 #include "Response.hpp"
-
-class Command;
-
 #include "Command.hpp"
 
 class CapCommand: public Command {
