@@ -119,15 +119,15 @@ void	Server::HandleClientEvent(struct kevent event) {
 		for (size_t i = 0; i < cmds.size(); ++i) {
 			std::cout << "index : " << i << "\n";
 			pool_->Enqueue(cmds[i]);
-	}
-	pool_->UnlockClientMutex(event.ident);//unlock
-
-	//	if (client.auth_)
-	//	{
-	//		/* Authorized Clients event handle */
-	//	} else {
-	//		/* Unauthorized Clients event handle */
-	//	}
+		}
+		pool_->UnlockClientMutex(event.ident);//unlock
+	
+		//	if (client.auth_)
+		//	{
+		//		/* Authorized Clients event handle */
+		//	} else {
+		//		/* Unauthorized Clients event handle */
+		//	}
 	}
 }
 
