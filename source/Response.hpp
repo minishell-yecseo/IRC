@@ -2,5 +2,5 @@
 # define RESPONSE_HPP
 
 #include "NumericDefine.hpp"
-
+#define CRLF "\r\n"
 #endif

@@ -63,6 +63,7 @@ class Server {
 		std::vector<struct kevent>	chlist_;
 
 		std::map<int, Client>	clients_;//일단, socket fd 를 key로 지정
+		std::map<int, std::string>	buffers_;
 		std::map<std::string, Channel>	channels_;
 
 	/* private member functions*/

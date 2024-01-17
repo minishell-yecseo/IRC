@@ -8,13 +8,18 @@
 #include <string>
 #include <iostream>
 
+#define FT_INIT_CLIENT_FD -1
+
 class Server;
 
 class Client {
 	friend class Server;
 	public:
 		Client(void);
+//		Client(const Client& client);
 		int set_sock(int fd);
+		const int& get_sock(void);
+		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;
@@ -27,8 +32,8 @@ class Client {
 		std::string	user_;
 		struct sockaddr_in	addr_;
 		socklen_t	addr_size_;
+		std::string	channel_name_;
 		std::string	password_;//sent from client at first access
-		std::string	buffer_;
 };
 
 #endif
