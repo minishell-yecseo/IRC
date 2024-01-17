@@ -1,6 +1,8 @@
 #ifndef CAPCOMMAND_HPP
 #define CAPCOMMAND_HPP
 
+#include "Response.hpp"
+
 class Command;
 
 #include "Command.hpp"
