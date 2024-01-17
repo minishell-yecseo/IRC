@@ -62,8 +62,7 @@ void	Server::KqueueInit(void) {
 bool	Server::Run(void) {
 	// main loop of ircserv with kqueue
 	int nev;
-	int i = 0;
-	while (i < 5) {
+	while (true) {
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();//why should I write this line?
 		if (nev == -1)
@@ -72,7 +71,6 @@ bool	Server::Run(void) {
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
-		i++;
 	}
 	return true;
 }
@@ -94,34 +92,40 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
-	std::map<int, Client>::iterator	it = clients_.find(event.ident);
-	Client client;
+	if (pool_->LockClientMutex(event.ident) == false) {//lock
+		std::cerr << "HandleClientEvent() error\n";
+		return ;
+	}
 
-	if (it != clients_.end()) {
-		client = it->second;
-		char buff[FT_BUFF_SIZE];
-		int n = read(event.ident, buff, sizeof(buff));
-		if (n == -1)
-			std::cerr << "client read error\n";
-		else if (n == 0)
-			DisconnectClient(event);
-		else {
-			buff[n] = 0;
-			client.buffer_ += buff;
-			std::vector<Command *> cmds;
-			int	offset;
-			cmds = Request::ParseRequest(this, &client, client.buffer_, &offset);
-			for (size_t i = 0; i < cmds.size(); ++i) {
-				std::cout << "index : " << i << "\n";
-				pool_->Enqueue(cmds[i]);
-			}
-		//	if (client.auth_)
-		//	{
-		//		/* Authorized Clients event handle */
-		//	} else {
-		//		/* Unauthorized Clients event handle */
-		//	}
-		}
+	Client client = clients_[event.ident];
+	char	buff[FT_BUFF_SIZE];
+	std::string& buffer = buffers_[client.get_sock()];
+
+	int read_byte = read(event.ident, buff, sizeof(buff));
+	if (read_byte == -1)
+		std::cerr << "client read error\n";
+	else if (read_byte == 0) {
+		pool_->UnlockClientMutex(event.ident);//unlock
+		DisconnectClient(event);
+	}
+	else {
+		buff[read_byte] = '\0';
+		buffer += buff;
+		std::vector<Command *> cmds;
+		int	offset;
+		cmds = Request::ParseRequest(this, &client, buffer, &offset);
+		for (size_t i = 0; i < cmds.size(); ++i) {
+			std::cout << "index : " << i << "\n";
+			pool_->Enqueue(cmds[i]);
+	}
+	pool_->UnlockClientMutex(event.ident);//unlock
+
+	//	if (client.auth_)
+	//	{
+	//		/* Authorized Clients event handle */
+	//	} else {
+	//		/* Unauthorized Clients event handle */
+	//	}
 	}
 }
 
@@ -130,10 +134,20 @@ void	Server::ConnectClient(void) {
 	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr_, &client.addr_size_)) == -1)
 		error_handling("accept() error\n");
 
+	if (pool_->AddClientMutex(client.get_sock()) == false) {
+		std::cerr << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
+		return ;
+	}
+
 	/* handle new client */
-	std::cout << "accent new client: " << client.sock_ << "\n";
-	AddEvent(client.sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	clients_[client.sock_] = client;
+	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	std::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
+	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
+	clients_[client.get_sock()] = client;
+	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+	std::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
+	buffers_[client.get_sock()] = "";
+	std::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
 }
 
 bool	Server::AuthClient(Client& client) {
@@ -141,7 +155,7 @@ bool	Server::AuthClient(Client& client) {
 	//		1. client가 보낸 password 와 Server의 password 의 일치
 	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
 	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
-	std::cout << RED << "client authenticate call: " << client.sock_ << RESET << "\n";
+	std::cout << RED << "client authenticate call: " << client.get_sock() << RESET << "\n";
 	return true;
 }
 
@@ -162,13 +176,40 @@ void	Server::HandleEventError(struct kevent event) {
 }
 
 void	Server::DisconnectClient(struct kevent event) {
-	std::cout << RED << "client " << event.ident << " disconnected\n" << RESET;
-	struct kevent delete_event;
-	EV_SET(&delete_event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-	kevent(kq_, &delete_event, 1, NULL, 0, NULL);
-	close(event.ident);
-	clients_.erase(event.ident);
-	/* channel.. clients... etc */
+	std::map<int, Client>::iterator	client_it;
+	Client	client;
+
+	std::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
+	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
+	client_it = clients_.find(event.ident);
+	if (client_it == clients_.end()) {
+		std::cerr << "DisconnectClient(" << event.ident << ") error\n";
+		pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+		std::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
+		return;
+	}
+
+	client = client_it->second;
+	clients_.erase(client_it);
+	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
+
+	EV_SET(&event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	kevent(kq_, &event, 1, NULL, 0, NULL);
+
+	pool_->DeleteClientMutex(client.get_sock());
+	close(client.get_sock());
+
+	/* Channel 에서 Client 삭제 */
+	if (client.channel_name_.size() > 0) {
+		if (!pool_->LockChannelMutex(client.channel_name_)) {//lock
+			std::cerr << "DisconnectClient() error\n";
+			return ;
+		}
+		channels_[client.channel_name_].Kick(client);
+		pool_->UnlockChannelMutex(client.channel_name_);//unlock
+	}
+	std::cout << CYAN << "client " << client.get_sock() << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {

@@ -2,13 +2,39 @@
 
 Client::Client(void) {
 	auth_ = false;
-	sock_ = -1;
+	sock_ = FT_INIT_CLIENT_FD;
 	memset(&addr_, 0, sizeof(addr_));
+	nick_ = "unknown_nick";
+	user_ = "unknown_user";
+}
+
+/*
+Client::Client(const Client& client) {
+	*this = client;
+}
+*/
+
+Client Client::operator = (const Client& client) {
+	if (this == &client)
+		return *this;
+
+	auth_ = client.auth_;
+	sock_ = client.sock_;
+	nick_ = client.nick_;
+	user_ = client.user_;
+	addr_ = client.addr_;
+	addr_size_ = client.addr_size_;
+	password_ = client.password_;
+	return *this;
 }
 
 int	Client::set_sock(int fd) {
 	if (fd > 0)
 		sock_ = fd;
+	return sock_;
+}
+
+const int& Client::get_sock(void) {
 	return sock_;
 }
 
