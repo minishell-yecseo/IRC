@@ -124,8 +124,11 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 			//JoinCommand(token_list);
 			break ;
 		case KICK:
-		std::cout << "KICK IN\n";
+			std::cout << "KICK IN\n";
 			//KickCommand(token_list);
+			break ;
+		case MODE:
+			std::cout << "MODE IN\n";
 			break ;
 		case NICK:
 			std::cout << "NICK IN\n";		
@@ -136,7 +139,7 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 		case PASS:
 			std::cout << "PASS IN\n";
 			break ;
-		case PARK:
+		case PART:
 			std::cout << "PARK IN\n";
 			break ;
 		case PONG:
@@ -150,6 +153,9 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 			break ;
 		case TOPIC:
 			std::cout << "TOPIC IN\n";
+			break ;
+		case INVITE:
+			std::cout << "INVITE IN\n";
 			break ;
 		case NOTICE:
 			std::cout << "NOTICE IN\n";
