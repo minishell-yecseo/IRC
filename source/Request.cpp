@@ -95,7 +95,6 @@ int	Request::BaseAlphaToNumber(const std::string &token) {
 			return 0;
 		++index;
 	}
-	std::cout << "acc : " << acc << "\n";
 	return acc % static_cast<size_t>(INTMAX);
 }
 
