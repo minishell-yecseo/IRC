@@ -181,26 +181,34 @@ void	Server::DisconnectClient(struct kevent event) {
 	std::map<int, Client>::iterator	client_it;
 	Client	client;
 
+	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
+	
 	std::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
-	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
 	client_it = clients_.find(event.ident);
 	if (client_it == clients_.end()) {
 		std::cerr << "DisconnectClient(" << event.ident << ") error\n";
-		pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 		std::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
 		return;
 	}
 
 	client = client_it->second;
+	if (pool_->LockClientMutex(client.get_sock()) == false) {
+		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+		return;
+	}
+
 	clients_.erase(client_it);
-	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
-	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	EV_SET(&event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq_, &event, 1, NULL, 0, NULL);
-
 	pool_->DeleteClientMutex(client.get_sock());
-	close(client.get_sock());
+	std::cout << "close return : " << close(client.get_sock()) << "\n";
+
+	pool_->UnlockClientMutex(client.get_sock());
+
+	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	/* Channel 에서 Client 삭제 */
 	if (client.channel_name_.size() > 0) {
