@@ -1,0 +1,46 @@
+NAME = ircserv
+CXX = c++
+CPPFLAGS = -MMD -MP
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=thread
+RMFLAGS = -rf
+
+IRC_SRC = Channel.cpp Request.cpp Utils.cpp \
+			   Client.cpp Server.cpp main.cpp \
+			   Command.cpp ThreadPool.cpp
+
+IRC_DIR = ./source/
+IRC_OBJ_DIR = ./object/
+IRC_OBJ = $(IRC_SRC:.cpp=.o)
+IRC_DEP = $(IRC_SRC:.cpp=.d)
+IRC_SRC_PATH = $(addprefix $(IRC_DIR), $(IRC_SRC))
+IRC_OBJ_PATH = $(addprefix $(IRC_OBJ_DIR), $(IRC_OBJ))
+IRC_DEB_PATH = $(addprefix $(IRC_OBJ_DIR), $(IRC_DEP))
+
+CMD_SRC = PassCommand.cpp PrivmsgCommand.cpp \
+				JoinCommand.cpp PongCommand.cpp \
+				KickCommand.cpp CapCommand.cpp \
+				ModeCommand.cpp QuitCommand.cpp \
+				NickCommand.cpp TopicCommand.cpp \
+				UserCommand.cpp NoticeCommand.cpp \
+				PingCommand.cpp InviteCommand.cpp \
+				PartCommand.cpp
+
+CMD_DIR = ./source/command/
+CMD_OBJ_DIR = ./object/command/
+CMD_OBJ = $(CMD_SRC:.cpp=.o)
+CMD_DEP = $(CMD_SRC:.cpp=.d)
+CMD_SRC_PATH = $(addprefix $(CMD_DIR), $(CMD_SRC))
+CMD_OBJ_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_OBJ))
+CMD_DEB_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_DEP))
+
+$(IRC_OBJ_DIR)%.o : $(IRC_DIR)%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR)
+
+$(CMD_OBJ_DIR)%.o : $(CMD_DIR)%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR)
+
+ALL_DEP = $(IRC_DEB_PATH) $(CMD_DEB_PATH)
+ALL_OBJ = $(IRC_OBJ_PATH) $(CMD_OBJ_PATH)
+
+OBJ_DIR = ./object/ ./object/command/
+-include $(ALL_DEP)
