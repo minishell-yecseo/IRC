@@ -1,8 +1,6 @@
 #ifndef CAPCOMMAND_HPP
 #define CAPCOMMAND_HPP
 
-class Command;
-
 #include "Command.hpp"
 
 class CapCommand: public Command {
