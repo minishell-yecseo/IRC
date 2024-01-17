@@ -7,8 +7,8 @@ ThreadPool::ThreadPool(int size) {
 	this->thread_count_ = size;
 	pthread_mutex_init(&(this->lock_), NULL);
 	pthread_mutex_init(&(this->list_mutex_), NULL);
-	pthread_mutex_init(&(this->server_clients_mutex_), NULL);
-	pthread_mutex_init(&(this->server_channels_mutex_), NULL);
+	pthread_mutex_init(&(this->s_clients_mutex_), NULL);
+	pthread_mutex_init(&(this->s_channels_mutex_), NULL);
 	pthread_cond_init(&(this->notify_), NULL);
 	this->threads_.resize(size);
 	for (int i = 0; i < this->thread_count_; ++i) {

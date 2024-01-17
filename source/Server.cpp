@@ -102,8 +102,10 @@ void	Server::HandleClientEvent(struct kevent event) {
 	std::string& buffer = buffers_[client.get_sock()];
 
 	int read_byte = read(event.ident, buff, sizeof(buff));
-	if (read_byte == -1)
+	if (read_byte == -1) {
+		pool_->UnlockClientMutex(event.ident);//unlock
 		std::cerr << "client read error\n";
+	}
 	else if (read_byte == 0) {
 		pool_->UnlockClientMutex(event.ident);//unlock
 		DisconnectClient(event);
@@ -117,15 +119,15 @@ void	Server::HandleClientEvent(struct kevent event) {
 		for (size_t i = 0; i < cmds.size(); ++i) {
 			std::cout << "index : " << i << "\n";
 			pool_->Enqueue(cmds[i]);
-	}
-	pool_->UnlockClientMutex(event.ident);//unlock
-
-	//	if (client.auth_)
-	//	{
-	//		/* Authorized Clients event handle */
-	//	} else {
-	//		/* Unauthorized Clients event handle */
-	//	}
+		}
+		pool_->UnlockClientMutex(event.ident);//unlock
+	
+		//	if (client.auth_)
+		//	{
+		//		/* Authorized Clients event handle */
+		//	} else {
+		//		/* Unauthorized Clients event handle */
+		//	}
 	}
 }
 
@@ -142,9 +144,9 @@ void	Server::ConnectClient(void) {
 	/* handle new client */
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	std::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
-	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
+	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	clients_[client.get_sock()] = client;
-	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 	std::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
 	buffers_[client.get_sock()] = "";
 	std::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
@@ -179,26 +181,34 @@ void	Server::DisconnectClient(struct kevent event) {
 	std::map<int, Client>::iterator	client_it;
 	Client	client;
 
+	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
+	
 	std::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
-	pthread_mutex_lock(&(pool_->server_clients_mutex_));//lock
 	client_it = clients_.find(event.ident);
 	if (client_it == clients_.end()) {
 		std::cerr << "DisconnectClient(" << event.ident << ") error\n";
-		pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
+		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 		std::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
 		return;
 	}
 
 	client = client_it->second;
+	if (pool_->LockClientMutex(client.get_sock()) == false) {
+		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+		return;
+	}
+
 	clients_.erase(client_it);
-	pthread_mutex_unlock(&(pool_->server_clients_mutex_));//unlock
-	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	EV_SET(&event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 	kevent(kq_, &event, 1, NULL, 0, NULL);
-
 	pool_->DeleteClientMutex(client.get_sock());
-	close(client.get_sock());
+	std::cout << "close return : " << close(client.get_sock()) << "\n";
+
+	pool_->UnlockClientMutex(client.get_sock());
+
+	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	/* Channel 에서 Client 삭제 */
 	if (client.channel_name_.size() > 0) {

@@ -31,5 +31,6 @@ class Command
 		std::vector<std::string>	params_;
 		Server	*server_;
 		Client	*client_;
+		int		client_sock_;
 };
 #endif
