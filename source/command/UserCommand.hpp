@@ -6,6 +6,7 @@
 class UserCommand: public Command {
 	public:
 		UserCommand(const std::vector<std::string> &token_list);
+		bool	IsNonwhite(const std::string& str);
 		void	Run();
 };
 #endif
