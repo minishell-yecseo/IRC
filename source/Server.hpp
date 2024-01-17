@@ -43,15 +43,18 @@ class Server {
 		~Server();
 		Server(int argc, char **argv);
 		bool	Run(void);
+		ThreadPool	*pool_;
 
 		const std::string& get_name(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
+		pthread_mutex_t *get_s_clients_mutex(void);
+		pthread_mutex_t *get_s_channels_mutex(void);
 
 	/* private member variables */
 	private:
 		std::string	name_;
-		ThreadPool	*pool_;
+
 		int	sock_;
 		int	port_;
 		struct sockaddr_in	addr_;
