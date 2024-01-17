@@ -62,8 +62,7 @@ void	Server::KqueueInit(void) {
 bool	Server::Run(void) {
 	// main loop of ircserv with kqueue
 	int nev;
-	int i = 0;
-	while (i < 5) {
+	while (true) {
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();//why should I write this line?
 		if (nev == -1)
@@ -72,7 +71,6 @@ bool	Server::Run(void) {
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
-		i++;
 	}
 	return true;
 }
