@@ -35,7 +35,7 @@ class Server;
 #define FT_BUFF_SIZE 1024
 #define FT_THREAD_POOL_SIZE 10
 # ifndef FT_SERVER_NAME
-#  define FT_SERVER_NAME "ft_irc"
+#  define FT_SERVER_NAME "Happy"
 # endif
 
 class Server {
