@@ -177,7 +177,7 @@ void	ThreadPool::UnlockClientMutex(const int& sock) {
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<int, pthread_mutex_t*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
-		std::cerr << "UnlockClientMutexUnLock() fail\n";
+		std::cerr << "UnlockClientMutex() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return ;
 	}
@@ -190,7 +190,7 @@ void	ThreadPool::UnlockChannelMutex(const std::string& name) {
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<std::string, pthread_mutex_t*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it == channel_mutex_list_.end()) {
-		std::cerr << "UnlockChannelMutexUnLock() fail\n";
+		std::cerr << "UnlockChannelMutex() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return ;
 	}
