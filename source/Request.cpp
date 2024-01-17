@@ -1,5 +1,5 @@
 #include "Request.hpp"
-
+#include "SpecifyCommand.hpp"
 
 std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std::string request, int *offset) {
 	std::vector<std::string> message_list;

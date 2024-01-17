@@ -1,13 +1,17 @@
 #ifndef THREADPOOL_HPP
 #define THREADPOOL_HPP
 
+class	Command;
+class	Server;
+class	Client;
+
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <queue>
-#include "Request.hpp"
 
-class Command;
+#include "Command.hpp"
+
 class ThreadPool
 {
 	public:

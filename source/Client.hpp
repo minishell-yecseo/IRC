@@ -9,6 +9,7 @@
 #include <iostream>
 
 class Server;
+
 class Client {
 	friend class Server;
 	public:

@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 #include <set>
+
+class Client;
+
 #include "Client.hpp"
 
 #define MODE_INVITE (1 << 2)

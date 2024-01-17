@@ -1,4 +1,4 @@
-#include "Command.hpp"
+#include "CapCommand.hpp"
 
 CapCommand::CapCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }

@@ -5,6 +5,10 @@
 #include <iostream>
 #include <sstream>
 
+class Command;
+class Server;
+class Client;
+
 #include "Command.hpp"
 
 # define INTMAX 2147483647
@@ -28,7 +32,6 @@ enum CommandNumbers
 	PRIVMSG = 866058635,
 };
 
-class Command;
 class	Request
 {
 	public:

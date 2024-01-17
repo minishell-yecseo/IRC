@@ -1,10 +1,18 @@
 #ifndef COMAND_HPP
 #define COMAND_HPP
 
-#include "Server.hpp"
-#include "Client.hpp"
 #include <iostream>
 #include <vector>
+
+class ThreadPool;
+class Channel;
+class Client;
+class Server;
+
+#include "ThreadPool.hpp"
+#include "Server.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
 
 class Command
 {

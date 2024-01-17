@@ -15,11 +15,18 @@
 #include <map>
 #include <vector>
 #include <string>
-#include "Utils.hpp"
-#include "Client.hpp"
-#include "Channel.hpp"
-#include "ThreadPool.hpp"
+
+class Command;
+class Channel;
+class Client;
+class Server;
+
 #include "Request.hpp"
+#include "Command.hpp"
+#include "Channel.hpp"
+#include "Client.hpp"
+#include "ThreadPool.hpp"
+#include "Utils.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100
@@ -31,7 +38,6 @@
 #  define FT_SERVER_NAME "ft_irc"
 # endif
 
-class ThreadPool;
 class Server {
 	public:
 		~Server();
