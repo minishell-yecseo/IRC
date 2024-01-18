@@ -26,25 +26,16 @@ bool	NickCommand::IsValidNick(const std::string& str) {
 
 void	NickCommand::Run() {
 	/*
-	if (params_.empty())
+	if (params_.empty() == true)
 		ERR_NONICKNAMEGIVEN;
-	else
-	{
-		if (IsValidNick(this->params_[0]) == false)
-			ERR_ERRONEUSNICKNAME;
-	}
-
-	if (this->prefix.empty())
-	{
-		it = find(this->prefix)
-		if (it != end())
-			ERR_NICKNAMEINUSE
-	}
-	else if (params.empty() != false)
-	{
-		it = find(this->params[0]);
-		if (it != end())
-			ERR_NICKCOLLISION;
-	}
+	else if (IsValidNick(this->params_[0]) == false)
+		ERR_ERRONEUSNICKNAME;
+	else if (FindClientByNick(this->params_[0]) != end())
+		ERR_NICKNAMEINUSE;
+	else if (this->prefix.empty() != false && IsValidNick(this->prefix) == false))
+		ERR_UNKNOWNERROR;
+	
+	it = FindClientByNick(this->prefix_);
+	set_client_name(&it, this->params_[0]);
 	*/
 }
