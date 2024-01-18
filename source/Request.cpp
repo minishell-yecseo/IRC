@@ -145,9 +145,6 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 		case PART:
 			//log::cout << "PARK IN\n";
 			break ;
-		case PONG:
-			//log::cout << "PONG IN\n";
-			break ;
 		case USER:
 			//log::cout << "USER IN\n";
 			break ;
