@@ -20,7 +20,7 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> *
 	}
 	// Need log file
 	if (start != request.length())
-		std::cerr << "Unvalid message format\n";
+		std::cout << "Unvalid message format\n";
 	return start;
 }
 
