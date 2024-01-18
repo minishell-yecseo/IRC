@@ -27,6 +27,7 @@ class Server;
 #include "Client.hpp"
 #include "ThreadPool.hpp"
 #include "Utils.hpp"
+#include "log.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
 #define FT_KQ_EVENT_SIZE 100

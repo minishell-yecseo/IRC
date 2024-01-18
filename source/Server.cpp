@@ -93,7 +93,7 @@ void	Server::HandleEvents(int nev) {
 
 void	Server::HandleClientEvent(struct kevent event) {
 	if (pool_->LockClientMutex(event.ident) == false) {//lock
-		std::cout << "HandleClientEvent() error\n";
+		log::cout << "HandleClientEvent() error\n";
 		return ;
 	}
 
@@ -103,7 +103,8 @@ void	Server::HandleClientEvent(struct kevent event) {
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		pool_->UnlockClientMutex(event.ident);//unlock
-		std::cout << "client read error\n";
+		
+		log::cout << "client read error\n";
 	}
 	else if (read_byte == 0) {
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -116,7 +117,8 @@ void	Server::HandleClientEvent(struct kevent event) {
 		int	offset;
 		cmds = Request::ParseRequest(this, &client, buffer, &offset);
 		for (size_t i = 0; i < cmds.size(); ++i) {
-			std::cout << "index : " << i << "\n";
+			
+			log::cout << "index : " << i << "\n";
 			pool_->Enqueue(cmds[i]);
 		}
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -137,19 +139,21 @@ void	Server::ConnectClient(void) {
 		error_handling("accept() error\n");
 
 	if (pool_->AddClientMutex(client.get_sock()) == false) {
-		std::cout << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
+		
+		log::cout << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
 		return ;
 	}
 
 	/* handle new client */
+	
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	std::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
+	log::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
 	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	clients_[client.get_sock()] = client;
 	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
-	std::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
+	log::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
 	buffers_[client.get_sock()] = "";
-	std::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
+	log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
 }
 
 bool	Server::AuthClient(Client& client) {
@@ -157,7 +161,8 @@ bool	Server::AuthClient(Client& client) {
 	//		1. client가 보낸 password 와 Server의 password 의 일치
 	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
 	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
-	std::cout << RED << "client authenticate call: " << client.get_sock() << RESET << "\n";
+	
+	log::cout << RED << "client authenticate call: " << client.get_sock() << RESET << "\n";
 	return true;
 }
 
@@ -172,7 +177,8 @@ void	Server::HandleEventError(struct kevent event) {
 		error_handling("server socket event error\n");
 	else
 	{
-		std::cout << "client socket event error\n";
+		
+		log::cout << "client socket event error\n";
 		DisconnectClient(event);//need to implement fucntion
 	}
 }
@@ -182,17 +188,20 @@ void	Server::DisconnectClient(struct kevent event) {
 
 	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	
-	std::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
+	
+	log::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
 	client_it = clients_.find(event.ident);
 	if (client_it == clients_.end()) {
-		std::cout << "DisconnectClient(" << event.ident << ") error\n";
+		
+		log::cout << "DisconnectClient(" << event.ident << ") error\n";
 		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
-		std::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
+		log::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
 		return;
 	}
 
 	if (pool_->LockClientMutex(client_it->second.get_sock()) == false) {
-		std::cout << BOLDRED << "LockClientMutex(" << event.ident << ") fail\n";
+		
+		log::cout << BOLDRED << "LockClientMutex(" << event.ident << ") fail\n";
 		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 		return;
 	}
@@ -206,59 +215,64 @@ void	Server::DisconnectClient(struct kevent event) {
 	pool_->UnlockClientMutex(client_it->second.get_sock());
 
 	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
-	std::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
+	
+	log::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	/* Channel 에서 Client 삭제 */
 	if (client_it->second.channel_name_.size() > 0) {
 		if (!pool_->LockChannelMutex(client_it->second.channel_name_)) {//lock
-			std::cout << "DisconnectClient() error\n";
+			
+			log::cout << "DisconnectClient() error\n";
 			return ;
 		}
 		channels_[client_it->second.channel_name_].Kick(client_it->second);
 		pool_->UnlockChannelMutex(client_it->second.channel_name_);//unlock
 	}
-	std::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;
+	
+	log::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
 	/* handle timeout */
-	std::cout << "time out!\n";
+	
+	log::cout << "time out!\n";
 }
 
 /* wooseoki functions */
 void	Server::print_event(struct kevent *event, int i) {
-	std::cout << "=============================\n";
-	std::cout << "index : " << i << "\n";
-	std::cout << "ident : " << event->ident << "\n";
+	
+	log::cout << "=============================\n";
+	log::cout << "index : " << i << "\n";
+	log::cout << "ident : " << event->ident << "\n";
 	p_event_filter(event);
 	p_event_flags(event);
-	std::cout << "=============================\n";
+	log::cout << "=============================\n";
 }
 
 void	Server::p_event_filter(struct kevent *event) {
-	std::cout << "filter : " << GREEN;
-	if (event->filter == EVFILT_READ) std::cout << "EVFILT_READ";
-	else if (event->filter == EVFILT_WRITE) std::cout << "EVFILT_WRITE";
-	else if (event->filter == EVFILT_AIO) std::cout << "EVFILT_AIO";
-	else if (event->filter == EVFILT_VNODE) std::cout << "EVFILT_VNODE";
-	else if (event->filter == EVFILT_PROC) std::cout << "EVFILT_PROC";
-	else if (event->filter == EVFILT_SIGNAL) std::cout << "EVFILT_SIGNAL";
-	else if (event->filter == EVFILT_EXCEPT) std::cout << "EVFILT_EXCEPT";
-	else std::cout << "unknown EVFILT";
-	std::cout << "\n" << RESET;
+	log::cout << "filter : " << GREEN;
+	if (event->filter == EVFILT_READ) log::cout << "EVFILT_READ";
+	else if (event->filter == EVFILT_WRITE) log::cout << "EVFILT_WRITE";
+	else if (event->filter == EVFILT_AIO) log::cout << "EVFILT_AIO";
+	else if (event->filter == EVFILT_VNODE) log::cout << "EVFILT_VNODE";
+	else if (event->filter == EVFILT_PROC) log::cout << "EVFILT_PROC";
+	else if (event->filter == EVFILT_SIGNAL) log::cout << "EVFILT_SIGNAL";
+	else if (event->filter == EVFILT_EXCEPT) log::cout << "EVFILT_EXCEPT";
+	else log::cout << "unknown EVFILT";
+	log::cout << "\n" << RESET;
 }
 
 void	Server::p_event_flags(struct kevent *event) {
-	std::cout << "flags : " << GREEN;
-	if (event->flags & EV_ADD) std::cout << "EV_ADD | ";
-	if (event->flags & EV_DELETE) std::cout << "EV_DELETE | ";
-	if (event->flags & EV_ENABLE) std::cout << "EV_ENABLE | ";
-	if (event->flags & EV_DISABLE) std::cout << "EV_DISABLE | ";
-	if (event->flags & EV_ONESHOT) std::cout << "EV_ONESHOT | ";
-	if (event->flags & EV_CLEAR) std::cout << "EV_CLEAR | ";
-	if (event->flags & EV_RECEIPT) std::cout << "EV_RECEIPT | ";
-	if (event->flags & EV_OOBAND) std::cout << "EV_OOBAND | ";
-	if (event->flags & EV_ERROR) std::cout << "EV_ERROR | ";
-	if (event->flags & EV_EOF) std::cout << "EV_EOF | ";
-	std::cout << RESET << "\n";
+	log::cout << "flags : " << GREEN;
+	if (event->flags & EV_ADD) log::cout << "EV_ADD | ";
+	if (event->flags & EV_DELETE) log::cout << "EV_DELETE | ";
+	if (event->flags & EV_ENABLE) log::cout << "EV_ENABLE | ";
+	if (event->flags & EV_DISABLE) log::cout << "EV_DISABLE | ";
+	if (event->flags & EV_ONESHOT) log::cout << "EV_ONESHOT | ";
+	if (event->flags & EV_CLEAR) log::cout << "EV_CLEAR | ";
+	if (event->flags & EV_RECEIPT) log::cout << "EV_RECEIPT | ";
+	if (event->flags & EV_OOBAND) log::cout << "EV_OOBAND | ";
+	if (event->flags & EV_ERROR) log::cout << "EV_ERROR | ";
+	if (event->flags & EV_EOF) log::cout << "EV_EOF | ";
+	log::cout << RESET << "\n";
 }

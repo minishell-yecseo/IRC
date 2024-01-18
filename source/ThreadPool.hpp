@@ -13,6 +13,7 @@ class	Client;
 #include <map>
 
 #include "Command.hpp"
+#include "log.hpp"
 
 class ThreadPool
 {
