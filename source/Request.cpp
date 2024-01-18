@@ -20,7 +20,7 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> *
 	}
 	// Need log file
 	if (start != request.length())
-		std::cout << "Unvalid message format\n";
+		log::cout << "Unvalid message format\n";
 	return start;
 }
 
@@ -114,63 +114,63 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 
 	for (size_t i = 0; i < token_list.size(); ++i)
 	{
-		std::cout << token_list[i] << " ";
+		log::cout << token_list[i] << " ";
 	}
-	std::cout << "\n";
+	log::cout << "\n";
 	switch (SearchCommand(token_list)) {
 		case CAP:
-			//std::cout << "CAP IN\n";
+			//log::cout << "CAP IN\n";
 			c = new CapCommand(token_list);
 			break ;
 		case JOIN:
-			//std::cout << "JOIN IN\n";
+			//log::cout << "JOIN IN\n";
 			//JoinCommand(token_list);
 			break ;
 		case KICK:
-			//std::cout << "KICK IN\n";
+			//log::cout << "KICK IN\n";
 			//KickCommand(token_list);
 			break ;
 		case MODE:
-			//std::cout << "MODE IN\n";
+			//log::cout << "MODE IN\n";
 			break ;
 		case NICK:
-			//std::cout << "NICK IN\n";		
+			//log::cout << "NICK IN\n";		
 			break ;
 		case PING:
-			//std::cout << "PING IN\n";
+			//log::cout << "PING IN\n";
 			break ;
 		case PASS:
-			//std::cout << "PASS IN\n";
+			//log::cout << "PASS IN\n";
 			break ;
 		case PART:
-			//std::cout << "PARK IN\n";
+			//log::cout << "PARK IN\n";
 			break ;
 		case PONG:
-			//std::cout << "PONG IN\n";
+			//log::cout << "PONG IN\n";
 			break ;
 		case USER:
-			//std::cout << "USER IN\n";
+			//log::cout << "USER IN\n";
 			break ;
 		case QUIT:
-			//std::cout << "QUIT IN\n";
+			//log::cout << "QUIT IN\n";
 			break ;
 		case TOPIC:
-			//std::cout << "TOPIC IN\n";
+			//log::cout << "TOPIC IN\n";
 			break ;
 		case WHOIS:
-			//std::cout << "WHOIS IN\n";
+			//log::cout << "WHOIS IN\n";
 			break ;
 		case INVITE:
-			//std::cout << "INVITE IN\n";
+			//log::cout << "INVITE IN\n";
 			break ;
 		case NOTICE:
-			//std::cout << "NOTICE IN\n";
+			//log::cout << "NOTICE IN\n";
 			break ;
 		case PRIVMSG:
-			//std::cout << "PRIVMSG IN\n";
+			//log::cout << "PRIVMSG IN\n";
 			break ;
 		default:
-			std::cout << "Command not found : ";
+			log::cout << "Command not found : ";
 	}
 	return c;
 }
