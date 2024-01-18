@@ -32,6 +32,8 @@ void	NickCommand::Run() {
 		ERR_ERRONEUSNICKNAME;
 	else if (FindClientByNick(this->params_[0]) != end())
 		ERR_NICKNAMEINUSE;
+	else if (this->prefix.empty() != false && IsValidNick(this->prefix) == false))
+		ERR_UNKNOWNERROR;
 	
 	it = FindClientByNick(this->prefix_);
 	set_client_name(&it, this->params_[0]);
