@@ -8,5 +8,6 @@ class CapCommand: public Command {
 	public:
 		CapCommand(const std::vector<std::string> &token_list);
 		void	Run();
+		std::string	WelcomeBurst(void);
 };
 #endif
