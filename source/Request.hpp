@@ -10,6 +10,7 @@ class Server;
 class Client;
 
 #include "Command.hpp"
+#include "log.hpp"
 
 # define INTMAX 2147483647
 

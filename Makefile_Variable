@@ -6,7 +6,7 @@ RMFLAGS = -rf
 
 IRC_SRC = Channel.cpp Request.cpp Utils.cpp \
 			   Client.cpp Server.cpp main.cpp \
-			   Command.cpp ThreadPool.cpp
+			   Command.cpp ThreadPool.cpp log.cpp
 
 IRC_DIR = ./source/
 IRC_OBJ_DIR = ./object/
