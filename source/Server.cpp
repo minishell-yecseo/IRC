@@ -93,7 +93,7 @@ void	Server::HandleEvents(int nev) {
 
 void	Server::HandleClientEvent(struct kevent event) {
 	if (pool_->LockClientMutex(event.ident) == false) {//lock
-		std::cerr << "HandleClientEvent() error\n";
+		std::cout << "HandleClientEvent() error\n";
 		return ;
 	}
 
@@ -104,7 +104,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		pool_->UnlockClientMutex(event.ident);//unlock
-		std::cerr << "client read error\n";
+		std::cout << "client read error\n";
 	}
 	else if (read_byte == 0) {
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -137,7 +137,7 @@ void	Server::ConnectClient(void) {
 		error_handling("accept() error\n");
 
 	if (pool_->AddClientMutex(client.get_sock()) == false) {
-		std::cerr << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
+		std::cout << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
 		return ;
 	}
 

@@ -39,7 +39,6 @@ void	ThreadPool::Enqueue(void *arg) {
 	pthread_mutex_lock(&(this->lock_));
 	if (this->shutdown_ == true)
 		return ;
-	//std::cout << "Enque\n";
 	this->queue_.push(c);
 	this->count_ += 1;
 	pthread_cond_signal(&(this->notify_));
@@ -61,7 +60,6 @@ void	*ThreadPool::Worker(void *arg) {
 			break ;
 		}
 
-		//std::cout << "Run\n";
 		c = pool->queue_.front();
 		pool->queue_.pop();
 		pool->count_ -= 1;
@@ -78,14 +76,14 @@ void	*ThreadPool::Worker(void *arg) {
 }
 
 bool	ThreadPool::AddClientMutex(const int& sock) {
-	std::cout << BOLDRED << "AddClientMutex call with socket: " << sock << "\n" << RESET;
+	//std::cerr << BOLDRED << "AddClientMutex call with socket: " << sock << "\n" << RESET;
 	int	ret;
 	pthread_mutex_t *mutex_ptr = new pthread_mutex_t();
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<int, pthread_mutex_t*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it != client_mutex_list_.end()) {
 		pthread_mutex_unlock(&list_mutex_);//unlock
-		std::cout << MAGENTA << "socket(" << sock << ") has mutex already\n" << RESET;
+		//std::cerr << MAGENTA << "socket(" << sock << ") has mutex already\n" << RESET;
 		return false;
 	}
 	client_mutex_list_.insert(std::make_pair(sock, mutex_ptr));
@@ -93,7 +91,7 @@ bool	ThreadPool::AddClientMutex(const int& sock) {
 	if (!ret)
 		client_mutex_list_.erase(sock);
 	pthread_mutex_unlock(&list_mutex_);//unlock
-	std::cout << BOLDRED << "AddClientMutex ret: " << ret << "\n" << RESET;
+	//std::cerr << BOLDRED << "AddClientMutex ret: " << ret << "\n" << RESET;
 	return ret;
 }
 
@@ -113,12 +111,12 @@ bool	ThreadPool::AddChannelMutex(const std::string& name) {
 }
 
 bool	ThreadPool::DeleteClientMutex(const int& sock) {
-	std::cout << BLUE << "DeleteClientMutex call with socket: " << sock << RESET << "\n";
+	//std::cerr << BLUE << "DeleteClientMutex call with socket: " << sock << RESET << "\n";
 	int	ret;
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<int, pthread_mutex_t*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
-		std::cerr << BLUE << "There's no mutex about sock(" << sock << ")\n" << RESET;
+		//std::cerr << BLUE << "There's no mutex about sock(" << sock << ")\n" << RESET;
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return false;
 	}
@@ -143,12 +141,12 @@ bool	ThreadPool::DeleteChannelMutex(const std::string& name) {
 }
 
 bool	ThreadPool::LockClientMutex(const int& sock) {
-	std::cout << "LockClientMutex call! sock: " << sock << "\n";
+	//std::cerr << "LockClientMutex call! sock: " << sock << "\n";
 	int	ret;
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<int, pthread_mutex_t*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
-		std::cerr << "LockClientMutexLock() fail\n";
+		//std::cerr << "LockClientMutexLock() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return false;
 	}
@@ -158,12 +156,12 @@ bool	ThreadPool::LockClientMutex(const int& sock) {
 }
 
 bool	ThreadPool::LockChannelMutex(const std::string& name) {
-	std::cout << "LockChannelMutex call! name: " << name << "\n";
+	//std::cerr << "LockChannelMutex call! name: " << name << "\n";
 	int	ret;
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<std::string, pthread_mutex_t*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it == channel_mutex_list_.end()) {
-		std::cerr << "LockChannelMutexLock() fail\n";
+		//std::cerr << "LockChannelMutexLock() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return false;
 	}
@@ -173,11 +171,11 @@ bool	ThreadPool::LockChannelMutex(const std::string& name) {
 }
 
 void	ThreadPool::UnlockClientMutex(const int& sock) {
-	std::cout << "UnlockClientMutex call! sock: " << sock << "\n";
+	//std::cerr << "UnlockClientMutex call! sock: " << sock << "\n";
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<int, pthread_mutex_t*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
-		std::cerr << "UnlockClientMutex() fail\n";
+		//std::cerr << "UnlockClientMutex() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return ;
 	}
@@ -186,11 +184,11 @@ void	ThreadPool::UnlockClientMutex(const int& sock) {
 }
 
 void	ThreadPool::UnlockChannelMutex(const std::string& name) {
-	std::cout << "UnlockChannelMutex call! name: " << name << "\n";
+	//std::cerr << "UnlockChannelMutex call! name: " << name << "\n";
 	pthread_mutex_lock(&list_mutex_);//lock
 	std::map<std::string, pthread_mutex_t*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it == channel_mutex_list_.end()) {
-		std::cerr << "UnlockChannelMutex() fail\n";
+		//std::cerr << "UnlockChannelMutex() fail\n";
 		pthread_mutex_unlock(&list_mutex_);//unlock
 		return ;
 	}
@@ -201,7 +199,7 @@ void	ThreadPool::UnlockChannelMutex(const std::string& name) {
 bool	ThreadPool::ft_mutex_init(pthread_mutex_t *mutex) {
 	int ret = pthread_mutex_init(mutex, NULL);
 	if (ret != 0) {
-		std::cerr << strerror(ret) << "\n";
+		//std::cerr << strerror(ret) << "\n";
 		return false;
 	}
 	return true;
@@ -217,7 +215,7 @@ bool	ThreadPool::ft_mutex_destroy(pthread_mutex_t *mutex) {
 bool	ThreadPool::ft_mutex_lock(pthread_mutex_t *mutex) {
 	int ret = pthread_mutex_lock(mutex);
 	if (ret != 0) {
-		std::cerr << "error:" << strerror(ret) << "\n";
+		//std::cerr << "error:" << strerror(ret) << "\n";
 		return false;
 	}
 	return true;
@@ -226,7 +224,7 @@ bool	ThreadPool::ft_mutex_lock(pthread_mutex_t *mutex) {
 void	ThreadPool::ft_mutex_unlock(pthread_mutex_t *mutex) {
 	int ret = pthread_mutex_unlock(mutex);
 	if (ret != 0) {
-		std::cerr << strerror(ret) << "\n";
+		//std::cerr << strerror(ret) << "\n";
 		return;
 	}
 	return;
