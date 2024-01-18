@@ -100,7 +100,6 @@ void	Server::HandleClientEvent(struct kevent event) {
 	Client client = clients_[event.ident];
 	char	buff[FT_BUFF_SIZE];
 	std::string& buffer = buffers_[client.get_sock()];
-
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -121,6 +120,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 			pool_->Enqueue(cmds[i]);
 		}
 		pool_->UnlockClientMutex(event.ident);//unlock
+		buffer.erase(0, offset);
 	
 		//	if (client.auth_)
 		//	{
