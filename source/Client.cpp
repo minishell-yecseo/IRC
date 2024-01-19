@@ -9,7 +9,7 @@ Client::Client(void) {
 }
 
 bool	Client::IsAuth(void) {
-	if (this->auth_ == 1)
+	if (this->auth_ == 0)
 		return true;
 	return false;
 }

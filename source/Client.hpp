@@ -9,7 +9,7 @@
 #include <iostream>
 
 #define FT_INIT_CLIENT_FD -1
-#define FT_INIT_AUTH -1
+#define FT_INIT_AUTH -3
 
 class Server;
 

@@ -13,6 +13,8 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 }
 
 void	UserCommand::Run() {
+	/* It should wait for the client's auth variable to be 1 */
+
 /*
 	// <username> <hostname> <servername> <realname>
 	// realname must be prefix ':' but not irssi
