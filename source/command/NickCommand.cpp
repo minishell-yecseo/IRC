@@ -56,8 +56,11 @@ void	NickCommand::Run() {
 
 	/* send message with FAIL cases */
 	if (status == false) {
+		struct kevent ke;
+		EV_SET(&ke, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
 		send(this->client_sock_, out.get_chr(), out.size(), 0);
+		shutdown(this->client_sock_, SHUT_WR);
 		return ;
 	}
 
