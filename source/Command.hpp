@@ -26,6 +26,7 @@ class Command
 		void set_client(Client *client);
 		Server* get_server(void);
 		Client* get_client(void);
+		void	DisconnectClient(void);
 
 	protected:
 		std::string					prefix_;

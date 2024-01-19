@@ -26,41 +26,71 @@ bool	NickCommand::IsValidNick(const std::string& str) {
 	return true;
 }
 
+bool	NickCommand::IsUniqueNick(const std::string& nick) {
+	int	search_nick_sock;
+
+	search_nick_sock = this->server_->SearchClientByNick(nick);
+	if (search_nick_sock == FT_INIT_CLIENT_FD)
+		return true;
+	return false;
+}
+
+bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
+	/*error case : prefix exist but not equal to the request client's current name */
+	std::string current_nick;
+
+	this->server_->pool_->LockClientMutex(this->client_sock_);//lock
+	current_nick = client_->get_nick();
+	this->server_->pool_->UnlockClientMutex(this->client_sock_);//unlock
+
+	if (prev_nick.empty() == false && prev_nick.compare(current_nick) != 0)
+		return false;
+	return true;
+}
+
+/*
+# define ERR_UNKNOWNERROR		"400"
+# define ERR_NONICKNAMEGIVEN	"431"
+# define ERR_NICKNAMEINUSE		"433"
+# define ERR_ERRONEUSNICKNAME	"432"
+*/
+
+std::string	NickCommand::AnyOfError(bool * status) {
+	Response	error;
+
+	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
+		error << ERR_UNKNOWNERROR;
+	else if (IsEqualPrevNick(this->prefix_) == false) {
+		log::cout << "prevNick not equal\n";
+		error << ERR_UNKNOWNERROR;
+	}
+	else if (params_.empty() == false) {
+		if (IsUniqueNick(params_[0]) == false)
+			error << ERR_NICKNAMEINUSE;
+		else if (IsValidNick(params_[0]) == false)
+			error << ERR_ERRONEUSNICKNAME;
+	} else if (params_.empty() == true)
+		error << ERR_NONICKNAMEGIVEN;
+
+	if (error.size() > 0)
+		*status = false;
+
+	return error.get_str();
+}
+
 void	NickCommand::Run() {
 	Response	out;
 	bool	status = true;
-	int		fd;
-
+	
 	out << this->server_->get_name() << ": NICK : ";
-
-	/* baseic ERROR cases checking */
-	fd = this->server_->SearchClientByNick(this->params_[0]);
-	if (params_.empty() && !(status = false))
-		out << ERR_NONICKNAMEGIVEN;
-	else if (IsValidNick(this->params_[0]) == false && !(status = false))
-		out << ERR_ERRONEUSNICKNAME;
-	else if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false && !(status = false))
-		out << ERR_UNKNOWNERROR;
-	else if (fd != FT_INIT_CLIENT_FD && !(status = false))
-		out << ERR_NICKNAMEINUSE;
-
-	/*error case 1 : prefix exist but not equal to the request client's current name */
-	this->server_->pool_->LockClientMutex(this->client_sock_);
-	std::string current_nick = client_->get_nick();
-	this->server_->pool_->UnlockClientMutex(this->client_sock_);
-
-	if (this->prefix_.empty() == false && this->prefix_.compare(current_nick) != 0) { 
-		out << ERR_UNKNOWNERROR << " : previous nick doesn't match with the prefix";
-		status = false;
-	}
+	std::string	error_message = AnyOfError(&status);
 
 	/* send message with FAIL cases */
 	if (status == false) {
-		struct kevent ke;
-		EV_SET(&ke, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+		out << error_message;
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
 		send(this->client_sock_, out.get_chr(), out.size(), 0);
-		shutdown(this->client_sock_, SHUT_WR);
+		DisconnectClient();
 		return ;
 	}
 

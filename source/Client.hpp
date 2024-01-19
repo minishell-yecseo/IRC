@@ -7,6 +7,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <vector>
 
 #define FT_INIT_CLIENT_FD -1
 #define FT_INIT_AUTH -3
@@ -27,6 +28,7 @@ class Client {
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;
+		std::vector<std::string>	channels_;
 
 	private:
 		//int	id;//UNIQUE
@@ -36,7 +38,6 @@ class Client {
 		std::string	user_;
 		struct sockaddr_in	addr_;
 		socklen_t	addr_size_;
-		std::string	channel_name_;
 		std::string	password_;//sent from client at first access
 };
 

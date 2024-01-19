@@ -264,16 +264,16 @@ void	Server::DisconnectClient(struct kevent event) {
 	log::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	/* Channel 에서 Client 삭제 */
-	if (client_it->second.channel_name_.size() > 0) {
-		if (!pool_->LockChannelMutex(client_it->second.channel_name_)) {//lock
-			
-			log::cout << "DisconnectClient() error\n";
-			return ;
+	std::vector<std::string>::iterator	channel_itr = client_it->second.channels_.begin();
+	while (channel_itr != client_it->second.channels_.end()) {
+		if (pool_->LockChannelMutex(*channel_itr) == false) {//lock
+			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
+			return;
 		}
-		channels_[client_it->second.channel_name_].Kick(client_it->second);
-		pool_->UnlockChannelMutex(client_it->second.channel_name_);//unlock
+		this->channels_[*channel_itr].Kick(client_it->second);
+		pool_->UnlockChannelMutex(*channel_itr);//unlock
 	}
-	
+
 	log::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;
 }
 
