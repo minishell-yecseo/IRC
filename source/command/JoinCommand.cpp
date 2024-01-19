@@ -37,6 +37,8 @@ void	JoinCommand::Run() {
 	/*
 	std::string numeric_reply;
 	
+	if (this->params_.empty())
+		return ;
 	numeric_reply = AnyOfError(this->params_[0]);
 	if (numeric_reply.empty() == false)
 		return ;
