@@ -13,6 +13,7 @@ class Server;
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Response.hpp"
 #include "log.hpp"
 
 class Command

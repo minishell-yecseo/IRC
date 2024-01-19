@@ -16,9 +16,10 @@ class Client {
 	friend class Server;
 	public:
 		Client(void);
-//		Client(const Client& client);
 		int set_sock(int fd);
+		void set_nick(const std::string& nick);
 		const int& get_sock(void);
+		const std::string& get_nick(void);
 		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;

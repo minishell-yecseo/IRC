@@ -8,12 +8,6 @@ Client::Client(void) {
 	user_ = "unknown_user";
 }
 
-/*
-Client::Client(const Client& client) {
-	*this = client;
-}
-*/
-
 Client Client::operator = (const Client& client) {
 	if (this == &client)
 		return *this;
@@ -36,6 +30,14 @@ int	Client::set_sock(int fd) {
 
 const int& Client::get_sock(void) {
 	return sock_;
+}
+
+void Client::set_nick(const std::string& nick) {
+	this->nick_ = nick;
+}
+
+const std::string& Client::get_nick(void) {
+	return this->nick_;
 }
 
 bool Client::operator < (const Client& client) const {
