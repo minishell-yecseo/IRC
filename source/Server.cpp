@@ -17,6 +17,14 @@ Server::Server(int argc, char **argv) {
 	password_ = argv[2];
 	ServerSocketInit();
 	KqueueInit();
+
+	/* Psuedo Client for NickCommand test */
+	int fd = open("test.txt", O_RDWR | O_CREAT, 0666);
+	log::cout << BOLDGREEN << fd << "\n";
+	Client p_client;
+	p_client.set_sock(fd);
+	p_client.set_nick("saseo");
+	clients_.insert(std::make_pair(fd, p_client));
 }
 
 const std::string&	Server::get_name(void) {
@@ -95,6 +103,16 @@ bool	Server::Run(void) {
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
+		/* clients list print */
+		pthread_mutex_lock(&pool_->s_clients_mutex_);
+		std::map<int, Client>::iterator itr = clients_.begin();
+		while (itr != clients_.end()) {
+			pool_->LockClientMutex(itr->first);
+			log::cout << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << "\n" << RESET;
+			pool_->UnlockClientMutex(itr->first);
+			itr++;
+		}
+		pthread_mutex_unlock(&pool_->s_clients_mutex_);
 	}
 	return true;
 }
@@ -172,7 +190,7 @@ void	Server::ConnectClient(void) {
 	/* handle new client */
 	
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	log::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
+	log::cout << BOLDRED << "server->clients lock! in ConnectClient\n" << RESET;
 	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	clients_[client.get_sock()] = client;
 	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
