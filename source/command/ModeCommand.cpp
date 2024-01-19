@@ -4,21 +4,22 @@ ModeCommand::ModeCommand(const std::vector<std::string> &token_list) : Command(t
 }
 
 /*
- ERR_NOSUCHCHANNEL (403)
-	RPL_CHANNELMODEIS (324)
-	ERR_CHANOPRIVSNEEDED (482)
-	ERR_NEEDMOREPARAMS              RPL_CHANNELMODEIS
-	ERR_CHANOPRIVSNEEDED
-	ERR_NOSUCHNICK
-    ERR_NOTONCHANNEL
-	ERR_KEYSET (467)
-    RPL_BANLIST
-	RPL_ENDOFBANLIST
-    ERR_UNKNOWNMODE
-	ERR_NOSUCHCHANNEL
-    ERR_USERSDONTMATCH
-	RPL_UMODEIS
-    ERR_UMODEUNKNOWNFLAG
+ERR_NOSUCHCHANNEL (403)
+RPL_CHANNELMODEIS (324)
+ERR_CHANOPRIVSNEEDED (482)
+ERR_NEEDMOREPARAMS
+RPL_CHANNELMODEIS
+ERR_CHANOPRIVSNEEDED
+ERR_NOSUCHNICK
+ERR_NOTONCHANNEL
+ERR_KEYSET (467)
+RPL_BANLIST
+RPL_ENDOFBANLIST
+ERR_UNKNOWNMODE
+ERR_NOSUCHCHANNEL
+ERR_USERSDONTMATCH
+RPL_UMODEIS
+ERR_UMODEUNKNOWNFLAG
 */
 bool	ModeCommand::CheckKeyParam(const std::string& str) {
 	if (str[0] != '+')
@@ -38,7 +39,7 @@ bool	ModeCommand::CheckKeyParam(const std::string& str) {
 bool	ModeCommand::IsValidMode(const std::string& str) {
 	if (str[0] != '+' && str[0] != '-')
 		return false;
-	for (size_t i = 0; i < str.size(); ++i) {
+	for (size_t i = 1; i < str.size(); ++i) {
 		if (str[i] == 'i' || str[i] == 't' || str[i] == 'k' || str[i] == 'o' || str[i] == 'l')
 			;
 		else
@@ -62,10 +63,12 @@ std::string	ModeCommand::AnyOfError() {
 // i, t, k, o, l
 void	ModeCommand::Run() {
 	std::string	numeric_reply;
-
+	
 	numeric_reply = AnyOfError();
 	if (numeric_reply.empty() == false)
 		return ; //with numeric reply
 	// find channel
+	// ERR_NOSUCHCHANNEL (403)
 	// check privs
+	// ERR_CHANOPRIVSNEEDED
 }
