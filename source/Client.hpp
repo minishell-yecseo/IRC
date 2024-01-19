@@ -9,6 +9,7 @@
 #include <iostream>
 
 #define FT_INIT_CLIENT_FD -1
+#define FT_INIT_AUTH -1
 
 class Server;
 
@@ -20,6 +21,8 @@ class Client {
 		void set_nick(const std::string& nick);
 		const int& get_sock(void);
 		const std::string& get_nick(void);
+		bool	IsAuth(void);
+		void	AuthIncrease(void);
 		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
@@ -27,8 +30,8 @@ class Client {
 
 	private:
 		//int	id;//UNIQUE
-		bool auth_;
-		int	sock_;
+		int8_t	auth_;
+		int		sock_;
 		std::string	nick_;//UNIQUE
 		std::string	user_;
 		struct sockaddr_in	addr_;
