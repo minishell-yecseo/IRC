@@ -24,6 +24,7 @@
 # define RPL_ENDOFMOTD			"376"
 
 // ERRORS
+# define ERR_UNKNOWNERROR		"400"
 # define ERR_NOSUCHNICK 		"401"
 # define ERR_NOSUCHSERVER		"402"
 # define ERR_NOSUCHCHANNEL		"403"

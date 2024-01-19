@@ -17,6 +17,14 @@ Server::Server(int argc, char **argv) {
 	password_ = argv[2];
 	ServerSocketInit();
 	KqueueInit();
+
+	/* Psuedo Client for NickCommand test */
+	int fd = open("test.txt", O_RDWR | O_CREAT, 0666);
+	log::cout << BOLDGREEN << fd << "\n";
+	Client p_client;
+	p_client.set_sock(fd);
+	p_client.set_nick("saseo");
+	clients_.insert(std::make_pair(fd, p_client));
 }
 
 const std::string&	Server::get_name(void) {
@@ -29,6 +37,30 @@ const int& Server::get_port(void) {
 
 const struct sockaddr_in&	Server::get_addr(void) {
 	return this->addr_;
+}
+
+int	Server::SearchClientByNick(const std::string& nick) {
+	int	ret = FT_INIT_CLIENT_FD;
+
+	pthread_mutex_lock(&(this->pool_->s_clients_mutex_));
+
+	std::map<int, Client>::iterator	iter = this->clients_.begin();
+	int i = 0;
+	while (iter != this->clients_.end()) {
+		log::cout << MAGENTA << "\tSEARCH_" << i << " " << (iter->second).get_nick() << "\n" << RESET;
+		std::string temp_nick = (iter->second).get_nick();
+		if (nick.compare(temp_nick) == 0) {
+			ret = iter->first;
+			log::cout << RED << "NICK:" << nick << " foudn in Server\n" << RESET;
+			break ;
+		}
+		iter++;
+		i++;
+	}
+
+	pthread_mutex_unlock(&(this->pool_->s_clients_mutex_));
+	log::cout << BOLDGREEN << "SearchClientByNick " << nick << " : " << ret << "\n" << RESET;
+	return ret;
 }
 
 void	Server::ServerSocketInit(void) {
@@ -71,6 +103,16 @@ bool	Server::Run(void) {
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
+		/* clients list print */
+		pthread_mutex_lock(&pool_->s_clients_mutex_);
+		std::map<int, Client>::iterator itr = clients_.begin();
+		while (itr != clients_.end()) {
+			pool_->LockClientMutex(itr->first);
+			log::cout << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << "\n" << RESET;
+			pool_->UnlockClientMutex(itr->first);
+			itr++;
+		}
+		pthread_mutex_unlock(&pool_->s_clients_mutex_);
 	}
 	return true;
 }
@@ -97,9 +139,10 @@ void	Server::HandleClientEvent(struct kevent event) {
 		return ;
 	}
 
-	Client client = clients_[event.ident];
+	//Client client = clients_[event.ident];
+	Client	*client = &(clients_[event.ident]);
 	char	buff[FT_BUFF_SIZE];
-	std::string& buffer = buffers_[client.get_sock()];
+	std::string& buffer = buffers_[client->get_sock()];
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -115,7 +158,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 		buffer += buff;
 		std::vector<Command *> cmds;
 		int	offset;
-		cmds = Request::ParseRequest(this, &client, buffer, &offset);
+		cmds = Request::ParseRequest(this, client, buffer, &offset);
 		for (size_t i = 0; i < cmds.size(); ++i) {
 			
 			log::cout << "index : " << i << "\n";
@@ -147,7 +190,7 @@ void	Server::ConnectClient(void) {
 	/* handle new client */
 	
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	log::cout << BOLDRED << "server->clients lock! in ConnectCLient\n" << RESET;
+	log::cout << BOLDRED << "server->clients lock! in ConnectClient\n" << RESET;
 	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	clients_[client.get_sock()] = client;
 	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
