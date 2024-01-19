@@ -36,3 +36,9 @@ Server*	Command::get_server(void) {
 Client*	Command::get_client(void) {
 	return client_;
 }
+
+void	Command::DisconnectClient(void) {
+	struct kevent	kevent;
+	EV_SET(&kevent, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	shutdown(this->client_sock_, SHUT_WR);
+}
