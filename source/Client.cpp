@@ -38,6 +38,14 @@ const int& Client::get_sock(void) {
 	return sock_;
 }
 
+void Client::set_nick(const std::string& nick) {
+	this->nick_ = nick;
+}
+
+const std::string& Client::get_nick(void) {
+	return this->nick_;
+}
+
 bool Client::operator < (const Client& client) const {
 	return (this->sock_ < client.sock_);
 }

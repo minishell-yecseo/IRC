@@ -31,6 +31,30 @@ const struct sockaddr_in&	Server::get_addr(void) {
 	return this->addr_;
 }
 
+int	Server::SearchClientByNick(const std::string& nick) {
+	int	ret = FT_INIT_CLIENT_FD;
+
+	pthread_mutex_lock(&(this->pool_->s_clients_mutex_));
+
+	std::map<int, Client>::iterator	iter = this->clients_.begin();
+	int i = 0;
+	while (iter != this->clients_.end()) {
+		log::cout << MAGENTA << "\tSEARCH_" << i << " " << (iter->second).get_nick() << "\n" << RESET;
+		std::string temp_nick = (iter->second).get_nick();
+		if (nick.compare(temp_nick) == 0) {
+			ret = iter->first;
+			log::cout << RED << "NICK:" << nick << " foudn in Server\n" << RESET;
+			break ;
+		}
+		iter++;
+		i++;
+	}
+
+	pthread_mutex_unlock(&(this->pool_->s_clients_mutex_));
+	log::cout << BOLDGREEN << "SearchClientByNick " << nick << " : " << ret << "\n" << RESET;
+	return ret;
+}
+
 void	Server::ServerSocketInit(void) {
 	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
 		error_handling("socket() error\n");
@@ -97,9 +121,10 @@ void	Server::HandleClientEvent(struct kevent event) {
 		return ;
 	}
 
-	Client client = clients_[event.ident];
+	//Client client = clients_[event.ident];
+	Client	*client = &(clients_[event.ident]);
 	char	buff[FT_BUFF_SIZE];
-	std::string& buffer = buffers_[client.get_sock()];
+	std::string& buffer = buffers_[client->get_sock()];
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		pool_->UnlockClientMutex(event.ident);//unlock
@@ -115,7 +140,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 		buffer += buff;
 		std::vector<Command *> cmds;
 		int	offset;
-		cmds = Request::ParseRequest(this, &client, buffer, &offset);
+		cmds = Request::ParseRequest(this, client, buffer, &offset);
 		for (size_t i = 0; i < cmds.size(); ++i) {
 			
 			log::cout << "index : " << i << "\n";

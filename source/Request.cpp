@@ -135,6 +135,7 @@ Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 			break ;
 		case NICK:
 			//log::cout << "NICK IN\n";		
+			c = new NickCommand(token_list);
 			break ;
 		case PING:
 			//log::cout << "PING IN\n";
