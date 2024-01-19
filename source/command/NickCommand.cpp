@@ -56,7 +56,6 @@ void	NickCommand::Run() {
 
 	/* send message with FAIL cases */
 	if (status == false) {
-		out << CRLF;
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
 		send(this->client_sock_, out.get_chr(), out.size(), 0);
 		return ;
@@ -68,7 +67,7 @@ void	NickCommand::Run() {
 	this->server_->pool_->UnlockClientMutex(this->client_sock_);
 
 	/* send message with SUCCESS cases */
-	out << this->params_[0] << CRLF;
+	out << this->params_[0];
 	log::cout << BOLDCYAN << "send message from NickCommand\n" << RED << out.get_str() << RESET;
 	send(this->client_sock_, out.get_chr(), out.size(), 0);
 }
