@@ -1,11 +1,21 @@
 #include "Client.hpp"
 
 Client::Client(void) {
-	auth_ = false;
+	auth_ = FT_INIT_AUTH;
 	sock_ = FT_INIT_CLIENT_FD;
 	memset(&addr_, 0, sizeof(addr_));
 	nick_ = "unknown_nick";
 	user_ = "unknown_user";
+}
+
+bool	Client::IsAuth(void) {
+	if (this->auth_ == 0)
+		return true;
+	return false;
+}
+
+void	Client::AuthIncrease(void) {
+	this->auth_++;
 }
 
 Client Client::operator = (const Client& client) {
