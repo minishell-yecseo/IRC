@@ -34,11 +34,13 @@ std::string	JoinCommand::AnyOfError(const std::string &str) {
 
 // It can be empty in params_ because irssi send only 'JOIN'
 void	JoinCommand::Run() {
+	/*
 	std::string numeric_reply;
 	
 	numeric_reply = AnyOfError(this->params_[0]);
 	if (numeric_reply.empty() == false)
 		return ;
+		*/
 	// Need implement
 	// find_channel
 	// check mode, check pass
