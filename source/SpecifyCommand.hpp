@@ -6,7 +6,6 @@
 #include "InviteCommand.hpp"
 #include "PingCommand.hpp"
 #include "JoinCommand.hpp"
-#include "PongCommand.hpp"
 #include "KickCommand.hpp"
 #include "PrivmsgCommand.hpp"
 #include "ModeCommand.hpp"

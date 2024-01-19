@@ -17,13 +17,13 @@ IRC_OBJ_PATH = $(addprefix $(IRC_OBJ_DIR), $(IRC_OBJ))
 IRC_DEB_PATH = $(addprefix $(IRC_OBJ_DIR), $(IRC_DEP))
 
 CMD_SRC = PassCommand.cpp PrivmsgCommand.cpp \
-				JoinCommand.cpp PongCommand.cpp \
 				KickCommand.cpp CapCommand.cpp \
 				ModeCommand.cpp QuitCommand.cpp \
 				NickCommand.cpp TopicCommand.cpp \
 				UserCommand.cpp NoticeCommand.cpp \
 				PingCommand.cpp InviteCommand.cpp \
-				PartCommand.cpp WhoisCommand.cpp
+				PartCommand.cpp WhoisCommand.cpp \
+				JoinCommand.cpp
 
 CMD_DIR = ./source/command/
 CMD_OBJ_DIR = ./object/command/

@@ -3,9 +3,8 @@
 UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-bool	UserCommand::IsNonwhite(const std::string& str)
-{
-	for (size_t i = 0; i < this->params_[0].size(); ++i) {
+bool	UserCommand::IsNonwhite(const std::string& str) {
+	for (size_t i = 0; i < str.size(); ++i) {
 		// NUL WhiteSpace NewLine CarrigeReturn
 		if (str[i] == 0 || str[i] == 20 || str[i] == 12 || str[i] == 15)
 			return false;
