@@ -1,21 +1,36 @@
 #include "Response.hpp"
 
-std::string	MakeFormat(const std::string& prefix, const std::string& numeric_reply, const std::vector<std::string>& params)
-{
-	std::string	response;
+Response::Response(void) : buffer_("") {
+}
 
-	if	(prefix.empty() == false) {
-		response += prefix + " "
-	}
-	if (numeric_reply.empty() == false) {
-		response += numeric_reply + " "
-	}
-	for (size_t i = 0; i < params.size(); ++i) {
-		response += params[i];
-		if (i < params.size() - 1){
-			response += " "
-		}
-	}
-	response += CRLF;
-	return response.str();
+Response& Response::operator << (const char * char_ptr) {
+	buffer_ += char_ptr;
+	return *this;
+}
+
+Response& Response::operator << (const std::string str) {
+	buffer_ += str;
+	return *this;
+}
+
+Response& Response::operator << (const int i) {
+	std::istringstream	iss(i);
+	buffer_ += iss.str();
+	return *this;
+}
+
+const std::string&	Response::get_str(void) {
+	return buffer_;
+}
+
+const char *	Response::get_chr(void) {
+	return buffer_.c_str();
+}
+
+void	Response::flush(void) {
+	buffer_ = "";
+}
+
+size_t	Response::size(void) {
+	return buffer_.size();
 }
