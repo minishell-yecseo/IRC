@@ -5,6 +5,7 @@ std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std:
 	std::vector<std::string> message_list;
 	std::vector<Command *> command_list;
 
+	log::cout << "Request : " << request << "\n";
 	*offset = SplitRequest(request, &message_list);
 	SplitMessage(server, client, message_list, &command_list);
 	return command_list;
@@ -47,20 +48,23 @@ void	Request::SplitMessage(Server *server, Client *client, const std::vector<std
 // Message can be seperated one or more whitespace
 std::string Request::RemoveDuplicateSpace(const std::string& str) {
 	std::string result;
-	bool isSpace = false;
-	bool isColon = false;
+	bool space_flag = false;
+	bool colon_flag = false;
 
 	for (size_t i = 0; i < str.size(); ++i) {
-		if (isColon == false && str[i] == ' ') {
-			if (isSpace == false) {
+		if (str[i] == ' ' && colon_flag == false) {
+			if (space_flag == false) {
 				result += ' ';
-				isSpace = true;
+				space_flag = true;
 			}
-		} else if (i != 0 && str[i] == ':') {
-			isColon = true;
-		} else {
+		}
+		else if (i != 0 && str[i] == ':' ) {
 			result += str[i];
-			isSpace = false;
+			colon_flag = true;
+		}
+		else {
+			result += str[i];
+			space_flag = false;
 		}
 	}
 	return result;
@@ -74,8 +78,10 @@ void	Request::SeperateWhiteSpace(const std::string &str, std::vector<std::string
 	while ((end = str.find(delimiter, start)) != std::string::npos) {
 		token_list->push_back(str.substr(start, end - start));
 		start = end + 1;
-		if (start < str.length() && str[start] == ':')
-			break ;
+		if (start < str.length() && str[start] == ':') {
+			token_list->push_back(str.substr(start + 1));
+			return ;
+		}
 	}
 	token_list->push_back(str.substr(start));
 }
@@ -112,63 +118,58 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
 	Command *c = NULL;
 
-	for (size_t i = 0; i < token_list.size(); ++i)
-	{
-		log::cout << token_list[i] << " ";
-	}
-	log::cout << "\n";
 	switch (SearchCommand(token_list)) {
 		case CAP:
-			//log::cout << "CAP IN\n";
 			c = new CapCommand(token_list);
 			break ;
 		case JOIN:
-			//log::cout << "JOIN IN\n";
-			//JoinCommand(token_list);
+			c = new JoinCommand(token_list);
 			break ;
 		case KICK:
-			//log::cout << "KICK IN\n";
-			//KickCommand(token_list);
+			c = new KickCommand(token_list);
 			break ;
 		case MODE:
-			//log::cout << "MODE IN\n";
+			c = new ModeCommand(token_list);
 			break ;
 		case NICK:
-			//log::cout << "NICK IN\n";		
 			c = new NickCommand(token_list);
 			break ;
 		case PING:
-			//log::cout << "PING IN\n";
+			c = new PingCommand(token_list);
 			break ;
 		case PASS:
-			//log::cout << "PASS IN\n";
+			c = new PassCommand(token_list);
 			break ;
 		case PART:
-			//log::cout << "PARK IN\n";
+			c = new PartCommand(token_list);
 			break ;
 		case USER:
-			//log::cout << "USER IN\n";
+			c = new UserCommand(token_list);
 			break ;
 		case QUIT:
-			//log::cout << "QUIT IN\n";
+			c = new QuitCommand(token_list);
 			break ;
 		case TOPIC:
-			//log::cout << "TOPIC IN\n";
+			c = new TopicCommand(token_list);
 			break ;
 		case WHOIS:
-			//log::cout << "WHOIS IN\n";
+			c = new WhoisCommand(token_list);
 			break ;
 		case INVITE:
-			//log::cout << "INVITE IN\n";
+			c = new InviteCommand(token_list);
 			break ;
 		case NOTICE:
-			//log::cout << "NOTICE IN\n";
+			c = new NoticeCommand(token_list);
 			break ;
 		case PRIVMSG:
-			//log::cout << "PRIVMSG IN\n";
+			c = new PrivmsgCommand(token_list);
 			break ;
 		default:
-			log::cout << "Command not found : ";
+			log::cout << "Command not found : " ;
+			for (size_t i = 0; i < token_list.size(); ++i) {
+				log::cout << token_list[i] << " ";
+			}
+			log::cout << "\n";
 	}
 	return c;
 }
