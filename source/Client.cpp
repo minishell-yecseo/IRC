@@ -8,12 +8,6 @@ Client::Client(void) {
 	user_ = "unknown_user";
 }
 
-/*
-Client::Client(const Client& client) {
-	*this = client;
-}
-*/
-
 Client Client::operator = (const Client& client) {
 	if (this == &client)
 		return *this;
