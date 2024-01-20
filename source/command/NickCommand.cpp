@@ -55,38 +55,34 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 # define ERR_ERRONEUSNICKNAME	"432"
 */
 
-std::string	NickCommand::AnyOfError(bool * status) {
+std::string	NickCommand::AnyOfError(void) {
 	Response	error;
 
 	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
-		error << ERR_UNKNOWNERROR;
-	else if (IsEqualPrevNick(this->prefix_) == false) {
+		return ERR_UNKNOWNERROR;
+	if (IsEqualPrevNick(this->prefix_) == false) {
 		log::cout << "prevNick not equal\n";
-		error << ERR_UNKNOWNERROR;
+		return ERR_UNKNOWNERROR;
 	}
-	else if (params_.empty() == false) {
+	if (params_.empty() == false) {
 		if (IsUniqueNick(params_[0]) == false)
-			error << ERR_NICKNAMEINUSE;
+			return ERR_NICKNAMEINUSE;
 		else if (IsValidNick(params_[0]) == false)
-			error << ERR_ERRONEUSNICKNAME;
-	} else if (params_.empty() == true)
-		error << ERR_NONICKNAMEGIVEN;
-
-	if (error.size() > 0)
-		*status = false;
-
-	return error.get_str();
+			return ERR_ERRONEUSNICKNAME;
+	}
+	if (params_.empty() == true)
+		return ERR_NONICKNAMEGIVEN;
+	return "";
 }
 
 void	NickCommand::Run() {
 	Response	out;
-	bool	status = true;
 	
 	out << this->server_->get_name() << ": NICK : ";
-	std::string	error_message = AnyOfError(&status);
+	std::string	error_message = AnyOfError();
 
 	/* send message with FAIL cases */
-	if (status == false) {
+	if (error_message.empty() == false) {
 		out << error_message;
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
 		send(this->client_sock_, out.get_chr(), out.size(), 0);
@@ -102,5 +98,6 @@ void	NickCommand::Run() {
 	/* send message with SUCCESS cases */
 	out << this->params_[0];
 	log::cout << BOLDCYAN << "send message from NickCommand\n" << RED << out.get_str() << RESET;
+	// Maybe Need Mutex sure?
 	send(this->client_sock_, out.get_chr(), out.size(), 0);
 }
