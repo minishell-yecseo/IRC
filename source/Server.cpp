@@ -63,6 +63,22 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	return ret;
 }
 
+bool	Server::LockClientMutex(const int& sock) {
+	return (this->pool_->LockClientMutex(sock));
+}
+
+bool	Server::LockChannelMutex(const std::string& name) {
+	return (this->pool_->LockChannelMutex(name));
+}
+
+void	Server::UnlockClientMutex(const int& sock) {
+	this->pool_->UnlockClientMutex(sock);
+}
+
+void	Server::UnlockChannelMutex(const std::string& name) {
+	this->pool_->UnlockChannelMutex(name);
+}
+
 void	Server::ServerSocketInit(void) {
 	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
 		error_handling("socket() error\n");
