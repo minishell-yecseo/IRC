@@ -29,6 +29,7 @@ class Command
 		Client* get_client(void);
 		void	DisconnectClient(void);
 		void	SendResponse(const int& sock, const std::string& str);
+		bool	IsRegistered(const int& fd);
 
 	protected:
 		std::string					prefix_;

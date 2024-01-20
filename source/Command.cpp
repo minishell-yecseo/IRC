@@ -3,6 +3,14 @@
 Command::~Command(void){
 }
 
+bool	Command::IsRegistered(const int&fd) {
+	this->server_->pool_->LockClientMutex(fd);
+	bool result = this->client_->IsAuth();
+	this->server_->pool_->UnlockClientMutex(fd);
+
+	return result;
+}
+
 void	Command::SendResponse(const int& sock, const std::string& str) {
 	this->server_->LockClientMutex(sock);
 	send(sock, str.c_str(), str.size(), 0);
