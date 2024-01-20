@@ -97,7 +97,7 @@ void	NickCommand::Run() {
 	this->server_->UnlockClientMutex(this->client_sock_);
 
 	/* send message with SUCCESS cases */
-	SendResponse(this->client_sock_, out.get_str());
+	SendResponse(this->client_sock_, out.get_format_str());
 
 	/* auth process */
 	AuthCheckReply();
