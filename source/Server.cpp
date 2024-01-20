@@ -138,9 +138,9 @@ bool	Server::Run(void) {
 			pool_->LockClientMutex(itr->first);
 			print << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << RESET;
 			if (itr->second.IsAuth() == true)
-				print << GREEN << " is Authenticated";
+				print << GREEN << " is Authenticated\n";
 			else
-				print << RED << " is not Authenticated";
+				print << RED << " is not Authenticated\n";
 			print << RESET;
 			log::cout << print.get_str();
 			pool_->UnlockClientMutex(itr->first);
@@ -235,14 +235,10 @@ void	Server::ConnectClient(void) {
 	log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
 }
 
-bool	Server::AuthClient(Client& client) {
-	// client가 보낸 메시지를 확인한다.
-	//		1. client가 보낸 password 와 Server의 password 의 일치
-	//		2. client가 보낸 nick이 기존 clients의 nick과 겹치지 않아야함.
-	//	1, 2 조건을 만족하는 client에 한해서 참을 반환.
-	
-	log::cout << RED << "client authenticate call: " << client.get_sock() << RESET << "\n";
-	return true;
+bool	Server::AuthPassword(const std::string& password) {
+	if (this->password_.compare(password) == 0)
+		return true;
+	return false;
 }
 
 void	Server::AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata) {
