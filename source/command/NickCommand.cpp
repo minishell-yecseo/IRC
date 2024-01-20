@@ -39,9 +39,9 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 	/*error case : prefix exist but not equal to the request client's current name */
 	std::string current_nick;
 
-	this->server_->pool_->LockClientMutex(this->client_sock_);//lock
+	this->server_->LockClientMutex(this->client_sock_);//lock
 	current_nick = client_->get_nick();
-	this->server_->pool_->UnlockClientMutex(this->client_sock_);//unlock
+	this->server_->UnlockClientMutex(this->client_sock_);//unlock
 
 	if (prev_nick.empty() == false && prev_nick.compare(current_nick) != 0)
 		return false;
@@ -89,7 +89,7 @@ void	NickCommand::Run() {
 	if (status == false) {
 		out << error_message;
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
-		send(this->client_sock_, out.get_chr(), out.size(), 0);
+		SendResponse(this->client_sock_, out.get_str());
 		DisconnectClient();
 		return ;
 	}
@@ -102,5 +102,5 @@ void	NickCommand::Run() {
 	/* send message with SUCCESS cases */
 	out << this->params_[0];
 	log::cout << BOLDCYAN << "send message from NickCommand\n" << RED << out.get_str() << RESET;
-	send(this->client_sock_, out.get_chr(), out.size(), 0);
+	SendResponse(this->client_sock_, out.get_str());
 }

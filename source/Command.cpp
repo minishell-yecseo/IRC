@@ -3,6 +3,12 @@
 Command::~Command(void){
 }
 
+void	Command::SendResponse(const int& sock, const std::string& str) {
+	this->server_->LockClientMutex(sock);
+	send(sock, str.c_str(), str.size(), 0);
+	this->server_->UnlockClientMutex(sock);
+}
+
 Command::Command(const std::vector<std::string> &token_list) {
 	size_t	param_index;
 
