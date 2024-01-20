@@ -63,6 +63,16 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	return ret;
 }
 
+bool	Server::SearchChannelByName(const std::string& name) {
+	bool	search_ret = false;
+	pthread_mutex_lock(&this->pool_->s_channels_mutex_);
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
+	if (itr != this->channels_.end())
+		search_ret = true;
+	pthread_mutex_unlock(&this->pool_->s_channels_mutex_);
+	return search_ret;
+}
+
 bool	Server::LockClientMutex(const int& sock) {
 	return (this->pool_->LockClientMutex(sock));
 }
