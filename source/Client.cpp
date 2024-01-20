@@ -5,11 +5,13 @@ Client::Client(void) {
 	memset(&addr_, 0, sizeof(addr_));
 	nick_ = "unknown_nick";
 	user_ = "unknown_user";
+	auth_flag_ = 0;
 }
 
 bool	Client::IsAuth(void) {
-	int	auth_all_flag = FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER;
-	if (this->auth_flag_ & auth_all_flag)
+	if ((this->auth_flag_ & FT_AUTH_NICK) && \
+		(this->auth_flag_ & FT_AUTH_PASS) && \
+		(this->auth_flag_ & FT_AUTH_USER))
 		return true;
 	return false;
 }

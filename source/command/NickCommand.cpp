@@ -96,8 +96,9 @@ void	NickCommand::Run() {
 	client_->SetAuthFlag(FT_AUTH_NICK);
 	this->server_->UnlockClientMutex(this->client_sock_);
 
-	/* Client's auth check increase */
-
 	/* send message with SUCCESS cases */
 	SendResponse(this->client_sock_, out.get_str());
+
+	/* auth process */
+	AuthCheckReply();
 }
