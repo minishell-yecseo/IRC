@@ -27,6 +27,7 @@ class Command
 		Server* get_server(void);
 		Client* get_client(void);
 		void	DisconnectClient(void);
+		void	SendResponse(const int& sock, const std::string& str);
 
 	protected:
 		std::string					prefix_;

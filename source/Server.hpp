@@ -53,8 +53,12 @@ class Server {
 		pthread_mutex_t *get_s_channels_mutex(void);
 
 		/* for command process */
-		int	SearchClientByNick(const std::string& nick);
+		int		SearchClientByNick(const std::string& nick);
 		//int	SearchChannelByName(const std::string& name);
+		bool	LockClientMutex(const int& sock);
+		bool	LockChannelMutex(const std::string& name);
+		void	UnlockClientMutex(const int& sock);
+		void	UnlockChannelMutex(const std::string& name);
 
 	/* private member variables */
 	private:
