@@ -93,10 +93,11 @@ void	NickCommand::Run() {
 	/* success case : nick can be changed */
 	this->server_->LockClientMutex(this->client_sock_);
 	client_->set_nick(params_[0]);
+	client_->SetAuthFlag(FT_AUTH_NICK);
 	this->server_->UnlockClientMutex(this->client_sock_);
 
+	/* Client's auth check increase */
+
 	/* send message with SUCCESS cases */
-	out << this->params_[0];
-	log::cout << BOLDCYAN << "send message from NickCommand\n" << RED << out.get_str() << RESET;
 	SendResponse(this->client_sock_, out.get_str());
 }
