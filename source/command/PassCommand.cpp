@@ -8,6 +8,11 @@ std::string	PassCommand::AnyOfError(void) {
 }
 
 void	PassCommand::Run(void) {
+	log::cout << "PASS Command Run\n";
+	this->server_->LockClientMutex(this->client_sock_);
+	client_->SetAuthFlag(FT_AUTH_PASS);
+	this->server_->UnlockClientMutex(this->client_sock_);
+	AuthCheckReply();
 	/*
 	if (this->params_.empty())
 	{

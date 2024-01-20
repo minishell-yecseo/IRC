@@ -24,6 +24,7 @@ Server::Server(int argc, char **argv) {
 	Client p_client;
 	p_client.set_sock(fd);
 	p_client.set_nick("saseo");
+	p_client.SetAuthFlag(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER);
 	clients_.insert(std::make_pair(fd, p_client));
 }
 
@@ -61,6 +62,16 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	pthread_mutex_unlock(&(this->pool_->s_clients_mutex_));
 	log::cout << BOLDGREEN << "SearchClientByNick " << nick << " : " << ret << "\n" << RESET;
 	return ret;
+}
+
+bool	Server::SearchChannelByName(const std::string& name) {
+	bool	search_ret = false;
+	pthread_mutex_lock(&this->pool_->s_channels_mutex_);
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
+	if (itr != this->channels_.end())
+		search_ret = true;
+	pthread_mutex_unlock(&this->pool_->s_channels_mutex_);
+	return search_ret;
 }
 
 bool	Server::LockClientMutex(const int& sock) {
@@ -123,8 +134,15 @@ bool	Server::Run(void) {
 		pthread_mutex_lock(&pool_->s_clients_mutex_);
 		std::map<int, Client>::iterator itr = clients_.begin();
 		while (itr != clients_.end()) {
+			Response	print;
 			pool_->LockClientMutex(itr->first);
-			log::cout << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << "\n" << RESET;
+			print << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << RESET;
+			if (itr->second.IsAuth() == true)
+				print << GREEN << " is Authenticated";
+			else
+				print << RED << " is not Authenticated";
+			print << RESET;
+			log::cout << print.get_str();
 			pool_->UnlockClientMutex(itr->first);
 			itr++;
 		}

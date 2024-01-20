@@ -18,7 +18,10 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 
 void	UserCommand::Run(void) {
 	/* It should wait for the client's auth variable to be 1 */
-
+	this->server_->LockClientMutex(this->client_sock_);
+	client_->SetAuthFlag(FT_AUTH_USER);
+	this->server_->UnlockClientMutex(this->client_sock_);
+	AuthCheckReply();
 /*
 	// <username> <hostname> <servername> <realname>
 	// realname must be prefix ':' but not irssi

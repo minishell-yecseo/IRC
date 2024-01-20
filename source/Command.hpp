@@ -29,6 +29,7 @@ class Command
 		Client* get_client(void);
 		void	DisconnectClient(void);
 		void	SendResponse(const int& sock, const std::string& str);
+		void	AuthCheckReply(void);
 
 	protected:
 		std::string					prefix_;
