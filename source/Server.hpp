@@ -60,6 +60,9 @@ class Server {
 		void	UnlockClientMutex(const int& sock);
 		void	UnlockChannelMutex(const std::string& name);
 
+	/* Authentication */
+		bool	AuthPassword(const std::string& password);
+	
 	/* private member variables */
 	private:
 		std::string	name_;
@@ -90,9 +93,6 @@ class Server {
 		void	ConnectClient(void);
 		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 
-	/* Authentication */
-		bool	AuthClient(Client& client);
-	
 	/* debugging functions */
 		void	p_event_filter(struct kevent *event);
 		void	p_event_flags(struct kevent*event);
