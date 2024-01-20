@@ -8,7 +8,7 @@ Response& Response::operator << (const char * char_ptr) {
 	return *this;
 }
 
-Response& Response::operator << (const std::string str) {
+Response& Response::operator << (const std::string& str) {
 	buffer_ += str;
 	return *this;
 }

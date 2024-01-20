@@ -20,7 +20,7 @@ class Response {
 		size_t				size(void);
 
 		Response& operator << (const char * char_ptr);
-		Response& operator << (const std::string str);
+		Response& operator << (const std::string& str);
 		Response& operator << (const int i);
 };
 
