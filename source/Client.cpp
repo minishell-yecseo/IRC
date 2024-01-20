@@ -1,28 +1,35 @@
 #include "Client.hpp"
 
 Client::Client(void) {
-	auth_ = FT_INIT_AUTH;
 	sock_ = FT_INIT_CLIENT_FD;
 	memset(&addr_, 0, sizeof(addr_));
 	nick_ = "unknown_nick";
 	user_ = "unknown_user";
+	auth_flag_ = 0;
 }
 
 bool	Client::IsAuth(void) {
-	if (this->auth_ == 0)
+	if ((this->auth_flag_ & FT_AUTH_NICK) && \
+		(this->auth_flag_ & FT_AUTH_PASS) && \
+		(this->auth_flag_ & FT_AUTH_USER))
 		return true;
 	return false;
 }
 
-void	Client::AuthIncrease(void) {
-	this->auth_++;
+void	Client::SetAuthFlag(const int& flag) {
+	if (flag & FT_AUTH_PASS)
+		this->auth_flag_ |= FT_AUTH_PASS;
+	if (flag & FT_AUTH_NICK)
+		this->auth_flag_ |= FT_AUTH_NICK;
+	if (flag & FT_AUTH_USER)
+		this->auth_flag_ |= FT_AUTH_USER;
 }
 
 Client Client::operator = (const Client& client) {
 	if (this == &client)
 		return *this;
 
-	auth_ = client.auth_;
+	auth_flag_ = client.auth_flag_;
 	sock_ = client.sock_;
 	nick_ = client.nick_;
 	user_ = client.user_;

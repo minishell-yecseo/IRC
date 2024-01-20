@@ -56,3 +56,18 @@ void	Command::DisconnectClient(void) {
 	EV_SET(&kevent, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	shutdown(this->client_sock_, SHUT_WR);
 }
+
+void	Command::AuthCheckReply(void) {
+	Response	auth_message;
+	auth_message << RPL_WELCOME;
+	bool		auth_status = false;
+
+	this->server_->LockClientMutex(this->client_sock_);//Lock
+	auth_status = this->client_->IsAuth();
+	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
+	
+	if (auth_status == true) {
+		SendResponse(this->client_sock_, auth_message.get_str());
+		log::cout << RED << "send 001\n" << RESET;
+	}
+}

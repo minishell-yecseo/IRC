@@ -30,6 +30,7 @@ class Command
 		void	DisconnectClient(void);
 		void	SendResponse(const int& sock, const std::string& str);
 		bool	IsRegistered(const int& fd);
+		void	AuthCheckReply(void);
 
 	protected:
 		std::string					prefix_;

@@ -54,7 +54,7 @@ class Server {
 
 		/* for command process */
 		int		SearchClientByNick(const std::string& nick);
-		//int	SearchChannelByName(const std::string& name);
+		bool	SearchChannelByName(const std::string& name);
 		bool	LockClientMutex(const int& sock);
 		bool	LockChannelMutex(const std::string& name);
 		void	UnlockClientMutex(const int& sock);
