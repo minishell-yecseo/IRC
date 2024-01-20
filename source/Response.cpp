@@ -20,12 +20,14 @@ Response& Response::operator << (const int i) {
 }
 
 const std::string&	Response::get_str(void) {
-	*this << CRLF;
 	return buffer_;
 }
 
+const std::string	Response::get_format_str(void) {
+	return (buffer_ + CRLF);
+}
+
 const char *	Response::get_chr(void) {
-	*this << CRLF;
 	return buffer_.c_str();
 }
 

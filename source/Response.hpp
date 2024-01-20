@@ -15,9 +15,11 @@ class Response {
 	public:
 		Response(void);
 		const std::string&	get_str(void);
+		const std::string	get_format_str(void);
 		const char * 		get_chr(void);
 		void				flush(void);
 		size_t				size(void);
+		bool				empty(void);
 
 		Response& operator << (const char * char_ptr);
 		Response& operator << (const std::string& str);
