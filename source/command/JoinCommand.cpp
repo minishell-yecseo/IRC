@@ -20,10 +20,12 @@ ERR_BADCHANNELKEY (475)
 ERR_INVITEONLYCHAN (473)
 */
 
-std::string	JoinCommand::AnyOfError(const std::string &str) {
-	if (str.empty() == true)
-		return ERR_NEEDMOREPARAMS;
-	if (str[0] != '0' || str[0] != '#' || str[0] != '&')
+std::string	JoinCommand::AnyOfError(void) {
+	if (this->params_.empty() == true)
+		return "";
+
+	std::string	str = this->params_[0];
+	if (str[0] != '#' || str[0] != '&')
 		return ERR_BADCHANMASK;
 	if (str.size() > 200)
 		return ERR_NOSUCHCHANNEL;
@@ -33,7 +35,7 @@ std::string	JoinCommand::AnyOfError(const std::string &str) {
 }
 
 // It can be empty in params_ because irssi send only 'JOIN'
-void	JoinCommand::Run() {
+void	JoinCommand::Run(void) {
 	/*
 	std::string numeric_reply;
 	

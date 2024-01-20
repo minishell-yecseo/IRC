@@ -6,6 +6,7 @@
 class PartCommand: public Command {
 	public:
 		PartCommand(const std::vector<std::string> &token_list);
-		void	Run();
+		void	Run(void);
+		std::string	AnyOfError(void);
 };
 #endif

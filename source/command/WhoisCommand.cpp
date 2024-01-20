@@ -17,8 +17,12 @@ WhoisCommand::WhoisCommand(const std::vector<std::string> &token_list) : Command
  * because of resource usage they incur.
  */
 
+std::string	WhoisCommand::AnyOfError(void) {
+    return "";
+}
+
 // We just reply ENDOFWHOIS or such ERR
-void	WhoisCommand::Run() {
+void	WhoisCommand::Run(void) {
 	// Need function in mutex
 	/*
 	if (this->client_->auth_ == false)

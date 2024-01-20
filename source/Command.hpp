@@ -20,8 +20,9 @@ class Command
 {
 	public:
 		virtual ~Command(void);
+		virtual void	Run(void) = 0;
+		virtual std::string	AnyOfError(void) = 0;
 		Command(const std::vector<std::string> &token);
-		virtual void	Run() = 0;
 		void set_server(Server *server);
 		void set_client(Client *client);
 		Server* get_server(void);

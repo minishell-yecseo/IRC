@@ -12,7 +12,7 @@ ERR_CHANOPRIVSNEEDED (482)
 ERR_USERONCHANNEL (443)
 */
 
-std::string	InviteCommand::AnyOfError() {
+std::string	InviteCommand::AnyOfError(void) {
 	/*
 	if (this->params_.size() < 2)
 		return ERR_NEEDMOREPARMS;

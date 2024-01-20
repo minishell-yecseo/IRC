@@ -3,7 +3,11 @@
 PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-void	PassCommand::Run() {
+std::string	PassCommand::AnyOfError(void) {
+    return "";
+}
+
+void	PassCommand::Run(void) {
 	/*
 	if (this->params_.empty())
 	{

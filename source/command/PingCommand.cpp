@@ -6,7 +6,11 @@ PingCommand::PingCommand(const std::vector<std::string> &token_list) : Command(t
 // ERR_NOTREGISTERED (451)
 // ERR_NEEDMOREPARAMS (461)
 
-void	PingCommand::Run() {
+std::string	PingCommand::AnyOfError(void) {
+    return "";
+}
+
+void	PingCommand::Run(void) {
 	/*
 	if (this->client_->auth_ == false)
 		; //ERR_NOTREGISTERD;

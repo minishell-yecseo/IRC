@@ -3,5 +3,9 @@
 PartCommand::PartCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-void	PartCommand::Run() {
+std::string	PartCommand::AnyOfError(void) {
+    return "";
+}
+
+void	PartCommand::Run(void) {
 }

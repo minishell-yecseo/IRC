@@ -48,7 +48,7 @@ bool	ModeCommand::IsValidMode(const std::string& str) {
 	return true;
 }
 
-std::string	ModeCommand::AnyOfError() {
+std::string	ModeCommand::AnyOfError(void) {
 	if (this->params_.empty())
 		return ERR_NEEDMOREPARAMS;
 	if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)

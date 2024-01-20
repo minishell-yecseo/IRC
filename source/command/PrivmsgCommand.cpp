@@ -3,5 +3,9 @@
 PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-void	PrivmsgCommand::Run() {
+std::string	PrivmsgCommand::AnyOfError(void) {
+    return "";
+}
+
+void	PrivmsgCommand::Run(void) {
 }

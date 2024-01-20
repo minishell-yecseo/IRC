@@ -3,6 +3,10 @@
 CapCommand::CapCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
+std::string	CapCommand::AnyOfError(void) {
+	return "";
+}
+
 std::string	CapCommand::WelcomeBurst(void)
 {
 	return 

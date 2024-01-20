@@ -3,6 +3,10 @@
 UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
+std::string	UserCommand::AnyOfError(void) {
+    return "";
+}
+
 bool	UserCommand::IsNonwhite(const std::string& str) {
 	for (size_t i = 0; i < str.size(); ++i) {
 		// NUL WhiteSpace NewLine CarrigeReturn
@@ -12,7 +16,7 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 	return true;
 }
 
-void	UserCommand::Run() {
+void	UserCommand::Run(void) {
 	/* It should wait for the client's auth variable to be 1 */
 
 /*
