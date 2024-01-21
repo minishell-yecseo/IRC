@@ -67,7 +67,7 @@ void	Command::AuthCheckReply(void) {
 	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 	
 	if (auth_status == true) {
-		SendResponse(this->client_sock_, auth_message.get_str());
+		SendResponse(this->client_sock_, auth_message.get_format_str());
 		log::cout << RED << "send 001\n" << RESET;
 	}
 }
