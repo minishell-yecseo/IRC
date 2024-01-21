@@ -40,5 +40,5 @@ size_t	Response::size(void) {
 }
 
 bool	Response::IsError(void) {
-	return buffer_.size() == 0;
+	return buffer_.size() != 0;
 }
