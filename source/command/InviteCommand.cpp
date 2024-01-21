@@ -14,24 +14,18 @@ ERR_USERONCHANNEL (443)
 */
 
 std::string	InviteCommand::CheckChannel(const std::string& nick, const std::string& chan) {
-	std::string	dummy = chan + nick;
-/*
+	std::string	dummy;
+
 	int	receiver = this->server_->SearchClientByNick(nick);
+	int	ret = 0;
 
 	if (receiver == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " Invite :No Such User";
 	pthread_mutex_lock(&this->server_->pool_->s_channels_mutex_);
-	std::map<std::string, Channel>::iterator	it = this->server_->channels_.find(chan);
-	if (it == this->server_->channels_.end())
-		return dummy + ERR_NOTONCHANNEL + " " + this->params_[1] + " :No such channel";
-	if (it.IsMember(this->client_sock_) == false)
-		return dummy + ERR_NOTONCHANNEL + " Invite :You're not on that channel";
-	if (it.IsOperator(this->client_sock_) == false)
-		return dummy + ERR_CHANOPRIVSNEEDED +  ": You're not channel operator";
-	if (it.IsMember(receiver) == true)
-		return dummy + ERR_USERONCHANNEL + ":  User already in";
+	ret = this->server_->CheckInviteError(chan, this->client_sock_, receiver);
 	pthread_mutex_unlock(&this->server_->pool_->s_channels_mutex_);
-	*/
+	if (ret == 0)
+		return "";
 	return dummy;
 }
 

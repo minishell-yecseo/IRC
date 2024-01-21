@@ -62,6 +62,9 @@ class Server {
 
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
+
+	/* InviteCommand */
+		int		CheckInviteError(const std::string& name, const int& receiver, const int& sender);
 	
 	/* private member variables */
 	private:

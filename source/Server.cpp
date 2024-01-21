@@ -64,6 +64,20 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	return ret;
 }
 
+int	Server::CheckInviteError(const std::string& name, const int& receiver, const int& sender) {
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
+	if (itr != this->channels_.end())
+		return 1;
+	// Need client lock?
+	if ((itr->second).IsMember(sender) == false)
+		return 2;
+	if ((itr->second).IsOperator(sender) == false)
+		return 3;
+	if ((itr->second).IsMember(receiver) == true)
+		return 4;
+	return 0;
+}
+
 bool	Server::SearchChannelByName(const std::string& name) {
 	bool	search_ret = false;
 	pthread_mutex_lock(&this->pool_->s_channels_mutex_);
