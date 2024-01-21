@@ -38,3 +38,7 @@ void	Response::flush(void) {
 size_t	Response::size(void) {
 	return buffer_.size();
 }
+
+bool	Response::IsError(void) {
+	return buffer_.size() == 0;
+}
