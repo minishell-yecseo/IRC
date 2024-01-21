@@ -7,20 +7,22 @@ PingCommand::PingCommand(const std::vector<std::string> &token_list) : Command(t
 // ERR_NEEDMOREPARAMS (461)
 
 std::string	PingCommand::AnyOfError(void) {
-    return "";
+	std::string	dummy;
+
+	if (this->client_->IsAuth() == false)
+		return dummy + ERR_NOTREGISTERED + " :You have not registered";
+	if (this->params_.empty() || this->params_[0].empty())
+		return dummy + ERR_NEEDMOREPARAMS + " PING :Not enough parameters";
+    return dummy;
 }
 
 void	PingCommand::Run(void) {
-	/*
-	if (this->client_->auth_ == false)
-		; //ERR_NOTREGISTERD;
-	if (this->params_.empty() || this->params_[0].empty())
-		; //ERR_NEEDMOREPARAMS;
-	*/
-	// Need get_server_name function
-	std::string	message = "PONG " + this->params_[0] + "\r\n";
-	log::cout << message;
-	server_->pool_->LockClientMutex(client_sock_);
-	send(client_->get_sock(), message.c_str(), message.size(), 0);
-	server_->pool_->UnlockClientMutex(client_sock_);
+	Response	r;
+
+	r << AnyOfError();
+	if (r.IsError() == true)
+		return SendResponse(this->client_sock_, r.get_format_str());
+
+	r << "PONG " << this->params_[0] ;
+	SendResponse(this->client_sock_, r.get_format_str());
 }

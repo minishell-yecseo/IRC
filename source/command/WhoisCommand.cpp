@@ -18,23 +18,23 @@ WhoisCommand::WhoisCommand(const std::vector<std::string> &token_list) : Command
  */
 
 std::string	WhoisCommand::AnyOfError(void) {
-    return "";
+	std::string	dummy;
+
+	if (this->client_->IsAuth() == false)
+		return dummy + ERR_NOTREGISTERED + " :You have not registered";
+	if (this->params_.empty())
+		return dummy + ERR_NONICKNAMEGIVEN + " :No nickname given";
+	if (this->server_->SearchClientByNick(this->params_[0]) == FT_INIT_CLIENT_FD)
+		return dummy + ERR_NOSUCHNICK + " " + this->params_[0] +" :No such nick";
+    return dummy;
 }
 
-// We just reply ENDOFWHOIS or such ERR
 void	WhoisCommand::Run(void) {
-	// Need function in mutex
-	/*
-	if (this->client_->auth_ == false)
-		; //ERR_NOTREGISTERD;
-	if (this->params_.empty())
-		; //ERR_NONICKNAMEGIVEN;
-	if (find(this->params_[0]) == end())
-		; //ERR_NOSUCHNICK;
-	*/
-	std::string message = "318 WHOISEND\r\n";
-	server_->pool_->LockClientMutex(client_sock_);
-	send(client_->get_sock(), message.c_str(), message.size(), 0);
-	server_->pool_->UnlockClientMutex(client_sock_);
+	Response	r;
 
+	r << AnyOfError();
+	if (r.IsError() == true)
+		return SendResponse(this->client_sock_, r.get_format_str());
+	r << RPL_ENDOFWHOIS << " WHOISEND";
+	SendResponse(this->client_sock_, r.get_format_str());
 }
