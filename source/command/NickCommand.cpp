@@ -83,7 +83,7 @@ void	NickCommand::Run() {
 
 	/* send message with FAIL cases */
 	if (error_message.empty() == false) {
-		out << error_message;
+		out << error_message << CRLF;
 		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
 		SendResponse(this->client_sock_, out.get_str());
 		DisconnectClient();
@@ -97,6 +97,7 @@ void	NickCommand::Run() {
 	this->server_->UnlockClientMutex(this->client_sock_);
 
 	/* send message with SUCCESS cases */
+	out << params_[0] << CRLF;
 	SendResponse(this->client_sock_, out.get_str());
 
 	/* auth process */
