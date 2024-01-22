@@ -14,5 +14,7 @@ class NickCommand: public Command {
 		bool	IsSpecial(char c);
 		bool	IsUniqueNick(const std::string& nick);
 		bool	IsEqualPrevNick(const std::string& prev_nick);
+		std::string	AuthClientError(void);
 };
+
 #endif

@@ -56,14 +56,7 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 */
 
 std::string	NickCommand::AnyOfError(void) {
-	Response	error;
-
-	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
-		return ERR_UNKNOWNERROR;
-	if (IsEqualPrevNick(this->prefix_) == false) {
-		log::cout << "prevNick not equal\n";
-		return ERR_UNKNOWNERROR;
-	}
+	/* This function checks only about the parameter */
 	if (params_.empty() == false) {
 		if (IsUniqueNick(params_[0]) == false)
 			return ERR_NICKNAMEINUSE;
@@ -77,29 +70,52 @@ std::string	NickCommand::AnyOfError(void) {
 
 void	NickCommand::Run() {
 	Response	out;
+	std::string	error_message;
 	
 	out << this->server_->get_name() << ": NICK : ";
-	std::string	error_message = AnyOfError();
-
-	/* send message with FAIL cases */
-	if (error_message.empty() == false) {
-		out << error_message << CRLF;
-		log::cout << BOLDCYAN << "send message from NickCommand\n" << out.get_str() << RESET;
-		SendResponse(this->client_sock_, out.get_str());
-		DisconnectClient();
-		return ;
+	if (IsRegistered(this->client_sock_) == true) {
+		error_message = AuthClientError();
+		if (error_message.empty() == false) {
+			out << error_message;
+			SendResponse(this->client_sock_, out.get_format_str());
+			return;
+		}
+	}
+	else {
+		error_message = AnyOfError();
+		if (error_message.empty() == false) {
+			out << error_message;
+			SendResponse(this->client_sock_, out.get_format_str());
+			DisconnectClient();
+		}
 	}
 
 	/* success case : nick can be changed */
+	bool	auth_check = false;
 	this->server_->LockClientMutex(this->client_sock_);
 	client_->set_nick(params_[0]);
 	client_->SetAuthFlag(FT_AUTH_NICK);
+	auth_check = this->client_->IsAuth();
 	this->server_->UnlockClientMutex(this->client_sock_);
 
 	/* send message with SUCCESS cases */
-	out << params_[0] << CRLF;
-	SendResponse(this->client_sock_, out.get_str());
+	out << params_[0];
+	SendResponse(this->client_sock_, out.get_format_str());
 
 	/* auth process */
-	AuthCheckReply();
+	if (auth_check == false)
+		AuthCheckReply();
+}
+
+std::string	NickCommand::AuthClientError(void) {
+	std::string	dummy;
+
+	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
+		return dummy + ERR_UNKNOWNERROR + " : Wrong prefix name";
+	else if (this->prefix_.empty() == false && IsEqualPrevNick(this->prefix_) == false) 
+		return dummy + ERR_UNKNOWNERROR + " : prefix does not match with previous name";
+	else if (this->prefix_.empty() == true) {
+		dummy = AnyOfError();
+	}
+	return dummy;
 }
