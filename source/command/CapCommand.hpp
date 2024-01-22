@@ -4,6 +4,8 @@
 #include "Response.hpp"
 #include "Command.hpp"
 
+/* ERR_NEEDMOREPARAMS (461) */
+
 class CapCommand: public Command {
 	public:
 		CapCommand(const std::vector<std::string> &token_list);

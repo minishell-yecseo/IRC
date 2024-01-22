@@ -3,9 +3,6 @@
 PingCommand::PingCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-// ERR_NOTREGISTERED (451)
-// ERR_NEEDMOREPARAMS (461)
-
 std::string	PingCommand::AnyOfError(void) {
 	std::string	dummy;
 
