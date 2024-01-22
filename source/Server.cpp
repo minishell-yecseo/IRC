@@ -26,7 +26,7 @@ Server::Server(int argc, char **argv) {
 	Client p_client;
 	p_client.set_sock(fd);
 	p_client.set_nick("saseo");
-	p_client.SetAuthFlag(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER);
+	p_client.SetAuthFlag(FT_AUTH);
 	clients_.insert(std::make_pair(fd, p_client));
 	AddClientMutex(fd);
 }

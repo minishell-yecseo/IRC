@@ -57,15 +57,23 @@ void	Command::DisconnectClient(void) {
 }
 
 void	Command::AuthCheckReply(void) {
+	log::cout << "Command::AuthCheckReply call()\n";
 	Response	auth_message;
 	auth_message << RPL_WELCOME;
-	bool		auth_status = false;
+	char	flag;
+	bool	auth_status = false;
+	bool	send_status = false;
 
 	this->server_->LockClientMutex(this->client_sock_);//Lock
 	auth_status = this->client_->IsAuth();
+	flag = this->client_->get_auth_flag(FT_AUTH_ALL);
+	if (auth_status == false && ((flag & FT_AUTH_ALL) == FT_AUTH_ALL)) {
+		send_status = true;
+		this->client_->SetAuthFlag(FT_AUTH);
+	}
 	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 	
-	if (auth_status == true) {
+	if (send_status) {
 		SendResponse(this->client_sock_, auth_message.get_format_str());
 		log::cout << RED << "send 001\n" << RESET;
 	}
