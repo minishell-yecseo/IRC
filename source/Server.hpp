@@ -59,6 +59,7 @@ class Server {
 		bool	LockChannelMutex(const std::string& name);
 		void	UnlockClientMutex(const int& sock);
 		void	UnlockChannelMutex(const std::string& name);
+		void	AddDeleteClient(const int& sock);
 
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
@@ -80,6 +81,8 @@ class Server {
 		std::map<int, Client>	clients_;//일단, socket fd 를 key로 지정
 		std::map<int, std::string>	buffers_;
 		std::map<std::string, Channel>	channels_;
+		pthread_mutex_t					del_clients_mutex_;
+		std::set<int>					del_clients_;
 
 	/* private member functions*/
 	private:
@@ -89,7 +92,8 @@ class Server {
 		void	HandleTimeout(void);
 		void	HandleEventError(struct kevent event);
 		void	HandleClientEvent(struct kevent event);
-		void	DisconnectClient(struct kevent event);
+		void	DeleteInvalidClient(void);
+		void	DisconnectClient(const int& sock);
 		void	ConnectClient(void);
 		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 
