@@ -441,7 +441,7 @@ void	Server::DisconnectClient(const int& sock) {
 			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
 			return;
 		}
-		this->channels_[*channel_itr].Kick(client_it->second);
+		this->channels_[*channel_itr].Kick(client_it->second.get_sock());
 		UnlockChannelMutex(*channel_itr);//unlock
 	}
 

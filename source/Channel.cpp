@@ -12,8 +12,8 @@ void	Channel::set_name(const std::string& name) {
 	this->name_ = name;
 }
 
-bool	Channel::Kick(Client client) {
-	std::set<Client>::iterator	it = members_.find(client);
+bool	Channel::Kick(int sock) {
+	std::set<int>::iterator	it = members_.find(sock);
 	if (it != members_.end()) {
 		members_.erase(it);
 		return true;
@@ -21,12 +21,12 @@ bool	Channel::Kick(Client client) {
 	return false;
 }
 
-void	Channel::Join(Client client) {
-	members_.insert(client);
+void	Channel::Join(int sock) {
+	members_.insert(sock);
 }
 
-void	Channel::PromoteMember(Client client) {
-	operators_.insert(client);
+void	Channel::PromoteMember(int sock) {
+	operators_.insert(sock);
 }
 
 bool	Channel::AuthPassword(const std::string& password) {
@@ -35,15 +35,15 @@ bool	Channel::AuthPassword(const std::string& password) {
 	return false;
 }
 
-bool	Channel::IsMember(const Client& client) {
-	std::set<Client>::iterator	it = members_.find(client);
+bool	Channel::IsMember(int sock) {
+	std::set<int>::iterator	it = members_.find(sock);
 	if (it != members_.end())
 		return true;
 	return false;
 }
 
-bool	Channel::IsOperator(const Client& client) {
-	std::set<Client>::iterator	it = operators_.find(client);
+bool	Channel::IsOperator(int sock) {
+	std::set<int>::iterator	it = operators_.find(sock);
 	if (it != operators_.end())
 		return true;
 	return false;

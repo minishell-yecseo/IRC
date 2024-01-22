@@ -17,12 +17,12 @@ class Client;
 
 class Channel {
 	public:
-		bool	IsMember(const Client& client);
-		bool	IsOperator(const Client& client);
+		bool	IsMember(int sock);
+		bool	IsOperator(int sock);
 		bool	AuthPassword(const std::string& pw);
-		bool	Kick(Client client);
-		void	Join(Client client);
-		void	PromoteMember(Client client);
+		bool	Kick(int sock);
+		void	Join(int sock);
+		void	PromoteMember(int sock);
 		
 		/* getter & setter */
 		bool	set_mode(const int& flag, const bool& enable);
@@ -37,9 +37,9 @@ class Channel {
 		std::string	topic_;
 		char	mode_;
 	
-		std::set<Client>	members_;
-		std::set<Client>	operators_;
-		std::set<Client>	limits_;
+		std::set<int>	members_;
+		std::set<int>	operators_;
+		std::set<int>	limits_;
 	};
 
 #endif
