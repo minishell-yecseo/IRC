@@ -52,9 +52,8 @@ Client*	Command::get_client(void) {
 }
 
 void	Command::DisconnectClient(void) {
-	struct kevent	kevent;
-	EV_SET(&kevent, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	shutdown(this->client_sock_, SHUT_WR);
+	/* Add to Delete list in Server */
+	this->server_->AddDeleteClient(this->client_sock_);
 }
 
 void	Command::AuthCheckReply(void) {
@@ -67,6 +66,7 @@ void	Command::AuthCheckReply(void) {
 	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 	
 	if (auth_status == true) {
+		auth_message << CRLF;
 		SendResponse(this->client_sock_, auth_message.get_str());
 		log::cout << RED << "send 001\n" << RESET;
 	}
