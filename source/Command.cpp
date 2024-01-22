@@ -4,9 +4,9 @@ Command::~Command(void){
 }
 
 bool	Command::IsRegistered(const int&fd) {
-	this->server_->pool_->LockClientMutex(fd);
+	this->server_->LockClientMutex(fd);
 	bool result = this->client_->IsAuth();
-	this->server_->pool_->UnlockClientMutex(fd);
+	this->server_->UnlockClientMutex(fd);
 
 	return result;
 }

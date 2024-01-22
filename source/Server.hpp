@@ -49,17 +49,22 @@ class Server {
 		const std::string& get_name(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
-		pthread_mutex_t *get_s_clients_mutex(void);
-		pthread_mutex_t *get_s_channels_mutex(void);
 
 		/* for command process */
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
+		void	AddDeleteClient(const int& sock);
+
+	/* mutex list functions */
+		bool	AddClientMutex(const int& sock);
+		bool	AddChannelMutex(const std::string& name);
+		bool	DeleteClientMutex(const int& sock);
+		bool	DeleteChannelMutex(const std::string& name);
+
 		bool	LockClientMutex(const int& sock);
 		bool	LockChannelMutex(const std::string& name);
 		void	UnlockClientMutex(const int& sock);
 		void	UnlockChannelMutex(const std::string& name);
-		void	AddDeleteClient(const int& sock);
 
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
@@ -78,14 +83,23 @@ class Server {
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
 		std::vector<struct kevent>	chlist_;
 
-		std::map<int, Client>	clients_;//일단, socket fd 를 key로 지정
-		std::map<int, std::string>	buffers_;
-		std::map<std::string, Channel>	channels_;
-		pthread_mutex_t					del_clients_mutex_;
-		std::set<int>					del_clients_;
+		std::map<int, Client>					clients_;//일단, socket fd 를 key로 지정
+		pthread_mutex_t							clients_mutex_;
+		std::map<int, std::string>				buffers_;
+		
+		std::map<std::string, Channel>			channels_;
+		pthread_mutex_t							channels_mutex_;
+		
+		std::set<int>							del_clients_;
+		pthread_mutex_t							del_clients_mutex_;
+
+		pthread_mutex_t							list_mutex_;
+		std::map<int, pthread_mutex_t*>			client_mutex_list_;
+		std::map<std::string, pthread_mutex_t*>	channel_mutex_list_;
 
 	/* private member functions*/
 	private:
+		void	MutexInit(void);
 		void	ServerSocketInit(void);
 		void	KqueueInit(void);
 		void	HandleEvents(int nev);

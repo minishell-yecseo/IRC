@@ -33,8 +33,8 @@ void	WhoisCommand::Run(void) {
 		; //ERR_NOSUCHNICK;
 	*/
 	std::string message = "318 WHOISEND\r\n";
-	server_->pool_->LockClientMutex(client_sock_);
+	server_->LockClientMutex(client_sock_);
 	send(client_->get_sock(), message.c_str(), message.size(), 0);
-	server_->pool_->UnlockClientMutex(client_sock_);
+	server_->UnlockClientMutex(client_sock_);
 
 }

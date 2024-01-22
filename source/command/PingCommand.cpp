@@ -20,7 +20,7 @@ void	PingCommand::Run(void) {
 	// Need get_server_name function
 	std::string	message = "PONG " + this->params_[0] + "\r\n";
 	log::cout << message;
-	server_->pool_->LockClientMutex(client_sock_);
+	server_->LockClientMutex(client_sock_);
 	send(client_->get_sock(), message.c_str(), message.size(), 0);
-	server_->pool_->UnlockClientMutex(client_sock_);
+	server_->UnlockClientMutex(client_sock_);
 }
