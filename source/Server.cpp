@@ -69,7 +69,7 @@ int	Server::SearchClientByNick(const std::string& nick) {
 
 int	Server::CheckInviteError(const std::string& name, int receiver, int sender) {
 	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
-	if (itr != this->channels_.end())
+	if (itr == this->channels_.end())
 		return 1;
 	// Need client lock?
 	if ((itr->second).IsMember(sender) == false)
