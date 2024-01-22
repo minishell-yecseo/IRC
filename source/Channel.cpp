@@ -29,6 +29,10 @@ void	Channel::PromoteMember(int sock) {
 	operators_.insert(sock);
 }
 
+void	Channel::DegradeMember(int sock) {
+	operators_.erase(sock);
+}
+
 bool	Channel::AuthPassword(const std::string& password) {
 	if (password.compare(password_) == 0)
 		return true;
@@ -63,4 +67,12 @@ bool	Channel::set_mode(const int& flag, const bool& enable) {
 
 const char&	Channel::get_mode(void) {
 	return mode_;
+}
+
+void	Channel::set_limit(const int& l) {
+	this->limit_ = l;
+}
+
+void	Channel::unset_limit(void) {
+	this->limit_ = CLIENT_LIMIT;
 }

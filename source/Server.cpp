@@ -67,18 +67,94 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	return ret;
 }
 
-int	Server::CheckInviteError(const std::string& name, int receiver, int sender) {
-	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
-	if (itr == this->channels_.end())
-		return 1;
-	// Need client lock?
+// need check param max count
+void	Server::RunModeInServer(const std::vector<std::string>& params, char* mode_list) {
+	this->channels_mutex_.lock();
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(params[0]);
+	this->channels_mutex_.unlock();
+	if (itr == this->channels_.end()) 
+		return ;
+
+	LockChannelMutex(itr->first);
+	// i t k o l
+	if (mode_list[0] == -1)
+		(itr->second).set_mode(MODE_INVITE, false);
+	else if (mode_list[0] > 0)
+		(itr->second).set_mode(MODE_INVITE, true);
+	if (mode_list[1] == -1)
+		(itr->second).set_mode(MODE_TOPIC, false);
+	else if (mode_list[1] > 0) {
+		(itr->second).set_mode(MODE_TOPIC, true);
+		(itr->second).set_topic(params[mode_list[1]]);
+	};
+	if (mode_list[2] == -1)
+		(itr->second).set_mode(MODE_KEY, false);
+	else if (mode_list[2] > 0) {
+		(itr->second).set_mode(MODE_KEY, true);
+		(itr->second).set_password(params[mode_list[2]]);
+	}
+	int	user = this->SearchClientByNick(params[mode_list[3]]);
+	if (user == FT_INIT_CLIENT_FD)
+		;
+	else if (mode_list[3] == -1)
+		(itr->second).DegradeMember(user);
+	else if (mode_list[3] > 0) {
+		(itr->second).PromoteMember(user);
+	}	
+	if (mode_list[4] == -1) {
+		(itr->second).set_mode(MODE_LIMIT, false);
+		(itr->second).unset_limit();
+	}
+	else if (mode_list[4] > 0) {
+		(itr->second).set_mode(MODE_LIMIT, true);
+		// need fix
+		//(itr->second).set_limit(params[mode_list[4]])
+		(itr->second).set_limit(4);
+	}
+	UnlockChannelMutex(itr->first);
+}
+
+int	Server::CheckModeError(const std::string& chan, int sock) {
+	int	ret = 0;
+
+	this->channels_mutex_.lock();
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(chan);
+	if (itr == this->channels_.end()) 
+		ret = 1;
+	this->channels_mutex_.unlock();
+	if (ret == 1)
+		return ret;
+
+	LockChannelMutex(itr->first);
+	if ((itr->second).IsMember(sock) == false)
+		ret = 2;
+	else if ((itr->second).IsOperator(sock) == false)
+		ret = 3;
+	UnlockChannelMutex(itr->first);
+	return ret;
+
+}
+
+int	Server::CheckInviteError(const std::string& chan, int receiver, int sender) {
+	int	ret = 0;
+	
+	this->channels_mutex_.lock();
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(chan);
+	if (itr == this->channels_.end()) 
+		ret = 1;
+	this->channels_mutex_.unlock();
+	if (ret == 1)
+		return ret;
+
+	LockChannelMutex(itr->first);
 	if ((itr->second).IsMember(sender) == false)
-		return 2;
-	if ((itr->second).IsOperator(sender) == false)
-		return 3;
-	if ((itr->second).IsMember(receiver) == true)
-		return 4;
-	return 0;
+		ret = 2;
+	else if ((itr->second).IsOperator(sender) == false)
+		ret = 3;
+	else if ((itr->second).IsMember(receiver) == true)
+		ret = 4;
+	UnlockChannelMutex(itr->first);
+	return ret;
 }
 
 bool	Server::SearchChannelByName(const std::string& name) {
@@ -259,7 +335,7 @@ bool	Server::Run(void) {
 		while (itr != clients_.end()) {
 			Response	print;
 			LockClientMutex(itr->first);
-			print << BOLDWHITE << "(" << itr->second.get_sock() << ") nick: " << itr->second.get_nick() << RESET;
+			print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second.get_nick() << RESET;
 			if (itr->second.IsAuth() == true)
 				print << GREEN << " is Authenticated\n";
 			else

@@ -11,5 +11,9 @@ class ModeCommand: public Command {
 		std::string	AnyOfError(void);
 		bool		CheckKeyParam(const std::string& str);
 		bool		IsValidMode(const std::string& str);
+		int			ReturnFlagIndex(char c);
+		char		*ConvertMode(const std::string& modestr);
+		std::string	CheckChannel(const std::string& chan);
+		bool		IsParamEnough(char *mode_list);
 };
 #endif
