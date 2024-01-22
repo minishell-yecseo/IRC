@@ -15,7 +15,8 @@ Server::Server(int argc, char **argv) {
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
 	password_ = argv[2];
-	pthread_mutex_init(&(this->del_clients_mutex_), NULL);
+
+	MutexInit();
 	ServerSocketInit();
 	KqueueInit();
 
@@ -27,6 +28,7 @@ Server::Server(int argc, char **argv) {
 	p_client.set_nick("saseo");
 	p_client.SetAuthFlag(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER);
 	clients_.insert(std::make_pair(fd, p_client));
+	AddClientMutex(fd);
 }
 
 const std::string&	Server::get_name(void) {
@@ -44,7 +46,7 @@ const struct sockaddr_in&	Server::get_addr(void) {
 int	Server::SearchClientByNick(const std::string& nick) {
 	int	ret = FT_INIT_CLIENT_FD;
 
-	pthread_mutex_lock(&(this->pool_->s_clients_mutex_));
+	this->clients_mutex_.lock();
 
 	std::map<int, Client>::iterator	iter = this->clients_.begin();
 	int i = 0;
@@ -60,7 +62,7 @@ int	Server::SearchClientByNick(const std::string& nick) {
 		i++;
 	}
 
-	pthread_mutex_unlock(&(this->pool_->s_clients_mutex_));
+	this->clients_mutex_.unlock();
 	log::cout << BOLDGREEN << "SearchClientByNick " << nick << " : " << ret << "\n" << RESET;
 	return ret;
 }
@@ -81,28 +83,133 @@ int	Server::CheckInviteError(const std::string& name, int receiver, int sender) 
 
 bool	Server::SearchChannelByName(const std::string& name) {
 	bool	search_ret = false;
-	pthread_mutex_lock(&this->pool_->s_channels_mutex_);
+	this->channels_mutex_.lock();
 	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
 	if (itr != this->channels_.end())
 		search_ret = true;
-	pthread_mutex_unlock(&this->pool_->s_channels_mutex_);
+	this->channels_mutex_.unlock();
 	return search_ret;
 }
 
+//Mutex done
+bool	Server::AddClientMutex(const int& sock) {
+	Mutex *mutex_ptr = new Mutex();
+
+	this->list_mutex_.lock();//lock
+	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
+	if (mutex_it != client_mutex_list_.end()) {
+		log::cout << BOLDBLUE << sock << " client Mutex already exists\n" << RESET;
+		this->list_mutex_.unlock();//unlock
+		return false;
+	}
+
+	client_mutex_list_.insert(std::make_pair(sock, mutex_ptr));
+	if (mutex_ptr->init(NULL) != 0 ) {
+		client_mutex_list_.erase(sock);
+		delete mutex_ptr;
+		log::cout << BOLDBLUE << sock << " client Mutex init fail\n" << RESET;
+	}
+
+	this->list_mutex_.unlock();//unlock
+	return true;
+}
+
+//Mutex done
+bool	Server::AddChannelMutex(const std::string& name) {
+	Mutex *mutex_ptr = new Mutex();
+	this->list_mutex_.lock();//lock
+	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
+	if (mutex_it != channel_mutex_list_.end())
+		return false;
+	channel_mutex_list_.insert(std::make_pair(name, mutex_ptr));
+	if (mutex_ptr->init() != 0) {
+		channel_mutex_list_.erase(name);
+		delete mutex_ptr;
+	}
+	this->list_mutex_.unlock();//unlock
+	return true;
+}
+
+//Mutex done
+bool	Server::DeleteClientMutex(const int& sock) {
+	this->list_mutex_.lock();//lock
+	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
+	if (mutex_it == client_mutex_list_.end()) {
+		this->list_mutex_.unlock();//unlock
+		return false;
+	}
+	delete mutex_it->second;
+	client_mutex_list_.erase(mutex_it);
+	this->list_mutex_.unlock();//unlock
+	return true;
+}
+
+//Mutex done
+bool	Server::DeleteChannelMutex(const std::string& name) {
+	this->list_mutex_.lock();//lock
+	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
+	if (mutex_it != channel_mutex_list_.end())
+		return false;
+	delete mutex_it->second;
+	channel_mutex_list_.erase(mutex_it);
+	this->list_mutex_.unlock();//unlock
+	return true;
+}
+
+//Mutex done
 bool	Server::LockClientMutex(const int& sock) {
-	return (this->pool_->LockClientMutex(sock));
+	this->list_mutex_.lock();//lock
+	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
+	if (mutex_it == client_mutex_list_.end()) {
+		this->list_mutex_.unlock();//unlock
+		log::cout << BOLDBLUE << sock << ": no such client mutex\n" << RESET;
+		return false;
+	}
+	this->list_mutex_.unlock();//unlock
+	return (mutex_it->second->lock());
 }
 
+//Mutex done
 bool	Server::LockChannelMutex(const std::string& name) {
-	return (this->pool_->LockChannelMutex(name));
+	this->list_mutex_.lock();//lock
+	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
+	if (mutex_it == channel_mutex_list_.end()) {
+	this->list_mutex_.unlock();//unlock
+		return false;
+	}
+	this->list_mutex_.unlock();//unlock
+	return (mutex_it->second->lock());
 }
 
+//Mutex done
 void	Server::UnlockClientMutex(const int& sock) {
-	this->pool_->UnlockClientMutex(sock);
+	this->list_mutex_.lock();//lock
+	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
+	if (mutex_it == client_mutex_list_.end()) {
+	this->list_mutex_.unlock();//unlock
+		return ;
+	}
+	this->list_mutex_.unlock();//unlock
+	mutex_it->second->unlock();
 }
 
+//Mutex done
 void	Server::UnlockChannelMutex(const std::string& name) {
-	this->pool_->UnlockChannelMutex(name);
+	this->list_mutex_.lock();//lock
+	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
+	if (mutex_it == channel_mutex_list_.end()) {
+	this->list_mutex_.unlock();//unlock
+		return ;
+	}
+	(mutex_it->second)->unlock();
+	this->list_mutex_.unlock();//unlock
+}
+
+void	Server::MutexInit(void) {
+	this->list_mutex_.init(NULL);
+	this->del_clients_mutex_.init(NULL);
+	this->clients_mutex_.init(NULL);
+	this->channels_mutex_.init(NULL);
 }
 
 void	Server::ServerSocketInit(void) {
@@ -147,22 +254,22 @@ bool	Server::Run(void) {
 			HandleEvents(nev);
 		DeleteInvalidClient();
 		/* clients list print */
-		pthread_mutex_lock(&pool_->s_clients_mutex_);
+		this->clients_mutex_.lock();
 		std::map<int, Client>::iterator itr = clients_.begin();
 		while (itr != clients_.end()) {
 			Response	print;
-			pool_->LockClientMutex(itr->first);
-			print << BOLDWHITE << itr->first << ") nick: " << itr->second.get_nick() << RESET;
+			LockClientMutex(itr->first);
+			print << BOLDWHITE << "(" << itr->second.get_sock() << ") nick: " << itr->second.get_nick() << RESET;
 			if (itr->second.IsAuth() == true)
 				print << GREEN << " is Authenticated\n";
 			else
 				print << RED << " is not Authenticated\n";
 			print << RESET;
 			log::cout << print.get_str();
-			pool_->UnlockClientMutex(itr->first);
+			UnlockClientMutex(itr->first);
 			itr++;
 		}
-		pthread_mutex_unlock(&pool_->s_clients_mutex_);
+		this->clients_mutex_.unlock();
 	}
 	return true;
 }
@@ -186,7 +293,7 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
-	if (pool_->LockClientMutex(event.ident) == false) {//lock
+	if (LockClientMutex(event.ident) != 0) {//lock
 		log::cout << "HandleClientEvent() error\n";
 		return ;
 	}
@@ -197,12 +304,12 @@ void	Server::HandleClientEvent(struct kevent event) {
 	std::string& buffer = buffers_[client->get_sock()];
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
-		pool_->UnlockClientMutex(event.ident);//unlock
+		UnlockClientMutex(event.ident);//unlock
 		
 		log::cout << "client read error\n";
 	}
 	else if (read_byte == 0) {
-		pool_->UnlockClientMutex(event.ident);//unlock
+		UnlockClientMutex(event.ident);//unlock
 		DisconnectClient(event.ident);
 	}
 	else {
@@ -216,7 +323,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 			log::cout << "index : " << i << "\n";
 			pool_->Enqueue(cmds[i]);
 		}
-		pool_->UnlockClientMutex(event.ident);//unlock
+		UnlockClientMutex(event.ident);//unlock
 		buffer.erase(0, offset);
 	
 		//	if (client.auth_)
@@ -233,19 +340,18 @@ void	Server::ConnectClient(void) {
 	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr_, &client.addr_size_)) == -1)
 		error_handling("accept() error\n");
 
-	if (pool_->AddClientMutex(client.get_sock()) == false) {
-		
-		log::cout << BLUE << "client's pthread_mutex_init() fail\n" << RESET;
-		return ;
+	std::string dum = "";
+	if (AddClientMutex(client.get_sock()) == false) {
+		log::cout << dum + BOLDBLUE + "AddClientMutex() " + " fail at Connection\n" + RESET;
+		return;
 	}
 
 	/* handle new client */
-	
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	log::cout << BOLDRED << "server->clients lock! in ConnectClient\n" << RESET;
-	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
+	this->clients_mutex_.lock();//lock
 	clients_[client.get_sock()] = client;
-	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+	this->clients_mutex_.unlock();//unlock
 	log::cout << BOLDRED << "server->clients unlock! in ConnectClient\n" << RESET;
 	buffers_[client.get_sock()] = "";
 	log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
@@ -275,40 +381,40 @@ void	Server::HandleEventError(struct kevent event) {
 }
 
 void	Server::AddDeleteClient(const int& sock) {
-	pthread_mutex_lock(&this->del_clients_mutex_);
+	this->del_clients_mutex_.lock();
 	del_clients_.insert(sock);
-	pthread_mutex_unlock(&this->del_clients_mutex_);
+	this->del_clients_mutex_.unlock();
 }
 
 void	Server::DeleteInvalidClient(void) {
-	pthread_mutex_lock(&this->del_clients_mutex_);
+	this->del_clients_mutex_.lock();
 	std::set<int>::iterator	itr = this->del_clients_.begin();
 	while (itr != this->del_clients_.end()) {
 		DisconnectClient(*itr);
 		itr++;
 	}
 	this->del_clients_.clear();
-	pthread_mutex_unlock(&this->del_clients_mutex_);
+	this->del_clients_mutex_.unlock();
 }
 
 void	Server::DisconnectClient(const int& sock) {
 	std::map<int, Client>::iterator	client_it;
 
-	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
+	this->clients_mutex_.lock();//lock
 	
 	log::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
 		log::cout << "DisconnectClient(" << sock << ") error\n";
-		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+		this->clients_mutex_.unlock();//unlock
 		log::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
 		return;
 	}
 
-	if (pool_->LockClientMutex(client_it->second.get_sock()) == false) {
+	if (LockClientMutex(client_it->second.get_sock()) != 0) {
 		
 		log::cout << BOLDRED << "LockClientMutex(" << sock << ") fail\n";
-		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+		this->clients_mutex_.unlock();//unlock
 		return;
 	}
 
@@ -320,23 +426,23 @@ void	Server::DisconnectClient(const int& sock) {
 	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
 	close(sock);
 
-	pool_->DeleteClientMutex(client_it->second.get_sock());
+	DeleteClientMutex(client_it->second.get_sock());
 
-	pool_->UnlockClientMutex(client_it->second.get_sock());
+	UnlockClientMutex(client_it->second.get_sock());
 
-	pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
+	this->clients_mutex_.unlock();//unlock
 	
 	log::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
 
 	/* Channel 에서 Client 삭제 */
 	std::vector<std::string>::iterator	channel_itr = client_it->second.channels_.begin();
 	while (channel_itr != client_it->second.channels_.end()) {
-		if (pool_->LockChannelMutex(*channel_itr) == false) {//lock
+		if (LockChannelMutex(*channel_itr) == false) {//lock
 			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
 			return;
 		}
 		this->channels_[*channel_itr].Kick(client_it->second);
-		pool_->UnlockChannelMutex(*channel_itr);//unlock
+		UnlockChannelMutex(*channel_itr);//unlock
 	}
 
 	log::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;

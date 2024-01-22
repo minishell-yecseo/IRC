@@ -1,9 +1,9 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include <pthread.h>
 #include <stdio.h>
 #include <string>
+#include "Mutex.hpp"
 
 namespace log {
 	extern const char *endl;
