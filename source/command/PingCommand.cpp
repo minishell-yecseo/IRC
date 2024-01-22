@@ -6,7 +6,7 @@ PingCommand::PingCommand(const std::vector<std::string> &token_list) : Command(t
 std::string	PingCommand::AnyOfError(void) {
 	std::string	dummy;
 
-	if (this->client_->IsAuth() == false)
+	if (Command::IsRegistered(this->client_sock_) == false)
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty() || this->params_[0].empty())
 		return dummy + ERR_NEEDMOREPARAMS + " PING :Not enough parameters";

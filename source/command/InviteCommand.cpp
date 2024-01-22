@@ -13,9 +13,7 @@ std::string	InviteCommand::CheckChannel(const std::string& nick, const std::stri
 	sender = this->client_sock_;
 	if (receiver == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " :No such user";
-	pthread_mutex_lock(&this->server_->pool_->s_channels_mutex_);
 	ret = this->server_->CheckInviteError(chan, sender, receiver);
-	pthread_mutex_unlock(&this->server_->pool_->s_channels_mutex_);
 	if (ret == CHANNOTFOUND)
 		return dummy + ERR_NOSUCHCHANNEL + " " + chan + " :No such channel";
 	if (ret == SENDERNOTFOUND)
@@ -30,8 +28,10 @@ std::string	InviteCommand::CheckChannel(const std::string& nick, const std::stri
 std::string	InviteCommand::AnyOfError(void) {
 	std::string	dummy;
 
+	if (Command::IsRegistered(this->client_sock_) == false)
+		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.size() < 2)
-		return dummy + ERR_NEEDMOREPARAMS + " Invite :Need more param";
+		return dummy + ERR_NEEDMOREPARAMS + " Invite :Not enough parameters";
 	return CheckChannel(this->params_[0], this->params_[1]);
 }
 

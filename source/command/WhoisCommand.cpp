@@ -6,7 +6,7 @@ WhoisCommand::WhoisCommand(const std::vector<std::string> &token_list) : Command
 std::string	WhoisCommand::AnyOfError(void) {
 	std::string	dummy;
 
-	if (this->client_->IsAuth() == false)
+	if (Command::IsRegistered(this->client_sock_) == false)
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty())
 		return dummy + ERR_NONICKNAMEGIVEN + " :No nickname given";
