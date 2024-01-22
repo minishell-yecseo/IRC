@@ -20,7 +20,9 @@ std::string	PassCommand::AnyOfError(void) {
 void	PassCommand::Run(void) {
 	std::string	error_message = AnyOfError();
 	if (error_message.empty() == false) {
+		error_message += CRLF;
 		SendResponse(this->client_sock_, error_message);
+		log::cout << "PASS send : " << YELLOW << error_message << RESET << "\n";
 		DisconnectClient();
 		return;
 	}

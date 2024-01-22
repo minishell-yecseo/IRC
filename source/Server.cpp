@@ -15,6 +15,7 @@ Server::Server(int argc, char **argv) {
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
 	password_ = argv[2];
+	pthread_mutex_init(&(this->del_clients_mutex_), NULL);
 	ServerSocketInit();
 	KqueueInit();
 
@@ -144,6 +145,7 @@ bool	Server::Run(void) {
 			HandleTimeout();
 		else if (nev > 0)
 			HandleEvents(nev);
+		DeleteInvalidClient();
 		/* clients list print */
 		pthread_mutex_lock(&pool_->s_clients_mutex_);
 		std::map<int, Client>::iterator itr = clients_.begin();
@@ -173,13 +175,13 @@ void	Server::HandleEvents(int nev) {
 		if (event.flags & EV_ERROR)
 			HandleEventError(event);
 		else if (event.flags & EV_EOF)
-			DisconnectClient(event);//need to implement
+			DisconnectClient(event.ident);//need to implement
 		else if (event.filter == EVFILT_READ && event.ident == (uintptr_t)sock_)
 			ConnectClient();
 		else if (event.filter == EVFILT_READ)
 			HandleClientEvent(event);
 		else if (event.filter == EVFILT_WRITE)
-			DisconnectClient(event);
+			DisconnectClient(event.ident);
 	}
 }
 
@@ -201,7 +203,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 	}
 	else if (read_byte == 0) {
 		pool_->UnlockClientMutex(event.ident);//unlock
-		DisconnectClient(event);
+		DisconnectClient(event.ident);
 	}
 	else {
 		buff[read_byte] = '\0';
@@ -268,21 +270,36 @@ void	Server::HandleEventError(struct kevent event) {
 	{
 		
 		log::cout << "client socket event error\n";
-		DisconnectClient(event);//need to implement fucntion
+		DisconnectClient(event.ident);//need to implement fucntion
 	}
 }
 
-void	Server::DisconnectClient(struct kevent event) {
+void	Server::AddDeleteClient(const int& sock) {
+	pthread_mutex_lock(&this->del_clients_mutex_);
+	del_clients_.insert(sock);
+	pthread_mutex_unlock(&this->del_clients_mutex_);
+}
+
+void	Server::DeleteInvalidClient(void) {
+	pthread_mutex_lock(&this->del_clients_mutex_);
+	std::set<int>::iterator	itr = this->del_clients_.begin();
+	while (itr != this->del_clients_.end()) {
+		DisconnectClient(*itr);
+		itr++;
+	}
+	this->del_clients_.clear();
+	pthread_mutex_unlock(&this->del_clients_mutex_);
+}
+
+void	Server::DisconnectClient(const int& sock) {
 	std::map<int, Client>::iterator	client_it;
 
 	pthread_mutex_lock(&(pool_->s_clients_mutex_));//lock
 	
-	
 	log::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
-	client_it = clients_.find(event.ident);
+	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
-		
-		log::cout << "DisconnectClient(" << event.ident << ") error\n";
+		log::cout << "DisconnectClient(" << sock << ") error\n";
 		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 		log::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
 		return;
@@ -290,15 +307,19 @@ void	Server::DisconnectClient(struct kevent event) {
 
 	if (pool_->LockClientMutex(client_it->second.get_sock()) == false) {
 		
-		log::cout << BOLDRED << "LockClientMutex(" << event.ident << ") fail\n";
+		log::cout << BOLDRED << "LockClientMutex(" << sock << ") fail\n";
 		pthread_mutex_unlock(&(pool_->s_clients_mutex_));//unlock
 		return;
 	}
 
 	clients_.erase(client_it);
 
-	EV_SET(&event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-	kevent(kq_, &event, 1, NULL, 0, NULL);
+	struct kevent del_evlist[2];
+	EV_SET(&del_evlist[0], sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	EV_SET(&del_evlist[1], sock, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
+	close(sock);
+
 	pool_->DeleteClientMutex(client_it->second.get_sock());
 
 	pool_->UnlockClientMutex(client_it->second.get_sock());

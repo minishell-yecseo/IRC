@@ -52,9 +52,8 @@ Client*	Command::get_client(void) {
 }
 
 void	Command::DisconnectClient(void) {
-	struct kevent	kevent;
-	EV_SET(&kevent, this->client_sock_, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	shutdown(this->client_sock_, SHUT_WR);
+	/* Add to Delete list in Server */
+	this->server_->AddDeleteClient(this->client_sock_);
 }
 
 void	Command::AuthCheckReply(void) {
