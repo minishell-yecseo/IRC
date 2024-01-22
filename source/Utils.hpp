@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <unistd.h>
+#include <sys/errno.h>
 #include "Colors.hpp"
 
 # ifndef ERR_WRITE

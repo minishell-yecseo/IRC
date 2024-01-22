@@ -4,6 +4,7 @@ void error_handling(const char *message) {
 	size_t len = strlen(message);
 	if (write(STDERR_FILENO, message, len) == -1)
 		exit(ERR_WRITE);
+	perror(strerror(errno));
 	exit(ERR_IRCSERV);
 }
 
