@@ -1,6 +1,9 @@
 # ircserv binary
 ircserv
 
+# Test file
+test.txt
+
 # Prerequisites
 *.d
 
