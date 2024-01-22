@@ -14,8 +14,10 @@ Response& Response::operator << (const std::string& str) {
 }
 
 Response& Response::operator << (const int i) {
-	std::istringstream	iss(i);
-	buffer_ += iss.str();
+	std::stringstream ss;
+	ss << i;
+
+	buffer_ += ss.str();
 	return *this;
 }
 
