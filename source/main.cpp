@@ -2,13 +2,13 @@
 #include <arpa/inet.h>
 #include "log.hpp"
 
-pthread_mutex_t	print;
+Mutex print;
 
 void leaks();
 int main(int argc, char **argv) {
 	atexit(leaks);
-	pthread_mutex_init(&print, NULL);
 
+	print.init(NULL);
 	Server server(argc, argv);
 	struct sockaddr_in addr = server.get_addr();
 	char *ip_addr = inet_ntoa(addr.sin_addr);

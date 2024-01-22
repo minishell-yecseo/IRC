@@ -71,37 +71,3 @@ void	*ThreadPool::Worker(void *arg) {
 	pthread_exit(NULL);
 	return NULL;
 }
-
-bool	ThreadPool::ft_mutex_init(pthread_mutex_t *mutex) {
-	int ret = pthread_mutex_init(mutex, NULL);
-	if (ret != 0) {
-		//std::cerr << strerror(ret) << "\n";
-		return false;
-	}
-	return true;
-}
-
-bool	ThreadPool::ft_mutex_destroy(pthread_mutex_t *mutex) {
-	int	ret = pthread_mutex_destroy(mutex);
-	if (ret != 0)
-		return false;
-	return true;
-}
-
-bool	ThreadPool::ft_mutex_lock(pthread_mutex_t *mutex) {
-	int ret = pthread_mutex_lock(mutex);
-	if (ret != 0) {
-		//std::cerr << "error:" << strerror(ret) << "\n";
-		return false;
-	}
-	return true;
-}
-
-void	ThreadPool::ft_mutex_unlock(pthread_mutex_t *mutex) {
-	int ret = pthread_mutex_unlock(mutex);
-	if (ret != 0) {
-		//std::cerr << strerror(ret) << "\n";
-		return;
-	}
-	return;
-}

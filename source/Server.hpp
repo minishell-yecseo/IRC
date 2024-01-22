@@ -27,6 +27,7 @@ class Server;
 #include "Client.hpp"
 #include "ThreadPool.hpp"
 #include "Utils.hpp"
+#include "Mutex.hpp"
 #include "log.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
@@ -83,19 +84,19 @@ class Server {
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
 		std::vector<struct kevent>	chlist_;
 
-		std::map<int, Client>					clients_;//일단, socket fd 를 key로 지정
-		pthread_mutex_t							clients_mutex_;
-		std::map<int, std::string>				buffers_;
+		std::map<int, Client>			clients_;//일단, socket fd 를 key로 지정
+		Mutex							clients_mutex_;
+		std::map<int, std::string>		buffers_;
 		
-		std::map<std::string, Channel>			channels_;
-		pthread_mutex_t							channels_mutex_;
+		std::map<std::string, Channel>	channels_;
+		Mutex							channels_mutex_;
 		
-		std::set<int>							del_clients_;
-		pthread_mutex_t							del_clients_mutex_;
+		std::set<int>					del_clients_;
+		Mutex							del_clients_mutex_;
 
-		pthread_mutex_t							list_mutex_;
-		std::map<int, pthread_mutex_t*>			client_mutex_list_;
-		std::map<std::string, pthread_mutex_t*>	channel_mutex_list_;
+		Mutex							list_mutex_;
+		std::map<int, Mutex*>			client_mutex_list_;
+		std::map<std::string, Mutex*>	channel_mutex_list_;
 
 	/* private member functions*/
 	private:

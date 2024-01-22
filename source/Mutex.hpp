@@ -6,7 +6,6 @@
 class	Mutex {
 	public:
 		Mutex(void);
-		Mutex(const pthread_mutexattr_t *attr);
 		~Mutex(void);
 		int	lock(void);
 		int	unlock(void);

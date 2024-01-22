@@ -3,10 +3,6 @@
 Mutex::Mutex(void) {
 }
 
-Mutex::Mutex(const pthread_mutexattr_t *attr) {
-	init(attr);
-}
-
 Mutex::~Mutex(void) {
 	destroy();
 }

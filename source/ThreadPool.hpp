@@ -32,10 +32,5 @@ class ThreadPool
 
 		void		Enqueue(void *arg);
 		static void	*Worker(void *arg);
-
-		static bool	ft_mutex_init(pthread_mutex_t *mutex);
-		static bool	ft_mutex_destroy(pthread_mutex_t *mutex);
-		static bool	ft_mutex_lock(pthread_mutex_t *mutex);
-		static void	ft_mutex_unlock(pthread_mutex_t *mutex);
 };
 #endif
