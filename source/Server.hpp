@@ -76,9 +76,10 @@ class Server {
 		void	RunModeInServer(const std::vector<std::string>& params, char* mode_list);
 	
 	/* private member variables */
-	private:
-		std::string	name_;
 
+	protected:
+		std::string	name_;
+		
 		int	sock_;
 		int	port_;
 		struct sockaddr_in	addr_;
@@ -89,9 +90,9 @@ class Server {
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
 		std::vector<struct kevent>	chlist_;
 
+		std::map<int, std::string>		buffers_;
 		std::map<int, Client>			clients_;//일단, socket fd 를 key로 지정
 		Mutex							clients_mutex_;
-		std::map<int, std::string>		buffers_;
 		
 		std::map<std::string, Channel>	channels_;
 		Mutex							channels_mutex_;
@@ -123,6 +124,10 @@ class Server {
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
+	
+	friend class Command;
+	friend class JoinCommand;
+	friend class InviteCommand;
 };
 
 #endif
