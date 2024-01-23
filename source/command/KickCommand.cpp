@@ -3,6 +3,8 @@
 KickCommand::KickCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
+:WiZ!jto@tolsun.oulu.fi KICK #Finnish John
+
 std::string	KickCommand::CheckChannel(const std::string& channel_name, const std::string& nick) {
 	std::string	dummy;
 	std::map<std::string, Channel>::iterator chan;
@@ -28,7 +30,8 @@ std::string	KickCommand::CheckChannel(const std::string& channel_name, const std
 	else
 		(chan->second).Kick(target);
 	this->server_->UnlockChannelMutex(chan->first);
-	return dummy;
+	std::string cli = this->server_->SearchClientBySock(this->client_sock_);
+	return dummy + ":" + cli + " KICK " + channel_name + " " + nick;
 }
 
 std::string	KickCommand::AnyOfError(void) {
@@ -44,6 +47,5 @@ void	KickCommand::Run(void) {
 	Response	r;
 
 	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
+	SendResponse(this->client_sock_, r.get_format_str());
 }
