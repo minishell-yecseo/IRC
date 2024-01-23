@@ -55,6 +55,14 @@ class Server {
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
+	
+	/* queries for command process */
+		bool	get_channel_members(std::map<int, std::string>& ret, \
+									const std::string& channel_name, \
+									const int& flag);
+		bool	AddChannelMember(const std::string& channel_name, \
+								const int& flag, \
+								const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
@@ -116,7 +124,8 @@ class Server {
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);
 		void	ConnectClient(void);
-		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
+						uint32_t fflags, intptr_t data, void *udata);
 
 	/* debugging functions */
 		void	p_event_filter(struct kevent *event);

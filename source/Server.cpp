@@ -568,3 +568,72 @@ void	Server::p_event_flags(struct kevent *event) {
 	if (event->flags & EV_EOF) log::cout << "EV_EOF | ";
 	log::cout << RESET << "\n";
 }
+
+// queries for command process
+bool	Server::get_channel_members(std::map<int, std::string>& ret, \
+									const std::string& channel_name, \
+									const int& flag) {
+	if (SearchChannelByName(channel_name) == false)
+		return false;
+
+	std::set<int>	client_list;
+	LockChannelMutex(channel_name);
+	if (flag & FT_CH_MEMBER)
+		client_list = this->channels_[channel_name].get_members();
+	else if (flag & FT_CH_OPERATOR)
+		client_list = this->channels_[channel_name].get_operators();
+	else if (flag & FT_CH_BAN_LIST)
+		client_list = this->channels_[channel_name].get_ban_list();
+	UnlockChannelMutex(channel_name);
+
+	std::set<int>::iterator	itr = client_list.begin();
+	while (itr != client_list.end()) {
+		std::pair<int, std::string>	tmp;
+		tmp.first = *itr;
+		if (LockClientMutex(tmp.first) == false) {//lock
+			tmp.first = FT_INIT_CLIENT_FD;
+			tmp.second = "";
+			UnlockClientMutex(tmp.first);//fain -> unlock
+		} else {
+			tmp.second = this->clients_[tmp.first].get_nick();
+			UnlockClientMutex(tmp.first);//succ -> unlock
+		}
+		ret.insert(tmp);
+		itr++;
+	}
+	return true;
+}
+
+bool	Server::AddChannelMember(const std::string& channel_name, \
+								const int& flag, \
+								const int& sock) {
+	try {
+		LockChannelMutex(channel_name);
+		if (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR)
+			this->channels_[channel_name].Join(sock);
+		if (flag & FT_CH_OPERATOR)
+			this->channels_[channel_name].PromoteMember(sock);
+		UnlockChannelMutex(channel_name);
+	} catch (std::exception& e) {
+		log::cout << RED << e.what() << "Server::AddChannelMember fail\n" << RESET;
+		return false;
+	}
+	return true;
+}
+
+
+//	if (LockChannelMutex(channel_name) == false) {
+//		UnlockChannelMutex(channel_name);
+//		return false;
+//	}
+//
+//	if (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR)
+//		this->channels_[channel_name].Join(sock);
+//	else {
+//		UnlockChannelMutex(channel_name);
+//		return false;
+//	}
+//	if (flag & FT_CH_OPERATOR)
+//		this->channels_[channel_name].PromoteMember(sock);
+//	UnlockChannelMutex(channel_name);
+//	return true;
