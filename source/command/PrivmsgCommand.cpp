@@ -52,8 +52,11 @@ std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::s
 
 std::string	PrivmsgCommand::CheckTarget(void) {
 	std::string&	target = this->params_[0];
-	std::string	text = this->params_[this->params_.size() - 1] + CRLF;
+	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+	std::string	text = sender + ": " + this->params_[this->params_.size() - 1] + CRLF;
 
+	if (sender.empty())
+		return "Client not found";
 	if (target[0] == '#' || target[0] == '&')
 		return BroadCast(target, text);
 	return UniCast(target, text);
