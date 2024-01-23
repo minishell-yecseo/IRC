@@ -137,6 +137,7 @@ class Server {
 	friend class Command;
 	friend class JoinCommand;
 	friend class InviteCommand;
+	friend class PrivmsgCommand;
 };
 
 #endif

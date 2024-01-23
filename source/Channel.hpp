@@ -37,6 +37,7 @@ class Channel {
 		const std::set<int>&	get_ban_list(void);
 		bool	set_mode(const int& flag, const bool& enable);
 		const char&	get_mode(void);
+		size_t	get_size();
 		void	set_topic(const std::string& topic);
 		void	set_password(const std::string& password);
 		void	set_name(const std::string& name);

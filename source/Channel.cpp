@@ -88,3 +88,7 @@ const std::set<int>&	Channel::get_operators(void) {
 const std::set<int>&	Channel::get_ban_list(void) {
 	return ban_list_;
 };
+
+size_t	Channel::get_size(void) {
+	return this->members_.size();
+}
