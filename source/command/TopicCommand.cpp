@@ -42,8 +42,10 @@ std::string	TopicCommand::CheckChannel(const std::string& channel_name, const st
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
-	else if ((chan->second).IsOperator(this->client_sock_) == false)
-		dummy = dummy + ERR_NORECIPIENT " " + channel_name + " :You're not channel operator";
+	else if (((chan->second).get_mode() & MODE_TOPIC) == true) {
+		if ((chan->second).IsOperator(this->client_sock_) == false)
+			dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+	}
 	else 
 		chan->second.set_topic(topic);
 	this->server_->UnlockChannelMutex(chan->first);
