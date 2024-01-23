@@ -8,5 +8,7 @@ class TopicCommand: public Command {
 		TopicCommand(const std::vector<std::string> &token_list);
 		void	Run(void);
 		std::string	AnyOfError(void);
+		std::string	CheckChannel(const std::string& channel_name, const std::string& topic);
+		void	NoticeTopic(const std::string& channel_name, const std::string& topic);
 };
 #endif
