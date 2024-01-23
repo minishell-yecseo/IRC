@@ -7,10 +7,9 @@ std::string	InviteCommand::CheckChannel(const std::string& nick, const std::stri
 	std::string	dummy;
 
 	int	receiver = this->server_->SearchClientByNick(nick);
-	int sender = 0;
+	int sender = this->client_sock_;
 	int	ret = 0;
 
-	sender = this->client_sock_;
 	if (receiver == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " :No such user";
 	ret = this->server_->CheckInviteError(chan, sender, receiver);
