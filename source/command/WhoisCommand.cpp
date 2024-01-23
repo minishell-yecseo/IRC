@@ -23,4 +23,6 @@ void	WhoisCommand::Run(void) {
 		return SendResponse(this->client_sock_, r.get_format_str());
 	r << RPL_ENDOFWHOIS << " WHOISEND";
 	SendResponse(this->client_sock_, r.get_format_str());
+	std::string dum = BOLDMAGENTA;
+	log::cout << dum + "Whois send: " + r.get_str() + RESET + "\n";
 }

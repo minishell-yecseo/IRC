@@ -17,7 +17,18 @@ std::string	PassCommand::AnyOfError(void) {
 	return dummy;
 }
 
+bool	PassCommand::CheckClientAuth(void) {
+	bool	status = true;
+	this->server_->LockClientMutex(this->client_sock_);
+	this->client_->IsAuth(); 
+	this->server_->UnlockClientMutex(this->client_sock_);
+	return status;
+}
+
 void	PassCommand::Run(void) {
+	if (CheckClientAuth() == false)
+		return;
+
 	std::string	error_message = AnyOfError();
 	if (error_message.empty() == false) {
 		error_message += CRLF;

@@ -11,6 +11,10 @@ class Client;
 
 #include "Client.hpp"
 
+#define	FT_CH_OPERATOR	(1 << 3)
+#define	FT_CH_MEMBER	(1 << 2)
+#define	FT_CH_BAN_LIST	(1)
+
 #define	MODE_LIMIT		(1 << 3)
 #define MODE_INVITE 	(1 << 2)
 #define MODE_TOPIC		(1 << 1)
@@ -28,6 +32,9 @@ class Channel {
 		void	DegradeMember(int sock);
 
 		/* getter & setter */
+		const std::set<int>&	get_members(void);
+		const std::set<int>&	get_operators(void);
+		const std::set<int>&	get_ban_list(void);
 		bool	set_mode(const int& flag, const bool& enable);
 		const char&	get_mode(void);
 		void	set_topic(const std::string& topic);

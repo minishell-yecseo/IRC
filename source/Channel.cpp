@@ -76,3 +76,15 @@ void	Channel::set_limit(const int& l) {
 void	Channel::unset_limit(void) {
 	this->limit_ = CLIENT_LIMIT;
 }
+
+const std::set<int>&	Channel::get_members(void) {
+	return members_;
+};
+
+const std::set<int>&	Channel::get_operators(void) {
+	return operators_;
+};
+
+const std::set<int>&	Channel::get_ban_list(void) {
+	return ban_list_;
+};

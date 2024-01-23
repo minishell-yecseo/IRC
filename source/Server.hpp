@@ -55,6 +55,14 @@ class Server {
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
+	
+	/* queries for command process */
+		bool	get_channel_members(std::map<int, std::string>& ret, \
+									const std::string& channel_name, \
+									const int& flag);
+		bool	AddChannelMember(const std::string& channel_name, \
+								const int& flag, \
+								const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
@@ -76,9 +84,10 @@ class Server {
 		void	RunModeInServer(const std::vector<std::string>& params, char* mode_list);
 	
 	/* private member variables */
-	private:
-		std::string	name_;
 
+	protected:
+		std::string	name_;
+		
 		int	sock_;
 		int	port_;
 		struct sockaddr_in	addr_;
@@ -89,9 +98,9 @@ class Server {
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
 		std::vector<struct kevent>	chlist_;
 
+		std::map<int, std::string>		buffers_;
 		std::map<int, Client>			clients_;//일단, socket fd 를 key로 지정
 		Mutex							clients_mutex_;
-		std::map<int, std::string>		buffers_;
 		
 		std::map<std::string, Channel>	channels_;
 		Mutex							channels_mutex_;
@@ -115,7 +124,8 @@ class Server {
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);
 		void	ConnectClient(void);
-		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
+						uint32_t fflags, intptr_t data, void *udata);
 
 	/* debugging functions */
 		void	p_event_filter(struct kevent *event);
@@ -123,6 +133,10 @@ class Server {
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
+	
+	friend class Command;
+	friend class JoinCommand;
+	friend class InviteCommand;
 };
 
 #endif

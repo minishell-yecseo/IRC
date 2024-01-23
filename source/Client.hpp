@@ -10,9 +10,11 @@
 #include <vector>
 
 #define FT_INIT_CLIENT_FD -1
-#define FT_AUTH_PASS	(1 << 2)
-#define FT_AUTH_NICK	(1 << 1)
-#define FT_AUTH_USER	(1)
+#define FT_AUTH				(1 << 3)
+#define FT_AUTH_PASS		(1 << 2)
+#define FT_AUTH_NICK		(1 << 1)
+#define FT_AUTH_USER		(1)
+#define	FT_AUTH_ALL			(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER)
 
 class Server;
 
@@ -26,6 +28,7 @@ class Client {
 		const std::string& get_nick(void);
 		bool	IsAuth(void);
 		void	SetAuthFlag(const int& flag);
+		char	get_auth_flag(const int& flag = FT_AUTH_ALL);
 		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;

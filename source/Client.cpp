@@ -9,9 +9,7 @@ Client::Client(void) {
 }
 
 bool	Client::IsAuth(void) {
-	if ((this->auth_flag_ & FT_AUTH_NICK) && \
-		(this->auth_flag_ & FT_AUTH_PASS) && \
-		(this->auth_flag_ & FT_AUTH_USER))
+	if (this->auth_flag_ & FT_AUTH)
 		return true;
 	return false;
 }
@@ -23,6 +21,21 @@ void	Client::SetAuthFlag(const int& flag) {
 		this->auth_flag_ |= FT_AUTH_NICK;
 	if (flag & FT_AUTH_USER)
 		this->auth_flag_ |= FT_AUTH_USER;
+	if (flag & FT_AUTH)
+		this->auth_flag_ |= FT_AUTH;
+}
+
+char	Client::get_auth_flag(const int& flag) {
+	char	ret = 0;
+	if ((flag & FT_AUTH) && (this->auth_flag_ & FT_AUTH))
+		ret |= FT_AUTH;
+	if ((flag & FT_AUTH_PASS) && (this->auth_flag_ & FT_AUTH_PASS))
+		ret |= FT_AUTH_PASS;
+	if ((flag & FT_AUTH_NICK) && (this->auth_flag_ & FT_AUTH_NICK))
+		ret |= FT_AUTH_NICK;
+	if ((flag & FT_AUTH_USER) && (this->auth_flag_ & FT_AUTH_USER))
+		ret |= FT_AUTH_USER;
+	return ret;
 }
 
 Client Client::operator = (const Client& client) {
