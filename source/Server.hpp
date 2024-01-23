@@ -52,6 +52,7 @@ class Server {
 		const struct sockaddr_in&	get_addr(void);
 
 		/* for command process */
+		std::string		SearchClientBySock(const int& sock);
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
@@ -138,6 +139,7 @@ class Server {
 	friend class JoinCommand;
 	friend class InviteCommand;
 	friend class PrivmsgCommand;
+	friend class TopicCommand;
 };
 
 #endif

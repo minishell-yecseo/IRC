@@ -43,6 +43,23 @@ const struct sockaddr_in&	Server::get_addr(void) {
 	return this->addr_;
 }
 
+std::string	Server::SearchClientBySock(const int& sock) {
+	std::string	nick;
+
+	this->clients_mutex_.lock();
+	std::map<int, Client>::iterator	iter = this->clients_.begin();
+	while (iter != this->clients_.end()) {
+		nick = (iter->second).get_nick();
+		if (iter->first == sock) {
+			break ;
+		}
+		iter++;
+	}
+	this->clients_mutex_.unlock();
+	log::cout << BOLDGREEN << "SearchClientSock " << sock << " : " << nick << "\n" << RESET;
+	return nick;
+}
+
 int	Server::SearchClientByNick(const std::string& nick) {
 	int	ret = FT_INIT_CLIENT_FD;
 
