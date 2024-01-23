@@ -140,6 +140,7 @@ class Server {
 	friend class InviteCommand;
 	friend class PrivmsgCommand;
 	friend class TopicCommand;
+	friend class KickCommand;
 };
 
 #endif
