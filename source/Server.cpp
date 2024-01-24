@@ -260,7 +260,10 @@ bool	Server::LockClientMutex(const int& sock) {
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
-	return (mutex_it->second->lock());
+	if (mutex_it->second->lock() == 0)
+		return true;
+	else
+		return false;
 }
 
 bool	Server::LockClientListMutex(void) {
@@ -284,11 +287,13 @@ bool	Server::LockChannelMutex(const std::string& name) {
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it == channel_mutex_list_.end()) {
-	this->list_mutex_.unlock();//unlock
+		this->list_mutex_.unlock();//unlock
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
-	return (mutex_it->second->lock());
+	if (mutex_it->second->lock() == 0)
+		return true;
+	return false;
 }
 
 //Mutex done
@@ -368,8 +373,9 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
-	if (LockClientMutex(event.ident) != 0) {//lock
+	if (LockClientMutex(event.ident) == false) {//lock
 		log::cout << "HandleClientEvent() error\n";
+		UnlockClientMutex(event.ident);
 		return ;
 	}
 
