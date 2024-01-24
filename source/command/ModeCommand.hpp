@@ -15,5 +15,6 @@ class ModeCommand: public Command {
 		char		*ConvertMode(const std::string& modestr);
 		std::string	CheckChannel(const std::string& chan);
 		bool		IsParamEnough(char *mode_list);
+		void		SetModeInChannel(Channel *c, char *mode_list);
 };
 #endif

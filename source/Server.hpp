@@ -85,13 +85,7 @@ class Server {
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
 
-	/* InviteCommand */
-		int		CheckInviteError(const std::string& chan, int receiver, int sender);
-		int		CheckModeError(const std::string& chan, int mode);
-		void	RunModeInServer(const std::vector<std::string>& params, char* mode_list);
-	
 	/* private member variables */
-
 	protected:
 		std::string	name_;
 		
@@ -143,8 +137,6 @@ class Server {
 	
 	friend class Command;
 	friend class JoinCommand;
-	friend class InviteCommand;
-	friend class TopicCommand;
 };
 
 #endif
