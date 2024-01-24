@@ -14,30 +14,30 @@ TOPIC <channel> <topic>
 "<client> <channel> <nick> <setat>"
 */
 
-void	TopicCommand::NoticeTopic(const std::string& channel_name, const std::string& topic) {
+void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 	std::string	nick = this->server_->SearchClientBySock(this->client_sock_);
-	std::string notice = channel_name + " " + nick + " :Set topic " + topic + "." + CRLF;
-	std::map<int, std::string>      members;
+	std::string notice = c->get_name() + " " + nick + " :Set topic " + topic + "." + CRLF;
+	std::set<int>	member_list;
 
-	this->server_->get_channel_members(members, channel_name, FT_CH_MEMBER);
-	this->server_->LockChannelMutex(channel_name);
-	for (std::map<int, std::string>::iterator it = members.begin(); it != members.end(); ++it) {
-		SendResponse(it->first, notice);
+	member_list = c->get_members();
+	for (std::set<int>::iterator it = member_list.begin(); it != member_list.end(); ++it) {
+		SendResponse(*it, notice);
 	}
-	this->server_->UnlockChannelMutex(channel_name);
 }
 
 std::string	TopicCommand::CheckChannel(const std::string& channel_name, const std::string& topic) {
 	std::string	dummy;
+	std::map<std::string, Channel> channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
-	this->server_->channels_mutex_.lock();
-	chan = this->server_->channels_.find(channel_name);
-	if (chan == this->server_->channels_.end()) {
-		this->server_->channels_mutex_.unlock();
+	this->server_->LockChannelListMutex();
+	channel_list = this->server_->get_channels();
+	chan = channel_list.find(channel_name);
+	if (chan == channel_list.end()) {
+		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
-	this->server_->channels_mutex_.unlock();
+	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
@@ -46,12 +46,13 @@ std::string	TopicCommand::CheckChannel(const std::string& channel_name, const st
 		if ((chan->second).IsOperator(this->client_sock_) == false)
 			dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	}
-	else 
+	else {
 		chan->second.set_topic(topic);
+		NoticeTopic(&(chan->second), topic);
+	}
 	this->server_->UnlockChannelMutex(chan->first);
 	if (dummy.empty() == false)
 		return dummy;
-	NoticeTopic(channel_name, topic);
 	return dummy;
 }
 
