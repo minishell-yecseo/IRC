@@ -30,8 +30,16 @@ void	Channel::set_host(const std::string& host) {
 	this->host_ = host;
 }
 
+void	Channel::set_host_sock(const int& sock) {
+	this->host_sock_ = sock;
+}
+
 const std::string&	Channel::get_host(void) {
 	return this->host_;
+}
+
+const int&	Channel::get_host_sock(void) {
+	return this->host_sock_;
 }
 
 int	Channel::Kick(int sock) {
