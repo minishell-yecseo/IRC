@@ -3,24 +3,33 @@
 InviteCommand::InviteCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-std::string	InviteCommand::CheckChannel(const std::string& nick, const std::string& chan) {
+std::string	InviteCommand::CheckChannel(const std::string& nick, const std::string& channel_name) {
 	std::string	dummy;
-
 	int	receiver = this->server_->SearchClientByNick(nick);
 	int sender = this->client_sock_;
-	int	ret = 0;
 
 	if (receiver == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " :No such user";
-	ret = this->server_->CheckInviteError(chan, sender, receiver);
-	if (ret == CHANNOTFOUND)
-		return dummy + ERR_NOSUCHCHANNEL + " " + chan + " :No such channel";
-	if (ret == SENDERNOTFOUND)
-		return dummy + ERR_NOTONCHANNEL + " " + chan + " :You're not on that channel";
-	if (ret == NOTOPERATOR)
-		return dummy + ERR_CHANOPRIVSNEEDED + " " + chan + " :You're not channel operator";
-	if (ret == ALREADYIN)
-		return dummy + ERR_USERONCHANNEL + " " + nick +" " + chan + " :is already on cahnnel";
+	std::map<std::string, Channel> channel_list;
+	std::map<std::string, Channel>::iterator chan;
+
+	this->server_->LockChannelListMutex();
+	channel_list = this->server_->get_channels();
+	chan = channel_list.find(channel_name);
+	if (chan == channel_list.end()) {
+		this->server_->UnlockChannelListMutex();
+		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+	}
+	this->server_->UnlockChannelListMutex();
+
+	this->server_->LockChannelMutex(chan->first);
+	if ((chan->second).IsMember(sender) == false)
+		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
+	else if ((chan->second).IsOperator(sender) == false)
+		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+	else if ((chan->second).IsMember(receiver) == true)
+		dummy = dummy + ERR_USERONCHANNEL + " " + nick +" " + channel_name + " :is already on cahnnel";
+	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
 }
 
