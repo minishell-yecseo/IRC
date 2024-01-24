@@ -33,9 +33,6 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 		SendResponse(*it, text);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
-	// NEED fix
-	//std::string cli = this->server_->SearchClientBySock(this->client_sock_);
-	//return dummy + ":" + cli + " PRIVMSG " + channel_name + " :" + this->params_[this->params_.size() - 1];
 	return dummy;
 }
 
@@ -58,7 +55,7 @@ std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::s
 std::string	PrivmsgCommand::CheckTarget(void) {
 	std::string&	target = this->params_[0];
 	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
-	std::string	text = sender + ": " + this->params_[this->params_.size() - 1] + CRLF;
+	std::string	text = ":" + sender + " PRIVMSG " + target + " :" + this->params_[this->params_.size() - 1] + CRLF;
 
 	if (sender.empty())
 		return "Client not found";
@@ -74,7 +71,7 @@ std::string	PrivmsgCommand::AnyOfError(void) {
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty())
 		return dummy + ERR_NOTEXTTOSEND + " :No text to send";
-	return dummy;
+	return CheckTarget();
 }
 
 void	PrivmsgCommand::Run(void) {
@@ -83,6 +80,4 @@ void	PrivmsgCommand::Run(void) {
 	r << AnyOfError();
 	if (r.IsError() == true)
 		return SendResponse(this->client_sock_, r.get_format_str());
-	r << CheckTarget();
-	SendResponse(this->client_sock_, r.get_format_str());
 }
