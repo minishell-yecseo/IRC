@@ -56,23 +56,29 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 */
 
 std::string	NickCommand::AnyOfError(void) {
+	std::string	dummy;
 	/* This function checks only about the parameter */
-	if (params_.empty() == false) {
-		if (IsUniqueNick(params_[0]) == false)
-			return ERR_NICKNAMEINUSE;
-		else if (IsValidNick(params_[0]) == false)
-			return ERR_ERRONEUSNICKNAME;
+	if (this->params_.empty() == false) {
+		if (IsUniqueNick(this->params_[0]) == false)
+			return dummy + ERR_NICKNAMEINUSE + " " + \
+				this->sender_nick_ + " " + this->params_[0] + \
+				" :Nickname is already in use";
+		else if (IsValidNick(this->params_[0]) == false)
+			return dummy + ERR_ERRONEUSNICKNAME + " " + \
+				this->sender_nick_ + " " + this->params_[0] + \
+				" :Erroneus nickname";
 	}
-	if (params_.empty() == true)
-		return ERR_NONICKNAMEGIVEN;
+	if (this->params_.empty() == true)
+		return dummy + ERR_NONICKNAMEGIVEN + " " + this->sender_nick_ + \
+			" :No nickname given";
 	return "";
 }
 
 void	NickCommand::Run() {
 	Response	out;
 	std::string	error_message;
-	
-	out << this->server_->get_name() << ": NICK : ";
+
+	sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
 	if (IsRegistered(this->client_sock_) == true) {
 		error_message = AuthClientError();
 		if (error_message.empty() == false) {
@@ -111,9 +117,9 @@ std::string	NickCommand::AuthClientError(void) {
 	std::string	dummy;
 
 	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
-		return dummy + ERR_UNKNOWNERROR + " : Wrong prefix name";
+		return dummy + ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : Wrong prefix name";
 	else if (this->prefix_.empty() == false && IsEqualPrevNick(this->prefix_) == false) 
-		return dummy + ERR_UNKNOWNERROR + " : prefix does not match with previous name";
+		return dummy + ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : prefix does not match with previous name";
 	else if (this->prefix_.empty() == true) {
 		dummy = AnyOfError();
 	}
