@@ -83,3 +83,11 @@ bool Client::operator == (const Client& client) const {
 		return true;
 	return false;
 }
+
+const std::vector<std::string>&	Client::get_channels(void) {
+	return this->channels_;
+}
+
+void	Client::add_channel(const std::string& channel_name) {
+	this->channels_.push_back(channel_name);
+}
