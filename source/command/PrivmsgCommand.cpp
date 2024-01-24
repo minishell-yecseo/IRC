@@ -5,15 +5,17 @@ PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list) : Com
 
 std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std::string& text) {
 	std::string	dummy;
+	std::map<std::string, Channel> channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
-	this->server_->channels_mutex_.lock();
-	chan = this->server_->channels_.find(channel_name);
-	if (chan == this->server_->channels_.end()) {
-		this->server_->channels_mutex_.unlock();
+	this->server_->LockChannelListMutex();
+	channel_list = this->server_->get_channels();
+	chan = channel_list.find(channel_name);
+	if (chan == channel_list.end()) {
+		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
-	this->server_->channels_mutex_.unlock();
+	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
@@ -24,13 +26,16 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	if (dummy.empty() == false)
 		return dummy;
 
-	std::map<int, std::string>	members;
-	this->server_->get_channel_members(members, channel_name, FT_CH_MEMBER);
+	std::set<int>	members;
 	this->server_->LockChannelMutex(chan->first);
-	for (std::map<int, std::string>::iterator it = members.begin(); it != members.end(); ++it) {
-		SendResponse(it->first, text);
+	members = (chan->second).get_members();
+	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
+		SendResponse(*it, text);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
+	// NEED fix
+	//std::string cli = this->server_->SearchClientBySock(this->client_sock_);
+	//return dummy + ":" + cli + " PRIVMSG " + channel_name + " :" + this->params_[this->params_.size() - 1];
 	return dummy;
 }
 
@@ -38,13 +43,13 @@ std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::s
 	std::string	dummy;
 	int	sock;
 
-	this->server_->clients_mutex_.lock();
+	this->server_->LockClientListMutex();
 	sock = this->server_->SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) {
-		this->server_->clients_mutex_.unlock();
+		this->server_->UnlockClientListMutex();
 		return dummy + ERR_NOSUCHNICK + " :No such nick.";
 	}
-	this->server_->clients_mutex_.unlock();
+	this->server_->UnlockClientListMutex();
 
 	SendResponse(sock, text);
 	return dummy;
@@ -79,6 +84,5 @@ void	PrivmsgCommand::Run(void) {
 	if (r.IsError() == true)
 		return SendResponse(this->client_sock_, r.get_format_str());
 	r << CheckTarget();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
+	SendResponse(this->client_sock_, r.get_format_str());
 }
