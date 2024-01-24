@@ -142,7 +142,7 @@ std::string	Server::SearchClientBySock(const int& sock) {
 
 	LockClientListMutex();
 	std::map<int, Client>::iterator	itr = this->clients_.find(sock);
-	if (itr != this->channels_.end())
+	if (itr != this->clients_.end())
 		nick = (itr->second).get_nick();
 	UnlockClientListMutex();
 	return nick;
