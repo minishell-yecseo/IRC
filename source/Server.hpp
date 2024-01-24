@@ -53,6 +53,7 @@ class Server {
 		const std::string& get_name(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
+		std::map<std::string, Channel>& get_channels(void);
 
 		/* for command process */
 		std::string		SearchClientBySock(const int& sock);
