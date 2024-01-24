@@ -42,6 +42,9 @@ class Server;
 
 class Server {
 	public:
+		void	print_channels(void);
+		void	print_clients(void);
+	
 		~Server();
 		Server(int argc, char **argv);
 		bool	Run(void);
