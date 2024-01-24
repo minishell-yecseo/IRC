@@ -1,7 +1,21 @@
 #include "Channel.hpp"
+#include "log.hpp"
+
+Channel::Channel(void) {
+	this->limit_ = CLIENT_LIMIT;
+}
+
+Channel::Channel(const std::string& name) {
+	this->limit_ = CLIENT_LIMIT;
+	this->name_ = name;
+}
 
 void	Channel::set_topic(const std::string& topic) {
 	this->topic_ = topic;
+}
+
+const std::string&	Channel::get_password(void) {
+	return this->password_;
 }
 
 void	Channel::set_password(const std::string& password) {
@@ -12,17 +26,22 @@ void	Channel::set_name(const std::string& name) {
 	this->name_ = name;
 }
 
-bool	Channel::Kick(int sock) {
+int	Channel::Kick(int sock) {
 	std::set<int>::iterator	it = members_.find(sock);
-	if (it != members_.end()) {
+	if (it != members_.end())
 		members_.erase(it);
+	it = operators_.find(sock);
+	if (it != operators_.end())
+		operators_.erase(it);
+	return (this->members_.size());
+}
+
+bool	Channel::Join(int sock) {
+	if (this->members_.size() < (size_t) this->limit_) {
+		members_.insert(sock);
 		return true;
 	}
 	return false;
-}
-
-void	Channel::Join(int sock) {
-	members_.insert(sock);
 }
 
 void	Channel::PromoteMember(int sock) {
@@ -51,6 +70,13 @@ bool	Channel::IsOperator(int sock) {
 	if (it != operators_.end())
 		return true;
 	return false;
+}
+
+bool	Channel::IsBanClient(int sock) {
+	std::set<int>::iterator	it = this->ban_list_.find(sock);
+	if (it == this->ban_list_.end())
+		return false;
+	return true;
 }
 
 /* return true when the mode has changed */
@@ -95,4 +121,8 @@ const std::set<int>&	Channel::get_ban_list(void) {
 
 size_t	Channel::get_size(void) {
 	return this->members_.size();
+}
+
+const std::string&	Channel::get_topic(void) {
+	return this->topic_;
 }

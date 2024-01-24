@@ -33,7 +33,8 @@ class Client {
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;
-		std::vector<std::string>	channels_;
+		void	add_channel(const std::string& channel_name);
+		const std::vector<std::string>&	get_channels(void);
 
 	private:
 		//int	id;//UNIQUE
@@ -44,6 +45,7 @@ class Client {
 		struct sockaddr_in	addr_;
 		socklen_t	addr_size_;
 		std::string	password_;//sent from client at first access
+		std::vector<std::string>	channels_;
 };
 
 #endif

@@ -10,6 +10,8 @@
 class Client;
 
 #include "Client.hpp"
+#include "Colors.hpp"
+#include "log.hpp"
 
 #define	FT_CH_OPERATOR	(1 << 3)
 #define	FT_CH_MEMBER	(1 << 2)
@@ -23,11 +25,14 @@ class Client;
 
 class Channel {
 	public:
+		Channel(void);
+		Channel(const std::string& name);
 		bool	IsMember(int sock);
 		bool	IsOperator(int sock);
+		bool	IsBanClient(int sock);
 		bool	AuthPassword(const std::string& pw);
-		bool	Kick(int sock);
-		void	Join(int sock);
+		int		Kick(int sock);
+		bool	Join(int sock);
 		void	PromoteMember(int sock);
 		void	DegradeMember(int sock);
 
@@ -35,11 +40,13 @@ class Channel {
 		const std::set<int>&	get_members(void);
 		const std::set<int>&	get_operators(void);
 		const std::set<int>&	get_ban_list(void);
+		const std::string&		get_name(void);
+		const std::string&		get_password(void);
 		bool	set_mode(const int& flag, const bool& enable);
 		const char&	get_mode(void);
-		const std::string&	get_name(void);
 		size_t	get_size();
 		void	set_topic(const std::string& topic);
+		const std::string&	get_topic(void);
 		void	set_password(const std::string& password);
 		void	set_name(const std::string& name);
 		void	set_limit(const int& l);
