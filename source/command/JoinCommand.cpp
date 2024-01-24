@@ -219,6 +219,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->channels_mutex_.unlock();//channels unlock
 
+	SendMemberList(*info);
 	std::map<int, std::string>	members;
 	members.insert(make_pair(this->client_sock_, this->sender_nick_));
 	SendNotifyToMember(&members, *info);
