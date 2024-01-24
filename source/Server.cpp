@@ -29,6 +29,95 @@ Server::Server(int argc, char **argv) {
 	p_client.SetAuthFlag(FT_AUTH);
 	clients_.insert(std::make_pair(fd, p_client));
 	AddClientMutex(fd);
+
+	/* Psuedo Channel for JoinCommand test */
+	Channel	ch("#Test");
+	//ch.set_mode(MODE_INVITE, true);
+	ch.set_mode(MODE_TOPIC, true);
+	ch.set_topic("Hello I'm Test Channel");
+	this->channels_.insert(make_pair(ch.get_name(), ch));
+	AddChannelMutex(ch.get_name());
+}
+
+bool	Server::Run(void) {
+	// main loop of ircserv with kqueue
+	int nev;
+	while (true) {
+		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
+		chlist_.clear();
+		if (nev == -1)
+			error_handling("kevent() error\n");
+		else if (nev == 0)
+			HandleTimeout();
+		else if (nev > 0)
+			HandleEvents(nev);
+		DeleteInvalidClient();
+		print_clients();
+		print_channels();
+	}
+	return true;
+}
+
+void	Server::print_clients(void) {
+	log::cout << BOLDWHITE << "_________CLIENT INFO_________\n" << RESET;
+	this->clients_mutex_.lock();
+	std::map<int, Client>::iterator itr = clients_.begin();
+	while (itr != clients_.end()) {
+		Response	print;
+		LockClientMutex(itr->first);//lock
+		print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second.get_nick() << RESET;
+		if (itr->second.IsAuth() == true) print << GREEN << " is Authenticated\n";
+		else print << RED << " is not Authenticated\n";
+		print << RESET;
+		log::cout << print.get_str();
+		UnlockClientMutex(itr->first);//lock
+		itr++;
+	}
+	this->clients_mutex_.unlock();
+}
+
+void	Server::print_channels(void) {
+	Response	logging;
+
+	logging << BOLDWHITE << "_________CHANNEL INFO________\n";
+	this->channels_mutex_.lock();
+	std::map<std::string, Channel>::iterator	iter = channels_.begin();
+	while (iter != channels_.end()) {
+		LockChannelMutex(iter->first);//lock
+		logging << "NAME: " << MAGENTA << iter->first << RESET << "\n";
+		logging << BOLDWHITE << "\tMODE: " << RESET;
+		char mode = iter->second.get_mode();
+		{
+			if (mode & MODE_LIMIT) logging << "+l ";
+			else logging << "-l ";
+
+			if (mode & MODE_INVITE) logging << "+i ";
+			else logging << "-i ";
+
+			if (mode & MODE_TOPIC) logging << "+t ";
+			else logging << "-t ";
+
+			if (mode & MODE_KEY) logging << "+k ";
+			else logging << "-k ";
+		}
+		logging << "\n";
+		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second.get_topic() << "\n";
+		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_password() << "\n";
+		logging << BOLDWHITE << "\tSIZE: " << RESET;
+		std::set<int>	mem = iter->second.get_members();
+		size_t	s = mem.size();
+		logging << RESET << (int)s << "\n" << RESET;
+		std::set<int>::iterator itr = mem.begin();
+		for (size_t i = 0; i < s; ++i) {
+			logging << BOLDMAGENTA << "\tMEM." << i << ": " << RESET <<  *itr << "\n";
+			itr++;
+		}
+		UnlockChannelMutex(iter->first);//unlock
+		iter++;
+	}
+	this->channels_mutex_.unlock();
+	logging << RED << "_____________________________\n" << RESET;
+	log::cout << logging.get_str();
 }
 
 const std::string&	Server::get_name(void) {
@@ -72,11 +161,9 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	std::map<int, Client>::iterator	iter = this->clients_.begin();
 	int i = 0;
 	while (iter != this->clients_.end()) {
-		log::cout << MAGENTA << "\tSEARCH_" << i << " " << (iter->second).get_nick() << "\n" << RESET;
 		std::string temp_nick = (iter->second).get_nick();
 		if (nick.compare(temp_nick) == 0) {
 			ret = iter->first;
-			log::cout << RED << "NICK:" << nick << " foudn in Server\n" << RESET;
 			break ;
 		}
 		iter++;
@@ -84,7 +171,6 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	}
 
 	this->clients_mutex_.unlock();
-	log::cout << BOLDGREEN << "SearchClientByNick " << nick << " : " << ret << "\n" << RESET;
 	return ret;
 }
 
@@ -100,6 +186,7 @@ bool	Server::SearchChannelByName(const std::string& name) {
 
 //Mutex done
 bool	Server::AddClientMutex(const int& sock) {
+	log::cout << BOLDBLUE << "AddClientMutex call()\n" << RESET;
 	Mutex *mutex_ptr = new Mutex();
 
 	this->list_mutex_.lock();//lock
@@ -173,7 +260,10 @@ bool	Server::LockClientMutex(const int& sock) {
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
-	return (mutex_it->second->lock());
+	if (mutex_it->second->lock() == 0)
+		return true;
+	else
+		return false;
 }
 
 bool	Server::LockClientListMutex(void) {
@@ -197,11 +287,13 @@ bool	Server::LockChannelMutex(const std::string& name) {
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it == channel_mutex_list_.end()) {
-	this->list_mutex_.unlock();//unlock
+		this->list_mutex_.unlock();//unlock
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
-	return (mutex_it->second->lock());
+	if (mutex_it->second->lock() == 0)
+		return true;
+	return false;
 }
 
 //Mutex done
@@ -263,45 +355,10 @@ void	Server::KqueueInit(void) {
 	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
 }
 
-bool	Server::Run(void) {
-	// main loop of ircserv with kqueue
-	int nev;
-	while (true) {
-		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
-		chlist_.clear();//why should I write this line?
-		if (nev == -1)
-			error_handling("kevent() error\n");
-		else if (nev == 0)
-			HandleTimeout();
-		else if (nev > 0)
-			HandleEvents(nev);
-		DeleteInvalidClient();
-		/* clients list print */
-		this->clients_mutex_.lock();
-		std::map<int, Client>::iterator itr = clients_.begin();
-		while (itr != clients_.end()) {
-			Response	print;
-			LockClientMutex(itr->first);
-			print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second.get_nick() << RESET;
-			if (itr->second.IsAuth() == true)
-				print << GREEN << " is Authenticated\n";
-			else
-				print << RED << " is not Authenticated\n";
-			print << RESET;
-			log::cout << print.get_str();
-			UnlockClientMutex(itr->first);
-			itr++;
-		}
-		this->clients_mutex_.unlock();
-	}
-	return true;
-}
-
 void	Server::HandleEvents(int nev) {
 	struct kevent	event;
 	for (int i = 0; i < nev; ++i) {
 		event = evlist_[i];
-		print_event(&event, i);
 		if (event.flags & EV_ERROR)
 			HandleEventError(event);
 		else if (event.flags & EV_EOF)
@@ -316,8 +373,9 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
-	if (LockClientMutex(event.ident) != 0) {//lock
+	if (LockClientMutex(event.ident) == false) {//lock
 		log::cout << "HandleClientEvent() error\n";
+		UnlockClientMutex(event.ident);
 		return ;
 	}
 
@@ -348,13 +406,6 @@ void	Server::HandleClientEvent(struct kevent event) {
 		}
 		UnlockClientMutex(event.ident);//unlock
 		buffer.erase(0, offset);
-	
-		//	if (client.auth_)
-		//	{
-		//		/* Authorized Clients event handle */
-		//	} else {
-		//		/* Unauthorized Clients event handle */
-		//	}
 	}
 }
 
@@ -421,27 +472,25 @@ void	Server::DeleteInvalidClient(void) {
 }
 
 void	Server::DisconnectClient(const int& sock) {
+	std::vector<std::string>	channels_of_client;
 	std::map<int, Client>::iterator	client_it;
 
 	this->clients_mutex_.lock();//lock
 	
-	log::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
-		log::cout << "DisconnectClient(" << sock << ") error\n";
 		this->clients_mutex_.unlock();//unlock
-		log::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
+		log::cout << "Disconnect " << sock << "fain: no such Client\n";
 		return;
 	}
 
-	if (LockClientMutex(client_it->second.get_sock()) != 0) {
+	if (LockClientMutex(client_it->second.get_sock()) == false) {
 		
 		log::cout << BOLDRED << "LockClientMutex(" << sock << ") fail\n";
 		this->clients_mutex_.unlock();//unlock
+		UnlockClientMutex(client_it->second.get_sock());
 		return;
 	}
-
-	clients_.erase(client_it);
 
 	struct kevent del_evlist[2];
 	EV_SET(&del_evlist[0], sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
@@ -449,26 +498,29 @@ void	Server::DisconnectClient(const int& sock) {
 	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
 	close(sock);
 
-	DeleteClientMutex(client_it->second.get_sock());
-
-	UnlockClientMutex(client_it->second.get_sock());
-
-	this->clients_mutex_.unlock();//unlock
+	channels_of_client = client_it->second.get_channels();
 	
-	log::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
-
 	/* Channel 에서 Client 삭제 */
-	std::vector<std::string>::iterator	channel_itr = client_it->second.channels_.begin();
-	while (channel_itr != client_it->second.channels_.end()) {
+	std::vector<std::string>::iterator channel_itr = channels_of_client.begin();
+	while (channel_itr != channels_of_client.end()) {
 		if (LockChannelMutex(*channel_itr) == false) {//lock
 			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
-			return;
+			UnlockChannelMutex(*channel_itr);
+			channel_itr++;
+			continue;
 		}
-		this->channels_[*channel_itr].Kick(client_it->second.get_sock());
+		this->channels_[*channel_itr].Kick(sock);
 		UnlockChannelMutex(*channel_itr);//unlock
+		channel_itr++;
 	}
 
-	log::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;
+	clients_.erase(client_it);
+	this->clients_mutex_.unlock();//unlock
+
+	UnlockClientMutex(client_it->second.get_sock());
+	DeleteClientMutex(client_it->second.get_sock());
+
+	log::cout << CYAN << "client " << sock << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
@@ -517,7 +569,7 @@ void	Server::p_event_flags(struct kevent *event) {
 }
 
 // queries for command process
-bool	Server::get_channel_members(std::map<int, std::string>& ret, \
+bool	Server::get_channel_members(std::map<int, std::string>* ret, \
 									const std::string& channel_name, \
 									const int& flag) {
 	if (SearchChannelByName(channel_name) == false)
@@ -540,12 +592,11 @@ bool	Server::get_channel_members(std::map<int, std::string>& ret, \
 		if (LockClientMutex(tmp.first) == false) {//lock
 			tmp.first = FT_INIT_CLIENT_FD;
 			tmp.second = "";
-			UnlockClientMutex(tmp.first);//fain -> unlock
 		} else {
 			tmp.second = this->clients_[tmp.first].get_nick();
-			UnlockClientMutex(tmp.first);//succ -> unlock
 		}
-		ret.insert(tmp);
+		UnlockClientMutex(*itr);//unlock
+		ret->insert(tmp);
 		itr++;
 	}
 	return true;
@@ -554,33 +605,11 @@ bool	Server::get_channel_members(std::map<int, std::string>& ret, \
 bool	Server::AddChannelMember(const std::string& channel_name, \
 								const int& flag, \
 								const int& sock) {
-	try {
-		LockChannelMutex(channel_name);
-		if (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR)
-			this->channels_[channel_name].Join(sock);
-		if (flag & FT_CH_OPERATOR)
-			this->channels_[channel_name].PromoteMember(sock);
-		UnlockChannelMutex(channel_name);
-	} catch (std::exception& e) {
-		log::cout << RED << e.what() << "Server::AddChannelMember fail\n" << RESET;
-		return false;
-	}
+	bool lock = LockChannelMutex(channel_name);
+	if (lock && (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR))
+		this->channels_[channel_name].Join(sock);
+	if (lock && flag & FT_CH_OPERATOR)
+		this->channels_[channel_name].PromoteMember(sock);
+	UnlockChannelMutex(channel_name);
 	return true;
 }
-
-
-//	if (LockChannelMutex(channel_name) == false) {
-//		UnlockChannelMutex(channel_name);
-//		return false;
-//	}
-//
-//	if (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR)
-//		this->channels_[channel_name].Join(sock);
-//	else {
-//		UnlockChannelMutex(channel_name);
-//		return false;
-//	}
-//	if (flag & FT_CH_OPERATOR)
-//		this->channels_[channel_name].PromoteMember(sock);
-//	UnlockChannelMutex(channel_name);
-//	return true;

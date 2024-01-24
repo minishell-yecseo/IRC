@@ -42,6 +42,9 @@ class Server;
 
 class Server {
 	public:
+		void	print_channels(void);
+		void	print_clients(void);
+	
 		~Server();
 		Server(int argc, char **argv);
 		bool	Run(void);
@@ -50,6 +53,7 @@ class Server {
 		const std::string& get_name(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
+		std::map<std::string, Channel>& get_channels(void);
 
 		/* for command process */
 		std::string		SearchClientBySock(const int& sock);
@@ -58,8 +62,7 @@ class Server {
 		void	AddDeleteClient(const int& sock);
 	
 	/* queries for command process */
-		std::map<std::string, Channel>&	get_channels(void);
-		bool	get_channel_members(std::map<int, std::string>& ret, \
+		bool	get_channel_members(std::map<int, std::string>* ret, \
 									const std::string& channel_name, \
 									const int& flag);
 		bool	AddChannelMember(const std::string& channel_name, \
