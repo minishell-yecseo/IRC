@@ -569,7 +569,7 @@ void	Server::p_event_flags(struct kevent *event) {
 }
 
 // queries for command process
-bool	Server::get_channel_members(std::map<int, std::string>& ret, \
+bool	Server::get_channel_members(std::map<int, std::string>* ret, \
 									const std::string& channel_name, \
 									const int& flag) {
 	if (SearchChannelByName(channel_name) == false)
@@ -592,12 +592,11 @@ bool	Server::get_channel_members(std::map<int, std::string>& ret, \
 		if (LockClientMutex(tmp.first) == false) {//lock
 			tmp.first = FT_INIT_CLIENT_FD;
 			tmp.second = "";
-			UnlockClientMutex(tmp.first);//fain -> unlock
 		} else {
 			tmp.second = this->clients_[tmp.first].get_nick();
-			UnlockClientMutex(tmp.first);//succ -> unlock
 		}
-		ret.insert(tmp);
+		UnlockClientMutex(*itr);//unlock
+		ret->insert(tmp);
 		itr++;
 	}
 	return true;

@@ -61,8 +61,7 @@ class Server {
 		void	AddDeleteClient(const int& sock);
 	
 	/* queries for command process */
-		std::map<std::string, Channel>&	get_channels(void);
-		bool	get_channel_members(std::map<int, std::string>& ret, \
+		bool	get_channel_members(std::map<int, std::string>* ret, \
 									const std::string& channel_name, \
 									const int& flag);
 		bool	AddChannelMember(const std::string& channel_name, \
