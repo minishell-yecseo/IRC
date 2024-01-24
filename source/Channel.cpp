@@ -69,6 +69,10 @@ const char&	Channel::get_mode(void) {
 	return mode_;
 }
 
+const std::string&	Channel::get_name(void) {
+	return name_;
+}
+
 void	Channel::set_limit(const int& l) {
 	this->limit_ = l;
 }
