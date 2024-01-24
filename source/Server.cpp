@@ -20,16 +20,6 @@ Server::Server(int argc, char **argv) {
 	ServerSocketInit();
 	KqueueInit();
 
-	/* Psuedo Client for NickCommand test */
-	int fd = open("test.txt", O_RDWR | O_CREAT, 0666);
-	log::cout << BOLDGREEN << fd << "\n";
-	Client p_client;
-	p_client.set_sock(fd);
-	p_client.set_nick("saseo");
-	p_client.SetAuthFlag(FT_AUTH);
-	clients_.insert(std::make_pair(fd, p_client));
-	AddClientMutex(fd);
-
 	/* Psuedo Channel for JoinCommand test */
 	Channel	ch("#Test");
 	//ch.set_mode(MODE_INVITE, true);
