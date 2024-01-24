@@ -58,6 +58,7 @@ class Server {
 		void	AddDeleteClient(const int& sock);
 	
 	/* queries for command process */
+		std::map<std::string, Channel>&	get_channels(void);
 		bool	get_channel_members(std::map<int, std::string>& ret, \
 									const std::string& channel_name, \
 									const int& flag);
@@ -75,6 +76,9 @@ class Server {
 		bool	LockChannelMutex(const std::string& name);
 		void	UnlockClientMutex(const int& sock);
 		void	UnlockChannelMutex(const std::string& name);
+
+		bool	LockChannelListMutex(void);
+		void	UnlockChannelListMutex(void);
 
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
@@ -140,7 +144,6 @@ class Server {
 	friend class InviteCommand;
 	friend class PrivmsgCommand;
 	friend class TopicCommand;
-	friend class KickCommand;
 };
 
 #endif

@@ -43,6 +43,10 @@ const struct sockaddr_in&	Server::get_addr(void) {
 	return this->addr_;
 }
 
+std::map<std::string, Channel>& Server::get_channels(void) {
+	return this->channels_;
+}
+
 std::string	Server::SearchClientBySock(const int& sock) {
 	std::string	nick;
 
@@ -260,6 +264,14 @@ bool	Server::LockClientMutex(const int& sock) {
 	}
 	this->list_mutex_.unlock();//unlock
 	return (mutex_it->second->lock());
+}
+
+bool	Server::LockChannelListMutex(void) {
+	return (this->channels_mutex_.lock());
+}
+
+void	Server::UnlockChannelListMutex(void) {
+	this->channels_mutex_.unlock();
 }
 
 //Mutex done
