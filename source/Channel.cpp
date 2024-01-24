@@ -26,6 +26,14 @@ void	Channel::set_name(const std::string& name) {
 	this->name_ = name;
 }
 
+void	Channel::set_host(const std::string& host) {
+	this->host_ = host;
+}
+
+const std::string&	Channel::get_host(void) {
+	return this->host_;
+}
+
 int	Channel::Kick(int sock) {
 	std::set<int>::iterator	it = members_.find(sock);
 	if (it != members_.end())

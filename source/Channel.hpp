@@ -50,12 +50,15 @@ class Channel {
 		void	set_password(const std::string& password);
 		void	set_name(const std::string& name);
 		void	set_limit(const int& l);
+		const std::string&	get_host(void);
+		void	set_host(const std::string& host);
 		void	unset_limit(void);
 
 	private:
 		std::string	name_;
 		std::string	password_;
 		std::string	topic_;
+		std::string	host_;
 		char	mode_;
 		int		limit_;
 	
