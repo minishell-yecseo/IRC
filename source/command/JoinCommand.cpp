@@ -115,15 +115,18 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 		reply << " = ";
 	reply << info.name << " :";
 
+	if (this->server_->SearchChannelByName(info.name) == false)
+		return;
+
 	this->server_->channels_mutex_.lock();
 	std::map<std::string, Channel>& serv_channels = this->server_->get_channels();
 	std::map<std::string, Channel>::iterator	itr = serv_channels.find(info.name);
+	this->server_->channels_mutex_.unlock();
 
-	if (itr == serv_channels.end()) {
-		this->server_->channels_mutex_.unlock();
+	if (itr == serv_channels.end())
 		return;
-	}
-	this->server_->LockChannelMutex(info.name);
+
+	this->server_->LockChannelMutex(info.name);//lock
 	Channel& cur_channel = itr->second;
 	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
 	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
@@ -138,11 +141,10 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 		reply << this->server_->SearchClientBySock(*citr) << " ";
 		citr++;
 	}
-	this->server_->UnlockChannelMutex(info.name);
-	this->server_->channels_mutex_.unlock();
+	this->server_->UnlockChannelMutex(info.name);//unlock
 	
-	reply << CRLF;
 	//"<client> <channel> :End of /NAMES list"
+	reply << CRLF;
 	reply << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
 	SendResponse(this->client_sock_, reply.get_format_str());
 	log::cout << BOLDYELLOW << reply.get_str() << "\n" << RESET;
@@ -219,15 +221,14 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->channels_mutex_.unlock();//channels unlock
 
-	SendMemberList(*info);
 	std::map<int, std::string>	members;
 	members.insert(make_pair(this->client_sock_, this->sender_nick_));
 	SendNotifyToMember(&members, *info);
+	//New channel is always in -t mode.
+	SendMemberList(*info);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
-	/* SEND topic to the sender */
-	/* message : "<client> <channel> :<topic>" */
 	Response	reply;
 
 	reply << ": " << RPL_TOPIC << " " << this->sender_nick_ << " " << info.name << " :" << info.topic; 
