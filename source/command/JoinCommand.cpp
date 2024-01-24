@@ -187,7 +187,10 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	if (info.mode & MODE_INVITE) {
 		log::cout << BOLDYELLOW << "CHANNEL IN INVITE MODE\n";
 		/* Can't Join By 'JOIN' command */
-		/* SEND message : */
+		/* SEND message :<client> <channel> :Cannot join channel (+i) */
+		reply << ": " << ERR_INVITEONLYCHAN << " " << this->sender_nick_ << " " << info.name;
+		reply << " : Cannot join channel (+i)";
+		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 
@@ -196,7 +199,7 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		/* Auth Failed at key only mode channel */
 		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
 		reply << ": " << ERR_BADCHANNELKEY << " " << this->sender_nick_ << " " << info.name;
-		reply << ": Cannot join channel (+k)";
+		reply << " : Cannot join channel (+k)";
 		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
@@ -204,7 +207,10 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	if (info.is_banned) {
 		log::cout << BOLDYELLOW << "BANNED\n";
 		/* Can't Join because the sender(client) has banned */
-		/* SEND message : */
+		/* SEND message : <client> <channel> :Cannot join channel (+b) */
+		reply << ": " << ERR_BANNEDFROMCHAN << " " << this->sender_nick_ << " " << info.name;
+		reply << " : Cannot join channel (+b)";
+		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 	return true;
