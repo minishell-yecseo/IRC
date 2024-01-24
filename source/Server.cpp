@@ -266,6 +266,14 @@ bool	Server::LockClientMutex(const int& sock) {
 	return (mutex_it->second->lock());
 }
 
+bool	Server::LockClientListMutex(void) {
+	return (this->clients_mutex_.lock());
+}
+
+void	Server::UnlockClientListMutex(void) {
+	this->clients_mutex_.unlock();
+}
+
 bool	Server::LockChannelListMutex(void) {
 	return (this->channels_mutex_.lock());
 }

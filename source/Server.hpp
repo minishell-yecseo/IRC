@@ -77,6 +77,8 @@ class Server {
 		void	UnlockClientMutex(const int& sock);
 		void	UnlockChannelMutex(const std::string& name);
 
+		bool	LockClientListMutex(void);
+		void	UnlockClientListMutex(void);
 		bool	LockChannelListMutex(void);
 		void	UnlockChannelListMutex(void);
 
@@ -142,7 +144,6 @@ class Server {
 	friend class Command;
 	friend class JoinCommand;
 	friend class InviteCommand;
-	friend class PrivmsgCommand;
 	friend class TopicCommand;
 };
 
