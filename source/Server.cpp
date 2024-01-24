@@ -472,27 +472,25 @@ void	Server::DeleteInvalidClient(void) {
 }
 
 void	Server::DisconnectClient(const int& sock) {
+	std::vector<std::string>	channels_of_client;
 	std::map<int, Client>::iterator	client_it;
 
 	this->clients_mutex_.lock();//lock
 	
-	log::cout << BOLDRED << "server->clients lock! in DisconnectClient\n" << RESET;
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
-		log::cout << "DisconnectClient(" << sock << ") error\n";
 		this->clients_mutex_.unlock();//unlock
-		log::cout << BOLDRED << "server->clients unlock! in DisconnectClient (error)\n" << RESET;
+		log::cout << "Disconnect " << sock << "fain: no such Client\n";
 		return;
 	}
 
-	if (LockClientMutex(client_it->second.get_sock()) != 0) {
+	if (LockClientMutex(client_it->second.get_sock()) == false) {
 		
 		log::cout << BOLDRED << "LockClientMutex(" << sock << ") fail\n";
 		this->clients_mutex_.unlock();//unlock
+		UnlockClientMutex(client_it->second.get_sock());
 		return;
 	}
-
-	clients_.erase(client_it);
 
 	struct kevent del_evlist[2];
 	EV_SET(&del_evlist[0], sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
@@ -500,26 +498,29 @@ void	Server::DisconnectClient(const int& sock) {
 	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
 	close(sock);
 
-	DeleteClientMutex(client_it->second.get_sock());
-
-	UnlockClientMutex(client_it->second.get_sock());
-
-	this->clients_mutex_.unlock();//unlock
+	channels_of_client = client_it->second.get_channels();
 	
-	log::cout << BOLDRED << "server->clients unlock! in DisconnectClient\n" << RESET;
-
 	/* Channel 에서 Client 삭제 */
-	std::vector<std::string>::iterator	channel_itr = client_it->second.channels_.begin();
-	while (channel_itr != client_it->second.channels_.end()) {
+	std::vector<std::string>::iterator channel_itr = channels_of_client.begin();
+	while (channel_itr != channels_of_client.end()) {
 		if (LockChannelMutex(*channel_itr) == false) {//lock
 			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
-			return;
+			UnlockChannelMutex(*channel_itr);
+			channel_itr++;
+			continue;
 		}
-		this->channels_[*channel_itr].Kick(client_it->second.get_sock());
+		this->channels_[*channel_itr].Kick(sock);
 		UnlockChannelMutex(*channel_itr);//unlock
+		channel_itr++;
 	}
 
-	log::cout << CYAN << "client " << client_it->second.get_sock() << " disconnected\n" << RESET;
+	clients_.erase(client_it);
+	this->clients_mutex_.unlock();//unlock
+
+	UnlockClientMutex(client_it->second.get_sock());
+	DeleteClientMutex(client_it->second.get_sock());
+
+	log::cout << CYAN << "client " << sock << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
