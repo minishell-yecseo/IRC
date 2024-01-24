@@ -58,7 +58,6 @@ void	JoinCommand::Run(void) {
 		return;
 
 	ParseParam();
-	PrintParam();
 	std::string	error_message = AnyOfError();
 
 	if (error_message.empty() == false) {
@@ -85,126 +84,123 @@ void	JoinCommand::Join(const int& idx) {
 	info.mode = info.key.size() > 0 ? MODE_KEY : 0;
 
 	if (this->server_->SearchChannelByName(info.name) == false) {
-		log::cout << BOLDYELLOW << "JOIN::CreateChannel\n" << RESET;
 		CreateChannel(&info);
 		AddChannelForClient(info.name);
 		return;
 	}
-	log::cout << BOLDYELLOW << "JOIN::ExistChannel try to join\n" << RESET;
 
 	GetChannelInfo(&info);//PASS
-	if (JoinErrorCheck(info) == false) {
-		log::cout << BOLDYELLOW << "JOIN::JoinErrorCheck exit\n" << RESET;
+	if (JoinErrorCheck(info) == false)
 		return;
-	}
-	if (TryJoin(info) == false) {
-		log::cout << BOLDYELLOW << "JOIN::TryJoin exit\n" << RESET;
+	if (TryJoin(info) == false)
 		return;
-	}
-
+	
 	std::map<int, std::string>	members;
 	this->server_->get_channel_members(&members, info.name, FT_CH_MEMBER);
-
-	/* channel 의 멤버들에게 들어왔다고 메시지 send */
 	SendNotifyToMember(&members, info);
-
-	/* channel 이 topic mode -> RPL_TOPIC (332) sender에게 보내기 */
 	if (info.mode & MODE_TOPIC)
 		SendTopic(info);
-
-	SendMemberList(&members, info);
+	SendMemberList(info);
 	AddChannelForClient(info.name);
-	log::cout << BOLDYELLOW << "JOIN::ExistChannel SUCCESS\n" << RESET;
 }
 
-void	JoinCommand::SendMemberList(std::map<int, std::string> *members, \
-						const channel_info& info) {
-	Response	notify;
+void	JoinCommand::SendMemberList(const channel_info& info) {
 	Response	reply;
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//"<client> <symbol> <channel> :[prefix]<nick>{ [prefix]<nick>}"
-	//<symbol> notes the status of the channel
-	//	("=", 0x3D) - Public channel.
-	//	("@", 0x40) - Secret channel (secret channel mode "+s").
-	//	("*", 0x2A) - Private channel (was "+p", no longer widely used today).
-	//	<nick> is the nickname of a client joined to that channel,
-	//	and <prefix> is the highest channel membership prefix that client has in the channel, if they have one. 
-	//	The last parameter of this numeric is a list of [prefix]<nick> pairs, delimited by a SPACE character (' ', 0x20).
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	notify << RPL_NAMREPLY << " " << this->sender_nick_;
+	
+	/* basic RPL_NAMREPLY format */
+	reply << RPL_NAMREPLY << " " << this->sender_nick_;
 	if (!(info.mode & MODE_KEY))
-		notify << "@";
+		reply << " @ ";
 	else
-		notify << "=";
-	notify << info.name << " :";
+		reply << " = ";
+	reply << info.name << " :";
 
-	std::map<int, std::string>::iterator	itr = members->begin();
-	while (itr != members->end()) {
-		if (itr->second.size() == 0) {
-			log::cout << "JOIN ERROR AT SendMemberList : " << itr->first << "\n" << RESET;
-			continue;
-		}
-		reply << notify.get_str() << itr->second;
-		SendResponse(this->client_sock_, reply.get_format_str());
-		reply.flush();
-		itr++;
+	this->server_->channels_mutex_.lock();
+	std::map<std::string, Channel>& serv_channels = this->server_->get_channels();
+	std::map<std::string, Channel>::iterator	itr = serv_channels.find(info.name);
+
+	if (itr == serv_channels.end()) {
+		this->server_->channels_mutex_.unlock();
+		return;
 	}
+
+	this->server_->LockChannelMutex(info.name);
+	Channel& cur_channel = itr->second;
+	size_t	index = 0;
+	size_t	channel_size = cur_channel.get_members().size();
+	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
+	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
+	while (citr != cur_channel.get_members().end()) {
+		if (cur_channel.IsOperator(*citr) == true)
+			reply << "@" << this->server_->SearchClientBySock(*citr);
+		else
+			reply << "%" << this->server_->SearchClientBySock(*citr);
+		citr++;
+		if (index++ < channel_size - 1)
+			reply << " ";
+	}
+	this->server_->UnlockChannelMutex(info.name);
+	this->server_->channels_mutex_.unlock();
+
+	reply << "\0" << CRLF;
 	//"<client> <channel> :End of /NAMES list"
-	reply << this->sender_nick_ << " " << info.name << " : End of /NAMES list";
-	reply << RPL_ENDOFNAMES;
+	reply << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
+	reply << " :End of /NAMES list";
 	SendResponse(this->client_sock_, reply.get_format_str());
+	log::cout << BOLDYELLOW << reply.get_str() << "]\n" << RESET;
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
-	log::cout << BOLDYELLOW << "JOIN::TryJoin\n" << RESET;
-	/* join try : channel 정보 수정 */
+	Response	reply;
 	bool	join_succ = false;
+
 	this->server_->LockChannelMutex(info.name);
 	join_succ = this->server_->channels_[info.name].Join(this->client_sock_);
 	this->server_->UnlockChannelMutex(info.name);
 
 	if (join_succ == false) {
 		/* false caused by client limit in channel */
-		/* SEND message : */
-		log::cout << BOLDRED << "JOIN FAIL AT TRY JOIN\n";
+		/* SEND message :<client> <channel> :Cannot join channel (+l) */
+		reply << ": " << ERR_CHANNELISFULL << " " << this->sender_nick_ << " " << info.name;
+		reply << " :Cannot join channel (+l)";
+		SendResponse(this->client_sock_, reply.get_format_str());
 	}
 	return join_succ;
 }
 
 bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	Response	reply;
-	/* sender 가 channel에 이미 있다면 return */
-	/* channel mode : key, invite 확인 후 에러 리턴 */
-	/* channel 에서 금지당했으면 -> 에러 리턴 */
+	
 	if (info.is_member) {
-		log::cout << BOLDYELLOW << "SENDER ALREADY IN CHANNEL\n";
 		reply << ": " << ERR_UNKNOWNERROR << " :" << this->sender_nick_ << " is already in " << info.name;
 		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 
 	if (info.mode & MODE_INVITE) {
-		log::cout << BOLDYELLOW << "CHANNEL IN INVITE MODE\n";
 		/* Can't Join By 'JOIN' command */
-		/* SEND message : */
+		/* SEND message :<client> <channel> :Cannot join channel (+i) */
+		reply << ": " << ERR_INVITEONLYCHAN << " " << this->sender_nick_ << " " << info.name;
+		reply << " : Cannot join channel (+i)";
+		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 
 	if (info.mode & MODE_KEY && info.is_auth == false) {
-		log::cout << BOLDYELLOW << "KEY IS NOT EQUAL\n";
 		/* Auth Failed at key only mode channel */
 		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
 		reply << ": " << ERR_BADCHANNELKEY << " " << this->sender_nick_ << " " << info.name;
-		reply << ": Cannot join channel (+k)";
+		reply << " : Cannot join channel (+k)";
 		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 
 	if (info.is_banned) {
-		log::cout << BOLDYELLOW << "BANNED\n";
 		/* Can't Join because the sender(client) has banned */
-		/* SEND message : */
+		/* SEND message : <client> <channel> :Cannot join channel (+b) */
+		reply << ": " << ERR_BANNEDFROMCHAN << " " << this->sender_nick_ << " " << info.name;
+		reply << " : Cannot join channel (+b)";
+		SendResponse(this->client_sock_, reply.get_format_str());
 		return false;
 	}
 	return true;
@@ -223,6 +219,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->channels_mutex_.unlock();//channels unlock
 
+	SendMemberList(*info);
 	std::map<int, std::string>	members;
 	members.insert(make_pair(this->client_sock_, this->sender_nick_));
 	SendNotifyToMember(&members, *info);

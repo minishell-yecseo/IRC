@@ -45,11 +45,8 @@ class JoinCommand: public Command
 		void	SendNotifyToMember(std::map<int, std::string> *members, \
 									const channel_info& info);
 		void	SendTopic(const channel_info& info);
-		void	SendMemberList(std::map<int, std::string> *members, \
-								const channel_info& info);
+		void	SendMemberList(const channel_info& info);
 		void	AddChannelForClient(const std::string& chname);
-
-
 
 	private:
 		std::string					sender_nick_;
