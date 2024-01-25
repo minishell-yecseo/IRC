@@ -209,8 +209,8 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 void	JoinCommand::CreateChannel(channel_info *info) {
 	this->server_->channels_mutex_.lock();//channels lock
 	Channel	new_ch(info->name);
-	new_ch.set_mode(info->mode, true);
-	new_ch.set_topic(info->topic);
+	if (info->mode & MODE_KEY)
+		new_ch.set_mode(MODE_KEY, true);
 	new_ch.set_password(info->key);
 	new_ch.set_host(this->sender_nick_);
 	new_ch.set_host_sock(this->client_sock_);
