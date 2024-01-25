@@ -199,20 +199,22 @@ bool	Server::SearchChannelByName(const std::string& name) {
 bool	Server::AddClientMutex(const int& sock) {
 	log::cout << BOLDBLUE << "AddClientMutex call()\n" << RESET;
 	Mutex *mutex_ptr = new Mutex();
+	int init_result = mutex_ptr->init(NULL);
+	if (init_result != 0) {
+		log::cout << "AddClientMutex fail by mutex init fail\n";
+		delete mutex_ptr;
+		return false;
+	}
 
 	this->list_mutex_.lock();//lock
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it != client_mutex_list_.end()) {
 		this->list_mutex_.unlock();//unlock
+		log::cout << "AddClientMutex fail by already exist socket\n";
 		return false;
 	}
 
 	client_mutex_list_.insert(std::make_pair(sock, mutex_ptr));
-	if (mutex_ptr->init(NULL) != 0 ) {
-		client_mutex_list_.erase(sock);
-		delete mutex_ptr;
-	}
-
 	this->list_mutex_.unlock();//unlock
 	return true;
 }
@@ -220,6 +222,12 @@ bool	Server::AddClientMutex(const int& sock) {
 //Mutex done
 bool	Server::AddChannelMutex(const std::string& name) {
 	Mutex *mutex_ptr = new Mutex();
+	int init_result = mutex_ptr->init(NULL);
+	if (init_result != 0) {
+		delete mutex_ptr;
+		return false;
+	}
+
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it != channel_mutex_list_.end()) {
