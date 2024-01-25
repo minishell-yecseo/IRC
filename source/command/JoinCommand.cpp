@@ -115,39 +115,39 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 		reply << " = ";
 	reply << info.name << " :";
 
+	if (this->server_->SearchChannelByName(info.name) == false)
+		return;
+
 	this->server_->channels_mutex_.lock();
 	std::map<std::string, Channel>& serv_channels = this->server_->get_channels();
 	std::map<std::string, Channel>::iterator	itr = serv_channels.find(info.name);
-
-	if (itr == serv_channels.end()) {
-		this->server_->channels_mutex_.unlock();
-		return;
-	}
-
-	this->server_->LockChannelMutex(info.name);
-	Channel& cur_channel = itr->second;
-	size_t	index = 0;
-	size_t	channel_size = cur_channel.get_members().size();
-	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
-	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
-	while (citr != cur_channel.get_members().end()) {
-		if (cur_channel.IsOperator(*citr) == true)
-			reply << "@" << this->server_->SearchClientBySock(*citr);
-		else
-			reply << "%" << this->server_->SearchClientBySock(*citr);
-		citr++;
-		if (index++ < channel_size - 1)
-			reply << " ";
-	}
-	this->server_->UnlockChannelMutex(info.name);
 	this->server_->channels_mutex_.unlock();
 
-	reply << "\0" << CRLF;
+	if (itr == serv_channels.end())
+		return;
+
+	this->server_->LockChannelMutex(info.name);//lock
+	Channel& cur_channel = itr->second;
+	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
+	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
+
+	while (citr != cur_channel.get_members().end()) {
+		if (cur_channel.IsOperator(*citr) == true)
+			reply << "@"; 
+		else
+			reply << "%";
+		if (cur_channel.get_host_sock() == *citr)
+			reply << "!";
+		reply << this->server_->SearchClientBySock(*citr) << " ";
+		citr++;
+	}
+	this->server_->UnlockChannelMutex(info.name);//unlock
+	
 	//"<client> <channel> :End of /NAMES list"
+	reply << CRLF;
 	reply << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
-	reply << " :End of /NAMES list";
 	SendResponse(this->client_sock_, reply.get_format_str());
-	log::cout << BOLDYELLOW << reply.get_str() << "]\n" << RESET;
+	log::cout << BOLDYELLOW << reply.get_str() << "\n" << RESET;
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
@@ -212,6 +212,8 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_mode(info->mode, true);
 	new_ch.set_topic(info->topic);
 	new_ch.set_password(info->key);
+	new_ch.set_host(this->sender_nick_);
+	new_ch.set_host_sock(this->client_sock_);
 	new_ch.Join(this->client_sock_);
 	new_ch.PromoteMember(this->client_sock_);
 	this->server_->AddChannelMutex(info->name);
@@ -219,15 +221,14 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->channels_mutex_.unlock();//channels unlock
 
-	SendMemberList(*info);
 	std::map<int, std::string>	members;
 	members.insert(make_pair(this->client_sock_, this->sender_nick_));
 	SendNotifyToMember(&members, *info);
+	//New channel is always in -t mode.
+	SendMemberList(*info);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
-	/* SEND topic to the sender */
-	/* message : "<client> <channel> :<topic>" */
 	Response	reply;
 
 	reply << ": " << RPL_TOPIC << " " << this->sender_nick_ << " " << info.name << " :" << info.topic; 

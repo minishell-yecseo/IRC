@@ -22,6 +22,7 @@ Server::Server(int argc, char **argv) {
 	ServerSocketInit();
 	KqueueInit();
 
+
 	/* Psuedo Channel for JoinCommand test */
 	Channel	ch("#Test");
 	//ch.set_mode(MODE_INVITE, true);
@@ -61,7 +62,7 @@ bool	Server::Run(void) {
 		else if (nev > 0)
 			HandleEvents(nev);
 		DeleteInvalidClient();
-		print_clients();
+		//print_clients();
 		print_channels();
 	}
 	return true;
@@ -204,7 +205,6 @@ bool	Server::AddClientMutex(const int& sock) {
 	this->list_mutex_.lock();//lock
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it != client_mutex_list_.end()) {
-		log::cout << BOLDBLUE << sock << " client Mutex already exists\n" << RESET;
 		this->list_mutex_.unlock();//unlock
 		return false;
 	}
@@ -213,7 +213,6 @@ bool	Server::AddClientMutex(const int& sock) {
 	if (mutex_ptr->init(NULL) != 0 ) {
 		client_mutex_list_.erase(sock);
 		delete mutex_ptr;
-		log::cout << BOLDBLUE << sock << " client Mutex init fail\n" << RESET;
 	}
 
 	this->list_mutex_.unlock();//unlock
@@ -225,8 +224,10 @@ bool	Server::AddChannelMutex(const std::string& name) {
 	Mutex *mutex_ptr = new Mutex();
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
-	if (mutex_it != channel_mutex_list_.end())
+	if (mutex_it != channel_mutex_list_.end()) {
+		this->list_mutex_.unlock();//unlock
 		return false;
+	}
 	channel_mutex_list_.insert(std::make_pair(name, mutex_ptr));
 	if (mutex_ptr->init() != 0) {
 		channel_mutex_list_.erase(name);

@@ -30,8 +30,9 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	this->server_->LockChannelMutex(chan->first);
 	members = (chan->second).get_members();
 	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
-		if (*it != this->client_sock_)
-			SendResponse(*it, text);
+		if (*it == this->client_sock_)
+			continue;
+		SendResponse(*it, text);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
