@@ -30,7 +30,8 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	this->server_->LockChannelMutex(chan->first);
 	members = (chan->second).get_members();
 	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
-		SendResponse(*it, text);
+		if (*it != this->client_sock_)
+			SendResponse(*it, text);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
@@ -40,14 +41,9 @@ std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::s
 	std::string	dummy;
 	int	sock;
 
-	this->server_->LockClientListMutex();
 	sock = this->server_->SearchClientByNick(client_name);
-	if (sock == FT_INIT_CLIENT_FD) {
-		this->server_->UnlockClientListMutex();
+	if (sock == FT_INIT_CLIENT_FD) 
 		return dummy + ERR_NOSUCHNICK + " :No such nick.";
-	}
-	this->server_->UnlockClientListMutex();
-
 	SendResponse(sock, text);
 	return dummy;
 }
