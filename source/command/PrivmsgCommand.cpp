@@ -42,14 +42,9 @@ std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::s
 	std::string	dummy;
 	int	sock;
 
-	this->server_->LockClientListMutex();
 	sock = this->server_->SearchClientByNick(client_name);
-	if (sock == FT_INIT_CLIENT_FD) {
-		this->server_->UnlockClientListMutex();
+	if (sock == FT_INIT_CLIENT_FD) 
 		return dummy + ERR_NOSUCHNICK + " :No such nick.";
-	}
-	this->server_->UnlockClientListMutex();
-
 	SendResponse(sock, text);
 	return dummy;
 }
