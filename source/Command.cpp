@@ -56,10 +56,11 @@ void	Command::DisconnectClient(void) {
 	this->server_->AddDeleteClient(this->client_sock_);
 }
 
+ //:server 004 <nick> <servername> <version> <available umodes> <available cmodes> [<cmodes with param>]
 void	Command::AuthCheckReply(void) {
 	log::cout << "Command::AuthCheckReply call()\n";
 	Response	auth_message;
-	auth_message << RPL_WELCOME;
+
 	char	flag;
 	bool	auth_status = false;
 	bool	send_status = false;
@@ -74,7 +75,17 @@ void	Command::AuthCheckReply(void) {
 	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 	
 	if (send_status) {
-		SendResponse(this->client_sock_, auth_message.get_format_str());
+		std::string	nick = this->server_->SearchClientBySock(this->client_sock_);
+		const std::string& serv_name = this->server_->get_name();
+		auth_message << ":" << serv_name << " " << RPL_WELCOME << " " << nick 
+			<< " :Welcome to the " << serv_name << " Network, " << nick << CRLF;
+		auth_message << ":" << serv_name << " " << RPL_YOURHOST << " " << nick 
+			<< " :Your host is  " << serv_name << ", running version " << this->server_->get_version() << CRLF;
+		auth_message << ":" << serv_name << " " << RPL_CREATED << " " << nick 
+			<< " :This server was create " << this->server_->get_create_time() << CRLF;
+		auth_message << ":" << serv_name << " " << RPL_MYINFO << " " << nick 
+			<< " " << serv_name << " " << this->server_->get_version() << CRLF;
+		SendResponse(this->client_sock_, auth_message.get_str());
 		log::cout << RED << "send 001\n" << RESET;
 	}
 }
