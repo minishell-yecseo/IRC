@@ -39,6 +39,9 @@ class Server;
 # ifndef FT_SERVER_NAME
 #  define FT_SERVER_NAME "Happy"
 # endif
+# ifndef IRC_VERSION
+#  define IRC_VERSION "0.1"
+# endif
 
 class Server {
 	public:
@@ -51,9 +54,12 @@ class Server {
 		ThreadPool	*pool_;
 
 		const std::string& get_name(void);
+		const std::string& get_version(void);
+		const std::string& get_create_time(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
 		std::map<std::string, Channel>& get_channels(void);
+		std::string	set_create_time(void);
 
 		/* for command process */
 		std::string		SearchClientBySock(const int& sock);
@@ -97,6 +103,8 @@ class Server {
 		struct sockaddr_in	addr_;
 		std::string	password_;
 		struct timespec	timeout_;
+		std::string	version_;
+		std::string	createtime_;
 	
 		int	kq_;
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];

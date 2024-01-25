@@ -14,11 +14,39 @@ Server::Server(int argc, char **argv) {
 	name_ = FT_SERVER_NAME;
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
+	version_ = IRC_VERSION;
 	password_ = argv[2];
+	createtime_ = set_create_time();
 
 	MutexInit();
 	ServerSocketInit();
 	KqueueInit();
+
+
+	/* Psuedo Channel for JoinCommand test */
+	Channel	ch("#Test");
+	//ch.set_mode(MODE_INVITE, true);
+	ch.set_mode(MODE_TOPIC, true);
+	ch.set_mode(MODE_KEY, true);
+	ch.set_topic("Hello I'm Test Channel");
+	this->channels_.insert(make_pair(ch.get_name(), ch));
+	AddChannelMutex(ch.get_name());
+}
+
+std::string	Server::set_create_time(void) {
+	std::time_t now = std::time(0);
+	std::tm* localTime = std::localtime(&now);
+
+	if (localTime->tm_hour >= 24) {
+		localTime->tm_hour -= 24;
+	}
+	
+	std::ostringstream timeStream;
+	timeStream << localTime->tm_year + 1900 << "-" 
+		<< localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+		<< localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec;
+
+	return timeStream.str();
 }
 
 bool	Server::Run(void) {
@@ -104,6 +132,14 @@ void	Server::print_channels(void) {
 
 const std::string&	Server::get_name(void) {
 	return this->name_;
+}
+
+const std::string&	Server::get_version(void) {
+	return this->version_;
+}
+
+const std::string&	Server::get_create_time(void) {
+	return this->createtime_;
 }
 
 const int& Server::get_port(void) {
