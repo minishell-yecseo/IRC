@@ -21,16 +21,6 @@ Server::Server(int argc, char **argv) {
 	MutexInit();
 	ServerSocketInit();
 	KqueueInit();
-
-
-	/* Psuedo Channel for JoinCommand test */
-	Channel	ch("#Test");
-	//ch.set_mode(MODE_INVITE, true);
-	ch.set_mode(MODE_TOPIC, true);
-	ch.set_mode(MODE_KEY, true);
-	ch.set_topic("Hello I'm Test Channel");
-	this->channels_.insert(make_pair(ch.get_name(), ch));
-	AddChannelMutex(ch.get_name());
 }
 
 std::string	Server::set_create_time(void) {
@@ -62,72 +52,10 @@ bool	Server::Run(void) {
 		else if (nev > 0)
 			HandleEvents(nev);
 		DeleteInvalidClient();
-		//print_clients();
+		print_clients();
 		print_channels();
 	}
 	return true;
-}
-
-void	Server::print_clients(void) {
-	log::cout << BOLDWHITE << "_________CLIENT INFO_________\n" << RESET;
-	this->clients_mutex_.lock();
-	std::map<int, Client>::iterator itr = clients_.begin();
-	while (itr != clients_.end()) {
-		Response	print;
-		LockClientMutex(itr->first);//lock
-		print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second.get_nick() << RESET;
-		if (itr->second.IsAuth() == true) print << GREEN << " is Authenticated\n";
-		else print << RED << " is not Authenticated\n";
-		print << RESET;
-		log::cout << print.get_str();
-		UnlockClientMutex(itr->first);//lock
-		itr++;
-	}
-	this->clients_mutex_.unlock();
-}
-
-void	Server::print_channels(void) {
-	Response	logging;
-
-	logging << BOLDWHITE << "_________CHANNEL INFO________\n";
-	this->channels_mutex_.lock();
-	std::map<std::string, Channel>::iterator	iter = channels_.begin();
-	while (iter != channels_.end()) {
-		LockChannelMutex(iter->first);//lock
-		logging << "NAME: " << MAGENTA << iter->first << RESET << "\n";
-		logging << BOLDWHITE << "\tMODE: " << RESET;
-		char mode = iter->second.get_mode();
-		{
-			if (mode & MODE_LIMIT) logging << "+l ";
-			else logging << "-l ";
-
-			if (mode & MODE_INVITE) logging << "+i ";
-			else logging << "-i ";
-
-			if (mode & MODE_TOPIC) logging << "+t ";
-			else logging << "-t ";
-
-			if (mode & MODE_KEY) logging << "+k ";
-			else logging << "-k ";
-		}
-		logging << "\n";
-		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second.get_topic() << "\n";
-		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_password() << "\n";
-		logging << BOLDWHITE << "\tSIZE: " << RESET;
-		std::set<int>	mem = iter->second.get_members();
-		size_t	s = mem.size();
-		logging << RESET << (int)s << "\n" << RESET;
-		std::set<int>::iterator itr = mem.begin();
-		for (size_t i = 0; i < s; ++i) {
-			logging << BOLDMAGENTA << "\tMEM." << i << ": " << RESET <<  *itr << "\n";
-			itr++;
-		}
-		UnlockChannelMutex(iter->first);//unlock
-		iter++;
-	}
-	this->channels_mutex_.unlock();
-	logging << RED << "_____________________________\n" << RESET;
-	log::cout << logging.get_str();
 }
 
 const std::string&	Server::get_name(void) {
@@ -632,3 +560,66 @@ bool	Server::AddChannelMember(const std::string& channel_name, \
 	UnlockChannelMutex(channel_name);
 	return true;
 }
+
+void	Server::print_clients(void) {
+	log::cout << BOLDWHITE << "_________CLIENT INFO_________\n" << RESET;
+	this->clients_mutex_.lock();
+	std::map<int, Client>::iterator itr = clients_.begin();
+	while (itr != clients_.end()) {
+		Response	print;
+		LockClientMutex(itr->first);//lock
+		print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second.get_nick() << RESET;
+		if (itr->second.IsAuth() == true) print << GREEN << " is Authenticated\n";
+		else print << RED << " is not Authenticated\n";
+		print << RESET;
+		log::cout << print.get_str();
+		UnlockClientMutex(itr->first);//lock
+		itr++;
+	}
+	this->clients_mutex_.unlock();
+}
+
+void	Server::print_channels(void) {
+	Response	logging;
+
+	logging << BOLDWHITE << "_________CHANNEL INFO________\n";
+	this->channels_mutex_.lock();
+	std::map<std::string, Channel>::iterator	iter = channels_.begin();
+	while (iter != channels_.end()) {
+		LockChannelMutex(iter->first);//lock
+		logging << "NAME: " << MAGENTA << iter->first << RESET << "\n";
+		logging << BOLDWHITE << "\tMODE: " << RESET;
+		char mode = iter->second.get_mode();
+		{
+			if (mode & MODE_LIMIT) logging << "+l ";
+			else logging << "-l ";
+
+			if (mode & MODE_INVITE) logging << "+i ";
+			else logging << "-i ";
+
+			if (mode & MODE_TOPIC) logging << "+t ";
+			else logging << "-t ";
+
+			if (mode & MODE_KEY) logging << "+k ";
+			else logging << "-k ";
+		}
+		logging << "\n";
+		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second.get_topic() << "\n";
+		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_password() << "\n";
+		logging << BOLDWHITE << "\tSIZE: " << RESET;
+		std::set<int>	mem = iter->second.get_members();
+		size_t	s = mem.size();
+		logging << RESET << (int)s << "\n" << RESET;
+		std::set<int>::iterator itr = mem.begin();
+		for (size_t i = 0; i < s; ++i) {
+			logging << BOLDMAGENTA << "\tMEM." << i << ": " << RESET <<  *itr << "\n";
+			itr++;
+		}
+		UnlockChannelMutex(iter->first);//unlock
+		iter++;
+	}
+	this->channels_mutex_.unlock();
+	logging << RED << "_____________________________\n" << RESET;
+	log::cout << logging.get_str();
+}
+
