@@ -163,42 +163,47 @@ bool	Server::AddChannelMutex(const std::string& name) {
 		return false;
 	}
 	channel_mutex_list_.insert(std::make_pair(name, mutex_ptr));
-	if (mutex_ptr->init() != 0) {
-		channel_mutex_list_.erase(name);
-		delete mutex_ptr;
-	}
 	this->list_mutex_.unlock();//unlock
 	return true;
 }
 
 //Mutex done
 bool	Server::DeleteClientMutex(const int& sock) {
+	Mutex *del_ptr;
+
 	this->list_mutex_.lock();//lock
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
 		this->list_mutex_.unlock();//unlock
 		return false;
 	}
-	delete mutex_it->second;
+	del_ptr = mutex_it->second;
 	client_mutex_list_.erase(mutex_it);
 	this->list_mutex_.unlock();//unlock
+	delete del_ptr;
 	return true;
 }
 
 //Mutex done
 bool	Server::DeleteChannelMutex(const std::string& name) {
+	Mutex *del_ptr;
+
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
-	if (mutex_it != channel_mutex_list_.end())
+	if (mutex_it != channel_mutex_list_.end()) {
+		this->list_mutex_.unlock();
 		return false;
-	delete mutex_it->second;
+	}
+	del_ptr = mutex_it->second;
 	channel_mutex_list_.erase(mutex_it);
 	this->list_mutex_.unlock();//unlock
+	delete del_ptr;
 	return true;
 }
 
 //Mutex done
 bool	Server::LockClientMutex(const int& sock) {
+	log::cout << pthread_self() << ": LockClientMutex " << sock << " START\n" << RESET;
 	this->list_mutex_.lock();//lock
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
