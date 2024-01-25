@@ -34,3 +34,10 @@ log::ostream& log::ostream::operator << (std::string str) {
 	print.unlock();
 	return *this;
 }
+
+log::ostream& log::ostream::operator << (pthread_t tid) {
+	print.lock();
+	printf("%lu", (unsigned long)tid);
+	print.unlock();
+	return *this;
+}
