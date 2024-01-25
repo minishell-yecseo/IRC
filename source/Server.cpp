@@ -416,9 +416,34 @@ void	Server::DeleteInvalidClient(void) {
 	}
 	this->del_clients_.clear();
 	this->del_clients_mutex_.unlock();
+	log::cout << BOLDRED << "DeleteInvalidClient END\n" << RESET;
+}
+
+void	Server::CeaseChannel(const std::string& channel_name) {
+	log::cout << BOLDGREEN << pthread_self() << ": CeaseChannel " << channel_name << "\n" << RESET;
+	DeleteChannel(channel_name);
+	log::cout << BOLDGREEN << pthread_self() << ": DeleteChannel END\n" << RESET;
+	DeleteChannelMutex(channel_name);
+	log::cout << BOLDGREEN << pthread_self() << ": DeleteChannelMutex END\n" << RESET;
+}
+
+void	Server::DeleteChannel(const std::string& channel_name) {
+	/*Channel should be deleted when the last participant PART from that channel */
+	std::map<std::string, Channel>::iterator	ch_itr;
+	std::map<std::string, Mutex*>::iterator		mutex_itr;
+
+	this->channels_mutex_.lock();
+	ch_itr = this->channels_.find(channel_name);
+	if (ch_itr != this->channels_.end()) {
+		LockChannelMutex(channel_name);
+		this->channels_.erase(ch_itr);
+		UnlockChannelMutex(channel_name);
+	}
+	this->channels_mutex_.unlock();
 }
 
 void	Server::DisconnectClient(const int& sock) {
+	log::cout << BOLDBLUE << pthread_self() << ": DisconnectClient START\n" << RESET;
 	std::vector<std::string>	channels_of_client;
 	std::map<int, Client>::iterator	client_it;
 
@@ -427,15 +452,14 @@ void	Server::DisconnectClient(const int& sock) {
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
 		this->clients_mutex_.unlock();//unlock
-		log::cout << "Disconnect " << sock << "fain: no such Client\n";
+		log::cout << pthread_self() << ": Disconnect " << sock << "fain: no such Client\n";
 		return;
 	}
 
-	if (LockClientMutex(client_it->second.get_sock()) == false) {
-		
-		log::cout << BOLDRED << "LockClientMutex(" << sock << ") fail\n";
+	if (LockClientMutex(sock) == false) {
+		log::cout << BOLDRED << pthread_self() << ": LockClientMutex(" << sock << ") fail\n";
 		this->clients_mutex_.unlock();//unlock
-		UnlockClientMutex(client_it->second.get_sock());
+		UnlockClientMutex(sock);
 		return;
 	}
 
@@ -449,25 +473,31 @@ void	Server::DisconnectClient(const int& sock) {
 	
 	/* Channel 에서 Client 삭제 */
 	std::vector<std::string>::iterator channel_itr = channels_of_client.begin();
+	int	left_client_num = 0;
 	while (channel_itr != channels_of_client.end()) {
-		if (LockChannelMutex(*channel_itr) == false) {//lock
-			log::cout << CYAN << "LockChannelMutex error\n" << RESET;
-			UnlockChannelMutex(*channel_itr);
-			channel_itr++;
-			continue;
-		}
-		this->channels_[*channel_itr].Kick(sock);
+		
+		if (LockChannelMutex(*channel_itr))
+			left_client_num = this->channels_[*channel_itr].Kick(sock);
 		UnlockChannelMutex(*channel_itr);//unlock
+
+		if (left_client_num < 1) {
+			CeaseChannel(*channel_itr);
+		}
 		channel_itr++;
 	}
-
-	clients_.erase(client_it);
+	
+	this->clients_.erase(client_it);
+	UnlockClientMutex(sock);
 	this->clients_mutex_.unlock();//unlock
 
-	UnlockClientMutex(client_it->second.get_sock());
+	log::cout << BOLDYELLOW << pthread_self() << ": clients_mutex_.unlock() END\n" << RESET;
+
+	log::cout << BOLDCYAN << pthread_self() << ": DisconnectClient DeleteMutex START\n" << RESET;
 	DeleteClientMutex(client_it->second.get_sock());
+	log::cout << BOLDCYAN << pthread_self() << ": DisconnectClient DeleteMutex END\n" << RESET;
 
 	log::cout << CYAN << "client " << sock << " disconnected\n" << RESET;
+	log::cout << BOLDBLUE << pthread_self() << ": DisconnectClient END\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
