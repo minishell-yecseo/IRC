@@ -136,7 +136,6 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	this->clients_mutex_.lock();
 
 	std::map<int, Client>::iterator	iter = this->clients_.begin();
-	int i = 0;
 	while (iter != this->clients_.end()) {
 		std::string temp_nick = (iter->second).get_nick();
 		if (nick.compare(temp_nick) == 0) {
@@ -144,7 +143,6 @@ int	Server::SearchClientByNick(const std::string& nick) {
 			break ;
 		}
 		iter++;
-		i++;
 	}
 
 	this->clients_mutex_.unlock();
