@@ -79,7 +79,7 @@ char	*ModeCommand::ConvertMode(const std::string& modestr) {
 		else {
 			index = ReturnFlagIndex(modestr[i]);
 			if (sign == true) {
-				if (modestr[i] == 'i')
+				if (modestr[i] == 'i' || modestr[i] == 't')
 					flag[index] = 1;
 				else
 					flag[index] = order++;
