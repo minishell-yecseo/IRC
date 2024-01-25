@@ -37,7 +37,9 @@ bool	ModeCommand::CheckKeyParam(const std::string& str) {
 }
 
 bool	ModeCommand::IsValidMode(const std::string& str) {
-	if (str[0] != '+' && str[0] != '-')
+	if (str[0] == '+' || str[0] == '-')
+		;
+	else
 		return false;
 	for (size_t i = 1; i < str.size(); ++i) {
 		if (str[i] == 'i' || str[i] == 't' || str[i] == 'k' || str[i] == 'o' || str[i] == 'l')
@@ -100,51 +102,50 @@ bool	ModeCommand::IsParamEnough(char	*mode_list) {
 }
 
 // need check param max count
-void	ModeCommand::SetModeInChannel(Channel* c, char* mode_list) {
+void	ModeCommand::SetModeInChannel(Channel& c, char* mode_list) {
 	// i t k o l
 	if (mode_list[0] == -1)
-		c->set_mode(MODE_INVITE, false);
+		c.set_mode(MODE_INVITE, false);
 	else if (mode_list[0] > 0)
-		c->set_mode(MODE_INVITE, true);
+		c.set_mode(MODE_INVITE, true);
 	if (mode_list[1] == -1)
-		c->set_mode(MODE_TOPIC, false);
+		c.set_mode(MODE_TOPIC, false);
 	else if (mode_list[1] > 0) {
-		c->set_mode(MODE_TOPIC, true);
-		c->set_topic(this->params_[mode_list[1]]);
+		c.set_mode(MODE_TOPIC, true);
+		c.set_topic(this->params_[mode_list[1]]);
 	};
-	if (mode_list[2] == -1)
-		c->set_mode(MODE_KEY, false);
+	if (mode_list[2] == -1) 
+		c.set_mode(MODE_KEY, false);
 	else if (mode_list[2] > 0) {
-		c->set_mode(MODE_KEY, true);
-		c->set_password(this->params_[mode_list[2]]);
+		c.set_mode(MODE_KEY, true);
+		c.set_password(this->params_[mode_list[2]]);
 	}
 	int	user = this->server_->SearchClientByNick(this->params_[mode_list[3]]);
 	if (user == FT_INIT_CLIENT_FD)
 		;
 	else if (mode_list[3] == -1)
-		c->DegradeMember(user);
+		c.DegradeMember(user);
 	else if (mode_list[3] > 0) {
-		c->PromoteMember(user);
+		c.PromoteMember(user);
 	}
 	if (mode_list[4] == -1) {
-		c->set_mode(MODE_LIMIT, false);
-		c->unset_limit();
+		c.set_mode(MODE_LIMIT, false);
+		c.unset_limit();
 	}
 	else if (mode_list[4] > 0) {
-		c->set_mode(MODE_LIMIT, true);
+		c.set_mode(MODE_LIMIT, true);
 		// need fix
-		//c->set_limit(params[mode_list[4]])
-		c->set_limit(4);
+		//c.set_limit(params[mode_list[4]])
+		c.set_limit(4);
 	}
 }
 
 std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
-	std::map<std::string, Channel> channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
 	this->server_->LockChannelListMutex();
-	channel_list = this->server_->get_channels();
+	std::map<std::string, Channel> &channel_list = this->server_->get_channels();
 	chan = channel_list.find(channel_name);
 	if (chan == channel_list.end()) {
 		this->server_->UnlockChannelListMutex();
@@ -165,7 +166,7 @@ std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
 		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else
-		SetModeInChannel(&(chan->second), mode_list);
+		SetModeInChannel(chan->second, mode_list);
 	this->server_->UnlockChannelMutex(chan->first);
 	delete[] mode_list;
 	return dummy;
@@ -179,20 +180,21 @@ std::string	ModeCommand::AnyOfError(void) {
 	if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)
 		return dummy + RPL_CHANNELMODEIS + " :Not given modestring";
 	if (IsValidMode(this->params_[1]) == false)
-		return dummy + ERR_UNKNOWNMODE;
+		return dummy + ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
 	if (CheckKeyParam(this->params_[1]) == false)
 		return dummy + ERR_KEYSET;
 	return CheckChannel(this->params_[0]);
 }
-/*
-*/
+
 void	ModeCommand::Run() {
 	Response	r;
 	
 	r << AnyOfError();
-	if (r.IsError() == true)
+	if (r.IsError() == true) {
+		log::cout << r.get_str();
 		return SendResponse(this->client_sock_, r.get_format_str());
+	}
 	r << RPL_CREATIONTIME << " " << this->params_[0];
-	log::cout << "Work here\n";
+	log::cout << r.get_str();
 	SendResponse(this->client_sock_, r.get_format_str());
 }
