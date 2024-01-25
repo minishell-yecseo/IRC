@@ -3,11 +3,13 @@
 
 Channel::Channel(void) {
 	this->limit_ = CLIENT_LIMIT;
+	this->mode_ = 0;
 }
 
 Channel::Channel(const std::string& name) {
 	this->limit_ = CLIENT_LIMIT;
 	this->name_ = name;
+	this->mode_ = 0;
 }
 
 void	Channel::set_topic(const std::string& topic) {

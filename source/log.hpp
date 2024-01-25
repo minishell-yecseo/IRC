@@ -13,6 +13,7 @@ namespace log {
 			ostream& operator << (const char * char_ptr);
 			ostream& operator << (int i);
 			ostream& operator << (std::string str);
+			ostream& operator << (pthread_t tid);
 	};
 	extern ostream cout;
 }
