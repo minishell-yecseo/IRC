@@ -23,8 +23,3 @@ int	Mutex::lock(void) {
 int	Mutex::unlock(void) {
 	return pthread_mutex_unlock(&this->mutex_);
 }
-
-/*
-const char * Mutex::LockError::what(void) const throw() {
-	return "Mutex Lock Error";
-}*/
