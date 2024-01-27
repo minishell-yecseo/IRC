@@ -50,7 +50,8 @@ void	InviteCommand::Run() {
 	if (r.IsError() == true)
 		return SendResponse(this->client_sock_, r.get_format_str());
 	//<client> <nick> <channel>
-	r << RPL_INVITING << " " << this->params_[0] << " " << this->params_[1];
+	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+	r << ":" << sender << " " << RPL_INVITING << " " << this->params_[0] << " " << this->params_[1];
 	SendResponse(this->client_sock_, r.get_format_str());
 }
 
