@@ -4,6 +4,17 @@ UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(t
 }
 
 std::string	UserCommand::AnyOfError(void) {
+	std::string	dummy;
+
+	if (this->params_.size() < 4)
+		return (dummy + ERR_NEEDMOREPARAMS);
+	if (IsNonwhite(this->params_[0]) == false)
+		return (dummy + ERR_UNKNOWNERROR + " : username must not has whitespace");
+	this->server_->LockClientMutex(this->client_sock_);
+	bool isRegistered = this->client_->IsAuth();
+	this->server_->UnlockClientMutex(this->client_sock_);
+	if (isRegistered == true)
+		return (dummy + ERR_ALREADYREGISTERED);
     return "";
 }
 
@@ -17,21 +28,18 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 }
 
 void	UserCommand::Run(void) {
-	/* It should wait for the client's auth variable to be 1 */
+	Response	reply;
+
+	// <username> <hostname> <servername> <realname>
+	// realname must be prefix ':' but not irssi
+	reply << AnyOfError();
+	if (reply.IsError()) {
+		SendResponse(this->client_sock_, reply.get_format_str());
+		return;
+	}
+
 	this->server_->LockClientMutex(this->client_sock_);
 	client_->SetAuthFlag(FT_AUTH_USER);
 	this->server_->UnlockClientMutex(this->client_sock_);
 	AuthCheckReply();
-/*
-	// <username> <hostname> <servername> <realname>
-	// realname must be prefix ':' but not irssi
-	if (this->params_.size() < 4)
-	{
-		ERR_NEEDMOREPARAMS (461)
-		if (IsNonwhite(this->params_[0]) == false)
-			//Not any Numeric error;;;
-	}
-	// is needed?
-	ERR_ALREADYREGISTERED (462)
-*/
 }
