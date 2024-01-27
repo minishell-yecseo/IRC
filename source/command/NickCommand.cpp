@@ -98,7 +98,10 @@ void	NickCommand::Run() {
 
 	/* success case : nick can be changed */
 	bool	auth_check = false;
-	this->server_->LockClientMutex(this->client_sock_);
+	if (this->server_->LockClientMutex(this->client_sock_) == false) {//lock
+		this->server_->UnlockClientMutex(this->client_sock_);
+		return;
+	}
 	client_->set_nick(params_[0]);
 	client_->SetAuthFlag(FT_AUTH_NICK);
 	auth_check = this->client_->IsAuth();

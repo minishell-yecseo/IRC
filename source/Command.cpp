@@ -65,7 +65,11 @@ void	Command::AuthCheckReply(void) {
 	bool	auth_status = false;
 	bool	send_status = false;
 
-	this->server_->LockClientMutex(this->client_sock_);//Lock
+	if (this->server_->LockClientMutex(this->client_sock_) == false) {//Lock
+		log::cout << "AuthCheckReply: NO such client\n";
+		this->server_->UnlockClientMutex(this->client_sock_);//Unlock
+		return;
+	}
 	auth_status = this->client_->IsAuth();
 	flag = this->client_->get_auth_flag(FT_AUTH_ALL);
 	if (auth_status == false && ((flag & FT_AUTH_ALL) == FT_AUTH_ALL)) {
