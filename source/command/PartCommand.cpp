@@ -11,13 +11,13 @@ ERR_NOTONCHANNEL (442)
 
 std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
-	std::map<std::string, Channel> channel_list;
 	std::map<std::string, Channel>::iterator chan;
+	int	channel_left_num = 1;
 
 	this->server_->LockChannelListMutex();
-	channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	std::map<std::string, Channel> *channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 	}
@@ -26,11 +26,16 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
-	else
+	else 
 		// Run KICK here!
-		(chan->second).Kick(this->client_sock_);
+		channel_left_num = (chan->second).Kick(this->client_sock_);
+
 	this->server_->UnlockChannelMutex(chan->first);
 	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
+
+	if (channel_left_num == 0)
+		this->server_->CeaseChannel(channel_name);
+
 	return dummy + ":" + sender + " PART " + channel_name;
 }
 
