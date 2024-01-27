@@ -54,6 +54,13 @@ void	InviteCommand::Run() {
 	if (receiver == FT_INIT_CLIENT_FD)
 		return ;
 
+	std::string	channel_name = this->params_[1];
+	this->server_->LockChannelMutex(channel_name);
+	Channel *channel = this->server_->get_channel_ptr(channel_name);
+	if (channel != NULL)
+		channel->Invite(receiver);
+	this->server_->UnlockChannelMutex(channel_name);
+
 	r << ":" << sender <<  " INVITE " << this->params_[0] << " " << this->params_[1] << CRLF;
 	SendResponse(receiver, r.get_format_str());
 	r.flush();
