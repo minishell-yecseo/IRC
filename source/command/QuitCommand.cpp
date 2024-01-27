@@ -13,6 +13,6 @@ void	QuitCommand::Run(void) {
 	Response	r;
 
 	Command::DisconnectClient();
-	r << this->server_->SearchClientBySock(this->client_sock_) << " QUIT :Quit: Bye for now!";
+	r << ":" << this->server_->SearchClientBySock(this->client_sock_) << " QUIT :Quit: Bye for now!";
 	SendResponse(this->client_sock_, r.get_format_str());
 }
