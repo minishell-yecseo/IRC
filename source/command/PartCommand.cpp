@@ -11,11 +11,12 @@ ERR_NOTONCHANNEL (442)
 
 std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
+	std::map<std::string, Channel> *channel_list = &(this->server_->get_channels());
 	std::map<std::string, Channel>::iterator chan;
 	int	channel_left_num = 1;
 
 	this->server_->LockChannelListMutex();
-	std::map<std::string, Channel> *channel_list = &(this->server_->get_channels());
+	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
