@@ -59,6 +59,7 @@ class Server {
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
 		std::map<std::string, Channel>& get_channels(void);
+		Channel*	get_channel_ptr(const std::string& name);
 		std::string	set_create_time(void);
 
 		/* for command process */

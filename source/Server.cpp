@@ -85,6 +85,17 @@ std::map<std::string, Channel>& Server::get_channels(void) {
 	return this->channels_;
 }
 
+Channel*	Server::get_channel_ptr(const std::string& name) {
+	Channel *ret = NULL;
+
+	LockChannelListMutex();
+	std::map<std::string, Channel>::iterator	itr = this->channels_.find(name);
+	if (itr != this->channels_.end())
+		ret = &(itr->second);
+	UnlockChannelListMutex();
+	return ret;
+}
+
 //need Fix
 std::string	Server::SearchClientBySock(const int& sock) {
 	std::string	nick;
