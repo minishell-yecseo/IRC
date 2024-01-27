@@ -45,6 +45,9 @@ bool	Server::Run(void) {
 	while (true) {
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();
+
+		log::cout << BOLDMAGENTA << "nev: " << nev << RESET << "\n";
+	
 		if (nev == -1)
 			error_handling("kevent() error\n");
 		else if (nev == 0)
@@ -96,20 +99,21 @@ std::string	Server::SearchClientBySock(const int& sock) {
 
 int	Server::SearchClientByNick(const std::string& nick) {
 	int	ret = FT_INIT_CLIENT_FD;
+	std::string	tmp_nick;
 
-	this->clients_mutex_.lock();
-
+	LockClientListMutex();
 	std::map<int, Client>::iterator	iter = this->clients_.begin();
 	while (iter != this->clients_.end()) {
-		std::string temp_nick = (iter->second).get_nick();
-		if (nick.compare(temp_nick) == 0) {
+		//LockClientMutex(iter->first);
+		tmp_nick = (iter->second).get_nick();
+		//UnlockClientMutex(iter->first);
+		if (nick.compare(tmp_nick) == 0) {
 			ret = iter->first;
 			break ;
 		}
 		iter++;
 	}
-
-	this->clients_mutex_.unlock();
+	UnlockClientListMutex();
 	return ret;
 }
 
@@ -311,6 +315,7 @@ void	Server::KqueueInit(void) {
 void	Server::HandleEvents(int nev) {
 	struct kevent	event;
 	for (int i = 0; i < nev; ++i) {
+		log::cout << BOLDBLUE << "kevent: " << i << RESET << "\n";
 		event = evlist_[i];
 		if (event.flags & EV_ERROR)
 			HandleEventError(event);
@@ -374,6 +379,7 @@ void	Server::ConnectClient(void) {
 
 	/* handle new client */
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	AddEvent(client.get_sock(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	this->clients_mutex_.lock();//lock
 	clients_[client.get_sock()] = client;
 	this->clients_mutex_.unlock();//unlock
