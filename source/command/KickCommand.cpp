@@ -32,8 +32,8 @@ std::string	KickCommand::CheckChannel(const std::string& channel_name, const std
 	else
 		(chan->second).Kick(target);
 	this->server_->UnlockChannelMutex(chan->first);
-	std::string cli = this->server_->SearchClientBySock(this->client_sock_);
-	return dummy + ":" + cli + " KICK " + channel_name + " " + nick;
+	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
+	return dummy + ":" + sender + " KICK " + channel_name + " " + nick;
 }
 
 std::string	KickCommand::AnyOfError(void) {
@@ -41,7 +41,7 @@ std::string	KickCommand::AnyOfError(void) {
 
 	if (this->params_.size() < 2)
 		return dummy + ERR_NEEDMOREPARAMS + " :Not enough params";
-    return CheckChannel(this->params_[0], this->params_[1]);
+    return dummy;
 }
 
 // NEED any reply? or some job only kick in one channel one client
@@ -49,5 +49,8 @@ void	KickCommand::Run(void) {
 	Response	r;
 
 	r << AnyOfError();
+	if (r.IsError() == true)
+		return SendResponse(this->client_sock_, r.get_format_str());
+	r << CheckChannel(this->params_[0], this->params_[1]);
 	SendResponse(this->client_sock_, r.get_format_str());
 }
