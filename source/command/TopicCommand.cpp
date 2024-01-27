@@ -4,16 +4,6 @@ TopicCommand::TopicCommand(const std::vector<std::string> &token_list) : Command
 }
 
 /*
-ERR_NEEDMOREPARAMS (461)
-RPL_NOTOPIC (331)
-
-ERR_NOSUCHCHANNEL (403)
-ERR_NOTONCHANNEL (442)
-ERR_CHANOPRIVSNEEDED (482)
-TOPIC <channel> <topic>
-"<client> <channel> <nick> <setat>"
-*/
-
 void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 	std::string	nick = this->server_->SearchClientBySock(this->client_sock_);
 	std::string notice = c->get_name() + " " + nick + " :Set topic " + topic + "." + CRLF;
@@ -24,6 +14,7 @@ void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 		SendResponse(*it, notice);
 	}
 }
+*/
 
 std::string	TopicCommand::CheckChannel(const std::string& channel_name, const std::string& topic) {
 	std::string	dummy;
@@ -46,13 +37,9 @@ std::string	TopicCommand::CheckChannel(const std::string& channel_name, const st
 		if ((chan->second).IsOperator(this->client_sock_) == false)
 			dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	}
-	else {
+	else 
 		chan->second.set_topic(topic);
-		NoticeTopic(&(chan->second), topic);
-	}
 	this->server_->UnlockChannelMutex(chan->first);
-	if (dummy.empty() == false)
-		return dummy;
 	return dummy;
 }
 
@@ -63,7 +50,7 @@ std::string	TopicCommand::AnyOfError(void) {
 		return dummy + ERR_NEEDMOREPARAMS + " :Not enough params";
 	if (this->params_.size() == 1)
 		return dummy + RPL_NOTOPIC + " :No topic is set";
-    return CheckChannel(this->params_[0], this->params_[1]);
+	return dummy;
 }
 
 void	TopicCommand::Run(void) {
@@ -72,4 +59,5 @@ void	TopicCommand::Run(void) {
 	r << AnyOfError();
 	if (r.IsError() == true)
 		return SendResponse(this->client_sock_, r.get_format_str());
+	CheckChannel(this->params_[0], this->params_[1]);
 }
