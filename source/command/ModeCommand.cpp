@@ -3,24 +3,6 @@
 ModeCommand::ModeCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-/*
-RPL_CHANNELMODEIS (324)
-ERR_NEEDMOREPARAMS
-ERR_KEYSET (467)
-ERR_UNKNOWNMODE
-ERR_NOSUCHCHANNEL (403)
-ERR_CHANOPRIVSNEEDED (482)
-ERR_NOTONCHANNEL
-RPL_CREATIONTIME (329)
-
-RPL_BANLIST
-RPL_ENDOFBANLIST
-ERR_NOSUCHNICK
-ERR_USERSDONTMATCH
-RPL_UMODEIS
-ERR_UMODEUNKNOWNFLAG
-*/
-
 bool	ModeCommand::CheckKeyParam(const std::string& str) {
 	if (str[0] != '+')
 		return true;
@@ -61,7 +43,6 @@ int	ModeCommand::ReturnFlagIndex(char c) {
 		return 3;
 	if (c == 'l')
 		return 4;
-	return 4;
 }
 
 // i t k o l
@@ -104,7 +85,7 @@ bool	ModeCommand::IsLimitNumber(char	*mode_list) {
 }
 
 bool	ModeCommand::IsParamEnough(char	*mode_list) {
-	size_t	max = 2;
+	size_t	max = 1;
 
 	for (int i = 0; i < 5; ++i) {
 		if (mode_list[i] > 0 && max < static_cast<size_t>(mode_list[i]))
