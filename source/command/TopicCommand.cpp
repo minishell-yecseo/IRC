@@ -18,13 +18,13 @@ void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 
 std::string	TopicCommand::CheckChannel(const std::string& channel_name, const std::string& topic) {
 	std::string	dummy;
-	std::map<std::string, Channel> channel_list;
+	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
 	this->server_->LockChannelListMutex();
-	channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
@@ -37,8 +37,12 @@ std::string	TopicCommand::CheckChannel(const std::string& channel_name, const st
 		if ((chan->second).IsOperator(this->client_sock_) == false)
 			dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	}
-	else 
+	else {
+		chan->second.set_mode(MODE_TOPIC, true);
 		chan->second.set_topic(topic);
+		std::string sender = this->server_->SearchClientBySock(this->client_sock_);
+		dummy = dummy + ":" + sender + " TOPIC " + channel_name + " " + topic;
+	}
 	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
 }
@@ -57,7 +61,11 @@ void	TopicCommand::Run(void) {
 	Response	r;
 
 	r << AnyOfError();
-	if (r.IsError() == true)
+	if (r.IsError() == true) {
+		log::cout << r.get_str();
 		return SendResponse(this->client_sock_, r.get_format_str());
-	CheckChannel(this->params_[0], this->params_[1]);
+	}
+	r << CheckChannel(this->params_[0], this->params_[1]);
+	log::cout << r.get_str();
+	SendResponse(this->client_sock_, r.get_format_str());
 }
