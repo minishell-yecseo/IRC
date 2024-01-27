@@ -30,9 +30,11 @@ class Channel {
 		bool	IsMember(int sock);
 		bool	IsOperator(int sock);
 		bool	IsBanClient(int sock);
+		bool	IsInvited(int sock);
 		bool	AuthPassword(const std::string& pw);
 		int		Kick(int sock);
 		bool	Join(int sock);
+		bool	Invite(int sock);
 		void	PromoteMember(int sock);
 		void	DegradeMember(int sock);
 
@@ -68,6 +70,7 @@ class Channel {
 		std::set<int>	members_;
 		std::set<int>	operators_;
 		std::set<int>	ban_list_;
+		std::set<int>	invite_list_;
 	};
 
 #endif

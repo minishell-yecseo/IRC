@@ -178,8 +178,19 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	}
 
 	if (info.mode & MODE_INVITE) {
-		/* Can't Join By 'JOIN' command */
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
+		/* 1. check invite_list */
+		bool is_invited = false;
+		if (this->server_->LockChannelMutex(info.name) == false) {
+			this->server_->UnlockChannelMutex(info.name);
+			return false;
+		}
+		is_invited = this->server_->channels_[info.name].IsInvited(this->client_sock_);
+		this->server_->UnlockChannelMutex(info.name);
+
+		if (is_invited == true)
+			return true;
+	
 		reply << ": " << ERR_INVITEONLYCHAN << " " << this->sender_nick_ << " " << info.name;
 		reply << " : Cannot join channel (+i)";
 		SendResponse(this->client_sock_, reply.get_format_str());
