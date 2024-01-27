@@ -43,6 +43,7 @@ int	ModeCommand::ReturnFlagIndex(char c) {
 		return 3;
 	if (c == 'l')
 		return 4;
+	return 4;
 }
 
 // i t k o l
