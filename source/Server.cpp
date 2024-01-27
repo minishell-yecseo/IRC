@@ -379,7 +379,6 @@ void	Server::ConnectClient(void) {
 
 	/* handle new client */
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	AddEvent(client.get_sock(), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	this->clients_mutex_.lock();//lock
 	clients_[client.get_sock()] = client;
 	this->clients_mutex_.unlock();//unlock
