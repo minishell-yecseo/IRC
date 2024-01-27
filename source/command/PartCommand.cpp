@@ -61,6 +61,7 @@ void	PartCommand::PartEachTarget(Response *r) {
 	for (size_t i = 0; i < this->target_channels_.size(); ++i) {
 		*r << CheckChannel(this->target_channels_[i]);
 		SendResponse(this->client_sock_, r->get_format_str());
+		r->flush();
 	}
 }
 
