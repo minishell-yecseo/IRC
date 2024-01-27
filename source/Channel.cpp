@@ -57,9 +57,20 @@ int	Channel::Kick(int sock) {
 bool	Channel::Join(int sock) {
 	if (this->members_.size() < (size_t) this->limit_) {
 		members_.insert(sock);
+		if (this->invite_list_.find(sock) != this->invite_list_.end())
+			this->invite_list_.erase(sock);
 		return true;
 	}
 	return false;
+}
+
+bool	Channel::Invite(int sock) {
+	bool	ret = false;
+	if (this->invite_list_.find(sock) == this->invite_list_.end()) {
+		this->invite_list_.insert(sock);
+		ret = true;
+	}
+	return ret;
 }
 
 void	Channel::PromoteMember(int sock) {
@@ -93,6 +104,12 @@ bool	Channel::IsOperator(int sock) {
 bool	Channel::IsBanClient(int sock) {
 	std::set<int>::iterator	it = this->ban_list_.find(sock);
 	if (it == this->ban_list_.end())
+		return false;
+	return true;
+}
+
+bool	Channel::IsInvited(int sock) {
+	if (this->invite_list_.find(sock) == this->invite_list_.end())
 		return false;
 	return true;
 }
