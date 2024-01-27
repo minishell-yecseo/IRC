@@ -1,7 +1,6 @@
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
 
-#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
