@@ -1,6 +1,8 @@
 #ifndef MODECOMMAND_HPP
 #define MODECOMMAND_HPP
 
+#include <cstring>
+
 #include "Command.hpp"
 #include "NumericDefine.hpp"
 
@@ -15,6 +17,7 @@ class ModeCommand: public Command {
 		char		*ConvertMode(const std::string& modestr);
 		std::string	CheckChannel(const std::string& chan);
 		bool		IsParamEnough(char *mode_list);
+		bool		IsLimitNumber(char *mode_list);
 		void		SetModeInChannel(Channel &c, char *mode_list);
 };
 #endif

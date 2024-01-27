@@ -42,7 +42,7 @@ bool	ModeCommand::IsValidMode(const std::string& str) {
 	else
 		return false;
 	for (size_t i = 1; i < str.size(); ++i) {
-		if (str[i] == 'i' || str[i] == 't' || str[i] == 'k' || str[i] == 'o' || str[i] == 'l')
+		if (str[i] == 'i' || str[i] == 't' || str[i] == 'k' || str[i] == 'o' || str[i] == 'l' || str[i] == '+' || str[i] == '-')
 			;
 		else
 			return false;
@@ -91,24 +91,35 @@ char	*ModeCommand::ConvertMode(const std::string& modestr) {
 	return flag;
 }
 
+bool	ModeCommand::IsLimitNumber(char	*mode_list) {
+	if (mode_list[4] > 0) {
+		std::string&	limit_param = this->params_[mode_list[4]];
+		if (limit_param.size() > 9)
+			return false;
+		for (size_t i = 0; i < limit_param.size(); ++i)
+			if (limit_param[i] < '0' || limit_param[i] > '9')
+				return false;
+	}
+	return true;
+}
+
 bool	ModeCommand::IsParamEnough(char	*mode_list) {
-	size_t	max = 0;
+	size_t	max = 2;
 
 	for (int i = 0; i < 5; ++i) {
 		if (mode_list[i] > 0 && max < static_cast<size_t>(mode_list[i]))
 			max = static_cast<size_t>(mode_list[i]);
 	}
-	return (this->params_.size() >= max);
+	return (this->params_.size() == max + 1);
 }
 
-// need check param max count
 void	ModeCommand::SetModeInChannel(Channel& c, char* mode_list) {
 	// i t k o l
-	if (mode_list[0] == -1)
+	if (mode_list[0] == -1) 
 		c.set_mode(MODE_INVITE, false);
-	else if (mode_list[0] > 0)
+	else if (mode_list[0] > 0) 
 		c.set_mode(MODE_INVITE, true);
-	if (mode_list[1] == -1)
+	if (mode_list[1] == -1) 
 		c.set_mode(MODE_TOPIC, false);
 	else if (mode_list[1] > 0) {
 		c.set_mode(MODE_TOPIC, true);
@@ -134,9 +145,8 @@ void	ModeCommand::SetModeInChannel(Channel& c, char* mode_list) {
 	}
 	else if (mode_list[4] > 0) {
 		c.set_mode(MODE_LIMIT, true);
-		// need fix
 		//c.set_limit(params[mode_list[4]])
-		c.set_limit(4);
+		c.set_limit(std::atoi(this->params_[mode_list[4]].c_str()));
 	}
 }
 
@@ -155,7 +165,7 @@ std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 
 	char*	mode_list = ConvertMode(this->params_[1]);
 	
-	if (IsParamEnough(mode_list) == false) {
+	if (IsParamEnough(mode_list) == false || IsLimitNumber(mode_list) == false) {
 		delete[] mode_list;
 		return dummy + ERR_NEEDMOREPARAMS + " MODE :Not enough params";
 	}
@@ -194,7 +204,11 @@ void	ModeCommand::Run() {
 		log::cout << r.get_str();
 		return SendResponse(this->client_sock_, r.get_format_str());
 	}
-	r << RPL_CREATIONTIME << " " << this->params_[0];
+	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+	r << ":" << sender << " MODE";
+	for (size_t i = 0; i < this->params_.size(); ++i) {
+		r << " " << this->params_[i];
+	}
 	log::cout << r.get_str();
 	SendResponse(this->client_sock_, r.get_format_str());
 }
