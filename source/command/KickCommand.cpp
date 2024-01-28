@@ -7,16 +7,16 @@ KickCommand::KickCommand(const std::vector<std::string> &token_list) : Command(t
 
 std::string	KickCommand::CheckChannel(const std::string& channel_name, const std::string& nick) {
 	std::string	dummy;
-	std::map<std::string, Channel> channel_list;
+	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 	int target = this->server_->SearchClientByNick(nick);
 
 	if (target == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " :No such nick.";
 	this->server_->LockChannelListMutex();
-	channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 	}

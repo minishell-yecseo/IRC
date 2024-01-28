@@ -5,13 +5,13 @@ PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list) : Com
 
 std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std::string& text) {
 	std::string	dummy;
-	std::map<std::string, Channel> channel_list;
+	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
 	this->server_->LockChannelListMutex();
-	channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
@@ -26,9 +26,8 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	if (dummy.empty() == false)
 		return dummy;
 
-	std::set<int>	members;
 	this->server_->LockChannelMutex(chan->first);
-	members = (chan->second).get_members();
+	const std::set<int>	&members = (chan->secon).get_members();
 	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
 		if (*it == this->client_sock_)
 			continue;

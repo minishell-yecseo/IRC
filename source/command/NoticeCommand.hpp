@@ -8,6 +8,6 @@ class NoticeCommand: public Command {
 		NoticeCommand(const std::vector<std::string> &token_list);
 		void	Run(void);
 		std::string	AnyOfError(void);
-
+		void	NoticeTopic(Channel *c, const std::string& topic);
 };
 #endif

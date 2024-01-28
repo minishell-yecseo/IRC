@@ -134,12 +134,13 @@ void	ModeCommand::SetModeInChannel(Channel& c, char* mode_list) {
 
 std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
+	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
 	this->server_->LockChannelListMutex();
-	std::map<std::string, Channel> &channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 	}
