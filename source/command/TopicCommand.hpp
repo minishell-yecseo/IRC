@@ -9,5 +9,6 @@ class TopicCommand: public Command {
 		void	Run(void);
 		std::string	AnyOfError(void);
 		std::string	CheckChannel(const std::string& channel_name, const std::string& topic);
+		void	NoticeTopic(Channel* c, const std::string& nick);
 };
 #endif
