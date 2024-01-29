@@ -7,7 +7,7 @@ Client::Client(void) {
 	auth_flag_ = 0;
 }
 
-bool	Client::IsAuth(void) {
+bool	Client::IsAuth(void) const {
 	if (this->auth_flag_ & FT_AUTH)
 		return true;
 	return false;
@@ -24,7 +24,7 @@ void	Client::SetAuthFlag(const int& flag) {
 		this->auth_flag_ |= FT_AUTH;
 }
 
-char	Client::get_auth_flag(const int& flag) {
+char	Client::get_auth_flag(const int& flag) const {
 	char	ret = 0;
 	if ((flag & FT_AUTH) && (this->auth_flag_ & FT_AUTH))
 		ret |= FT_AUTH;
@@ -60,7 +60,7 @@ int	Client::set_sock(int fd) {
 	return sock_;
 }
 
-const int& Client::get_sock(void) {
+const int& Client::get_sock(void) const {
 	return sock_;
 }
 
@@ -68,7 +68,7 @@ void Client::set_nick(const std::string& nick) {
 	this->nick_ = nick;
 }
 
-const std::string& Client::get_nick(void) {
+const std::string& Client::get_nick(void) const {
 	return this->nick_;
 }
 
@@ -86,7 +86,7 @@ bool Client::operator == (const Client& client) const {
 	return false;
 }
 
-const std::vector<std::string>&	Client::get_channels(void) {
+const std::vector<std::string>&	Client::get_channels(void) const {
 	return this->channels_;
 }
 
@@ -110,14 +110,14 @@ void	Client::set_real_name(const std::string& real_name) {
 	this->real_name_ = real_name;
 }
 
-const std::string&	Client::get_user_name(void) {
+const std::string&	Client::get_user_name(void) const {
 	return this->user_name_;
 }
 
-const std::string&	Client::get_host_name(void) {
+const std::string&	Client::get_host_name(void) const {
 	return this->host_name_;
 }
 
-const std::string&	Client::get_server_name(void) {
+const std::string&	Client::get_server_name(void) const {
 	return this->server_name_;
 }
