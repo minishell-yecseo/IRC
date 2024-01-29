@@ -4,17 +4,6 @@
 #include "Command.hpp"
 #include "Response.hpp"
 
-/* function check */
-// 1) create channel (no key)									(O)
-// 2) create channel (yes key)									(O)
-// 3) normal case (no key, no invite, and success for join)		(O)
-// 4) normal case (yes key, no invite, and success for join)	(O)
-// 5) error case (no key, yes invite, fail)						(O)
-// 6) error case (yes key, no invite, and key auth fail)		(O)
-// 7) error case (yes key, yes invite, fail)					(O)
-// 8) DisconnectClient -> channel delte							(X)
-//
-
 typedef struct channel_info {
 	std::string name;
 	std::string	topic;
@@ -31,11 +20,17 @@ class JoinCommand: public Command
 		JoinCommand(const std::vector<std::string> &token_list);
 		void		Run(void);
 		std::string	AnyOfError(void);
+	
+	private:
+		std::string					sender_nick_;
+		std::string					sender_host_name_;
+		std::string					sender_user_name_;
+		std::vector<std::string>	channels_;
+		std::vector<std::string>	keys_;
+
 		void	ParseParam(void);
 		bool	IsChannelString(const std::string &str);
-		void	PrintParam(void);
 
-		void	JoinChannels(void);
 		void	Join(const int& idx);
 		void	GetChannelInfo(channel_info *info);
 		void	CreateChannel(channel_info *info);
@@ -47,12 +42,5 @@ class JoinCommand: public Command
 		void	SendTopic(const channel_info& info);
 		void	SendMemberList(const channel_info& info);
 		void	AddChannelForClient(const std::string& chname);
-
-	private:
-		std::string					sender_nick_;
-		std::string					sender_host_name_;
-		std::string					sender_user_name_;
-		std::vector<std::string>	channels_;
-		std::vector<std::string>	keys_;
 };
 #endif
