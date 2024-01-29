@@ -4,16 +4,13 @@ PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(t
 }
 
 std::string	PassCommand::AnyOfError(void) {
-	std::string dummy = this->server_->get_name();
-	dummy += ": PASS : ";
+	std::string dummy;
 
 	if (this->params_.empty() || this->params_.size() != 1)
-		return (dummy + ERR_UNKNOWNERROR + " : parameter number error");
+		return (dummy + ERR_UNKNOWNERROR + " :parameter number error");
 
 	if (server_->AuthPassword(this->params_[0]) == false)
-		return (dummy + ERR_PASSWDMISMATCH);
-
-	dummy = "";
+		return (dummy + ERR_PASSWDMISMATCH) + " :Password incorrect";
 	return dummy;
 }
 

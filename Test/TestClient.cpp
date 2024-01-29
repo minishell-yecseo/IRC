@@ -24,6 +24,7 @@ void	DummyClient(int i) {
         close(clientSocket);
         return ;
     }
+	sleep(1);
 	std::string	index = std::to_string(i);
     std::string message = "CAP LS\r\n";
 	message += "PASS 1234\r\n";
@@ -33,6 +34,7 @@ void	DummyClient(int i) {
 	message += "CAP END\r\n";
     ssize_t bytesSent = send(clientSocket, message.c_str(), message.size(), 0);
 
+	/*
 	sleep(2);
 	message = "";
 	message += "JOIN DummyChannel\r\n";
@@ -64,13 +66,14 @@ void	DummyClient(int i) {
 	message += ":number" + index +" privmsg #DummyChannel2 :It's dummy chat\r\n";
 	message += ":number" + index +" privmsg #DummyChannel2 :It's dummy chat\r\n";
 	message += "PART #DummyChannel\r\n";
+
     bytesSent = send(clientSocket, message.c_str(), message.size(), 0);
-    if (bytesSent == -1) {
+*/
+	if (bytesSent == -1) {
         perror("Sending data failed");
         return ;
     }
 
-	sleep(5);
     close(clientSocket);
     return ;
 
