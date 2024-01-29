@@ -21,5 +21,4 @@ void	CapCommand::Run() {
 		r << "CAP * LS :";
 		
 	SendResponse(this->client_sock_, r.get_format_str());
-	log::cout << "(send message) CapCommand->" << YELLOW << r.get_str() << "\n" << RESET;
 }

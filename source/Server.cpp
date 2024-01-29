@@ -45,9 +45,6 @@ bool	Server::Run(void) {
 	while (true) {
 		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
 		chlist_.clear();
-
-		log::cout << BOLDMAGENTA << "nev: " << nev << RESET << "\n";
-	
 		if (nev == -1)
 			error_handling("kevent() error\n");
 		else if (nev == 0)
@@ -221,12 +218,10 @@ bool	Server::LockClientMutex(const int& sock) {
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
 		this->list_mutex_.unlock();//unlock
-		log::cout << BOLDBLUE << sock << ": no such client mutex\n" << RESET;
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
 	if (mutex_it->second->lock() == 0) {
-		log::cout << pthread_self() << ": LockClientMutex " << sock << " END\n" << RESET;
 		return true;
 	}
 	return false;
@@ -326,7 +321,6 @@ void	Server::KqueueInit(void) {
 void	Server::HandleEvents(int nev) {
 	struct kevent	event;
 	for (int i = 0; i < nev; ++i) {
-		log::cout << BOLDBLUE << "kevent: " << i << RESET << "\n";
 		event = evlist_[i];
 		if (event.flags & EV_ERROR)
 			HandleEventError(event);
@@ -354,7 +348,6 @@ void	Server::HandleClientEvent(struct kevent event) {
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		UnlockClientMutex(event.ident);//unlock
-		
 		log::cout << "client read error\n";
 	}
 	else if (read_byte == 0) {
@@ -367,11 +360,8 @@ void	Server::HandleClientEvent(struct kevent event) {
 		std::vector<Command *> cmds;
 		int	offset;
 		cmds = Request::ParseRequest(this, client, buffer, &offset);
-		for (size_t i = 0; i < cmds.size(); ++i) {
-			
-			log::cout << "index : " << i << "\n";
+		for (size_t i = 0; i < cmds.size(); ++i) 
 			pool_->Enqueue(cmds[i]);
-		}
 		UnlockClientMutex(event.ident);//unlock
 		buffer.erase(0, offset);
 	}
@@ -413,10 +403,7 @@ void	Server::HandleEventError(struct kevent event) {
 	if (event.ident == (uintptr_t)this->sock_)
 		error_handling("server socket event error\n");
 	else
-	{
-		log::cout << "client socket event error\n";
 		DisconnectClient(event.ident);//need to implement fucntion
-	}
 }
 
 void	Server::AddDeleteClient(const int& sock) {
@@ -465,12 +452,10 @@ void	Server::DisconnectClient(const int& sock) {
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
 		this->clients_mutex_.unlock();//unlock
-		log::cout << pthread_self() << ": Disconnect " << sock << "fail: no such Client\n";
 		return;
 	}
 
 	if (LockClientMutex(sock) == false) {
-		log::cout << BOLDRED << pthread_self() << ": LockClientMutex(" << sock << ") fail\n";
 		this->clients_mutex_.unlock();//unlock
 		UnlockClientMutex(sock);
 		return;
@@ -504,7 +489,6 @@ void	Server::DisconnectClient(const int& sock) {
 	this->clients_mutex_.unlock();//unlock
 
 	DeleteClientMutex(client_it->second.get_sock());
-	log::cout << CYAN << "client " << sock << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
