@@ -496,6 +496,12 @@ void	Server::HandleTimeout(void) {
 	log::cout << "time out!\n";
 }
 
+void	Server::p_server_info(void) {
+	log::cout << "IRC server:" << GREEN << this->name_ << RESET << " started at ";
+	log::cout << GREEN << inet_ntoa(this->addr_.sin_addr) << RESET;
+	log::cout << " :: " << GREEN << this->port_ << RESET << "\n";
+}
+
 /* wooseoki functions */
 void	Server::print_event(struct kevent *event, int i) {
 	

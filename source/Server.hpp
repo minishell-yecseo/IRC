@@ -146,6 +146,7 @@ class Server {
 	/* debugging functions */
 		void	p_event_filter(struct kevent *event);
 		void	p_event_flags(struct kevent*event);
+		void	p_server_info(void);
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
