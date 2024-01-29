@@ -27,7 +27,7 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 		return dummy;
 
 	this->server_->LockChannelMutex(chan->first);
-	const std::set<int>	&members = (chan->secon).get_members();
+	const std::set<int>	&members = (chan->second).get_members();
 	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
 		if (*it == this->client_sock_)
 			continue;
@@ -73,7 +73,11 @@ std::string	PrivmsgCommand::AnyOfError(void) {
 void	PrivmsgCommand::Run(void) {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }

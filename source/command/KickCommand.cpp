@@ -48,9 +48,13 @@ std::string	KickCommand::AnyOfError(void) {
 void	KickCommand::Run(void) {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
-	r << CheckChannel(this->params_[0], this->params_[1]);
-	SendResponse(this->client_sock_, r.get_format_str());
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		r << CheckChannel(this->params_[0], this->params_[1]);
+		SendResponse(this->client_sock_, r.get_format_str());
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }

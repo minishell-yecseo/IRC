@@ -53,20 +53,24 @@ std::string	JoinCommand::AnyOfError(void) {
  */
 
 void	JoinCommand::Run(void) {
-	// It can be empty in params_ because irssi send only 'JOIN'
-	if (IsRegistered(this->client_sock_) == false)
-		return;
-
-	ParseParam();
-	std::string	error_message = AnyOfError();
-
-	if (error_message.empty() == false) {
-		error_message += CRLF;
-		SendResponse(this->client_sock_, error_message);
-		return;
+	try {
+		// It can be empty in params_ because irssi send only 'JOIN'
+		if (IsRegistered(this->client_sock_) == false)
+			return;
+	
+		ParseParam();
+		std::string	error_message = AnyOfError();
+	
+		if (error_message.empty() == false) {
+			error_message += CRLF;
+			SendResponse(this->client_sock_, error_message);
+			return;
+		}
+		GetSenderNick();//PASS
+		JoinChannels();
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-	GetSenderNick();//PASS
-	JoinChannels();
 }
 
 void	JoinCommand::JoinChannels(void) {

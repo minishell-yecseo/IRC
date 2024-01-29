@@ -131,7 +131,7 @@ class Server {
 	/* private member functions*/
 	private:
 		void	MutexInit(void);
-		void	ServerSocketInit(void);
+		void	ServerSocketInit(char **argv);
 		void	KqueueInit(void);
 		void	HandleEvents(int nev);
 		void	HandleTimeout(void);
@@ -146,6 +146,7 @@ class Server {
 	/* debugging functions */
 		void	p_event_filter(struct kevent *event);
 		void	p_event_flags(struct kevent*event);
+		void	p_server_info(void);
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);

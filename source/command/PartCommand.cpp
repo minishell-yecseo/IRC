@@ -13,6 +13,7 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
+	std::set<int>	chan_member_list;
 	int	channel_left_num = 1;
 
 	this->server_->LockChannelListMutex();
@@ -24,12 +25,16 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	}
 	this->server_->UnlockChannelListMutex();
 
+
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
-	else 
+	else {
 		// Run KICK here!
 		channel_left_num = (chan->second).Kick(this->client_sock_);
+		if (channel_left_num)
+			chan_member_list = (chan->second).get_members();
+	}
 
 	this->server_->UnlockChannelMutex(chan->first);
 	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
@@ -37,7 +42,13 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	if (channel_left_num == 0)
 		this->server_->CeaseChannel(channel_name);
 
-	return dummy + ":" + sender + " PART " + channel_name;
+	std::string send_message = dummy + ":" + sender + " PART " + channel_name;
+	if (channel_left_num > 0) {
+		std::set<int>::const_iterator	iter = chan_member_list.begin();
+		SendResponse(*iter, (send_message + CRLF));
+	}
+	//return dummy + ":" + sender + " PART " + channel_name;
+	return send_message;
 }
 
 //  :dan-!d@localhost PART #test    ; dan- is leaving the channel #test
@@ -74,8 +85,12 @@ void	PartCommand::PartEachTarget(Response *r) {
 void	PartCommand::Run(void) {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
-	PartEachTarget(&r);
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		PartEachTarget(&r);
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }

@@ -56,9 +56,13 @@ std::string	TopicCommand::AnyOfError(void) {
 void	TopicCommand::Run(void) {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.IsError() == true) {
-		log::cout << r.get_str();
-		return SendResponse(this->client_sock_, r.get_format_str());
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true) {
+			log::cout << r.get_str();
+			return SendResponse(this->client_sock_, r.get_format_str());
+		}
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
 }

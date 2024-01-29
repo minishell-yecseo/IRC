@@ -1,6 +1,7 @@
 #ifndef MUTEX_HPP
 # define MUTEX_HPP
 
+#include <exception>
 #include <pthread.h>
 #include <string>
 
@@ -11,6 +12,11 @@ class	Mutex {
 		int	lock(void);
 		int	unlock(void);
 		int	init(const pthread_mutexattr_t *attr = NULL);
+	
+		class FailLock : public std::exception
+		{
+			virtual const char* what() const throw();
+		};
 
 	private:
 		pthread_mutex_t	mutex_;
