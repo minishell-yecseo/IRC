@@ -140,9 +140,10 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 			reply << "@"; 
 		else
 			reply << "%";
+		reply << this->server_->SearchClientBySock(*citr);
 		if (cur_channel.get_host_sock() == *citr)
 			reply << "!";
-		reply << this->server_->SearchClientBySock(*citr) << " ";
+		reply << " ";
 		citr++;
 	}
 	this->server_->UnlockChannelMutex(info.name);//unlock
