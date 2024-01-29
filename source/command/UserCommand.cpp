@@ -27,6 +27,17 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 	return true;
 }
 
+void	UserCommand::SetUserInfo(void) {
+	this->server_->LockClientMutex(this->client_sock_);
+	this->client_->set_user_name(this->params_[0]);
+	this->client_->set_host_name(this->params_[1]);
+	this->client_->set_server_name(this->params_[2]);
+	this->client_->set_real_name(this->params_[3]);
+	client_->SetAuthFlag(FT_AUTH_USER);
+	this->server_->UnlockClientMutex(this->client_sock_);
+	AuthCheckReply();
+}
+
 void	UserCommand::Run(void) {
 	Response	reply;
 
@@ -38,11 +49,7 @@ void	UserCommand::Run(void) {
 			SendResponse(this->client_sock_, reply.get_format_str());
 			return;
 		}
-	
-		this->server_->LockClientMutex(this->client_sock_);
-		client_->SetAuthFlag(FT_AUTH_USER);
-		this->server_->UnlockClientMutex(this->client_sock_);
-		AuthCheckReply();
+		SetUserInfo();
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

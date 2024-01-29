@@ -41,7 +41,7 @@ class JoinCommand: public Command
 		void	CreateChannel(channel_info *info);
 		bool	JoinErrorCheck(const channel_info& info);
 		bool	TryJoin(const channel_info& inf);
-		void	GetSenderNick(void);
+		void	GetSenderInfo(void);
 		void	SendNotifyToMember(std::map<int, std::string> *members, \
 									const channel_info& info);
 		void	SendTopic(const channel_info& info);
@@ -50,6 +50,8 @@ class JoinCommand: public Command
 
 	private:
 		std::string					sender_nick_;
+		std::string					sender_host_name_;
+		std::string					sender_user_name_;
 		std::vector<std::string>	channels_;
 		std::vector<std::string>	keys_;
 };
