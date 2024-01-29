@@ -13,7 +13,13 @@ ERR_INVITEONLYCHAN (473)
 */
 
 std::string	JoinCommand::AnyOfError(void) {
-	std::string	error;
+	std::string	dummy;
+
+	if (IsRegistered(this->client_sock_) == false)
+		return (dummy + ": " + ERR_UNKNOWNERROR + " " + \
+			this->sender_nick_ + " JOIN : Not registered in Server");
+
+	ParseParam();
 
 	// Check channel names
 	for (size_t i = 0; i < this->channels_.size(); ++i) {
@@ -34,49 +40,25 @@ std::string	JoinCommand::AnyOfError(void) {
 		}
 		for (size_t c = 0; c < tmp.size(); ++c) {
 			if (isspace(c))
-				return (error + ERR_UNKNOWNERROR + " : key with whitespace");
+				return (dummy + ERR_UNKNOWNERROR + " : key with whitespace");
 		}
 	}
 	return "";
 }
 
-/*
- * In This Server,
- *		channels don't have client number limit		//CHANLIMIT RPL_ISUPPORT	(005)
- * 		clients also don't have channel number limit	//ERR_TOOMANYCHANNELS		(405)
- */
-
-/*	About The Multiple Channel Arguments
- *		When the user send N number of channels with M(< N) numbers of keys,
- *		The Irssi fill the empty channels's keys as 'x'.
- *		So If the key is exactly same with 'x', We consider this as NO KEY.
- */
-
 void	JoinCommand::Run(void) {
+	Response	r;
+
 	try {
-		// It can be empty in params_ because irssi send only 'JOIN'
-		if (IsRegistered(this->client_sock_) == false)
-			return;
-	
-		ParseParam();
-		std::string	error_message = AnyOfError();
-	
-		if (error_message.empty() == false) {
-			error_message += CRLF;
-			SendResponse(this->client_sock_, error_message);
-			return;
-		}
-		GetSenderInfo();//PASS
-		JoinChannels();
+		GetSenderInfo();
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+
+		for (size_t i = 0; i < this->channels_.size(); ++i)
+			Join(i);
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
-	}
-}
-
-void	JoinCommand::JoinChannels(void) {
-	/* channels loop */
-	for (size_t i = 0; i < this->channels_.size(); ++i) {
-		Join(i);
 	}
 }
 
@@ -314,20 +296,6 @@ void	JoinCommand::ParseParam(void) {
 			start = i + 1;
 		}
 	}
-}
-
-// TEST CODE
-void	JoinCommand::PrintParam(void) {
-	std::string	logging = BLUE;
-	for (size_t i = 0; i < this->channels_.size(); ++i) {
-		logging += this->channels_[i];
-		if (i < this->keys_.size()) {
-			logging = logging + ":" + keys_[i];
-		}
-		logging += "\n";
-	}
-	logging += RESET;
-	log::cout << logging;
 }
 
 bool	JoinCommand::IsChannelString(const std::string &str) {

@@ -8,6 +8,8 @@ class UserCommand: public Command {
 		UserCommand(const std::vector<std::string> &token_list);
 		void		Run(void);
 		std::string	AnyOfError(void);
+
+	private:
 		bool		IsNonwhite(const std::string& str);
 		void		SetUserInfo(void);
 };

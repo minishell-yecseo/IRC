@@ -1,10 +1,21 @@
 #include "PassCommand.hpp"
 
+inline bool	CheckClientAuth(Server *server, Client *client, const int& client_sock) {
+	bool	status;
+	server->LockClientMutex(client_sock);
+	status = client->IsAuth(); 
+	server->UnlockClientMutex(client_sock);
+	return status;
+}
+
 PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
 std::string	PassCommand::AnyOfError(void) {
-	std::string dummy;
+	std::string dummy = this->server_->get_name();
+	
+	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
+			return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
 
 	if (this->params_.empty() || this->params_.size() != 1)
 		return (dummy + ERR_UNKNOWNERROR + " :parameter number error");
@@ -14,24 +25,13 @@ std::string	PassCommand::AnyOfError(void) {
 	return dummy;
 }
 
-bool	PassCommand::CheckClientAuth(void) {
-	bool	status = true;
-	this->server_->LockClientMutex(this->client_sock_);
-	this->client_->IsAuth(); 
-	this->server_->UnlockClientMutex(this->client_sock_);
-	return status;
-}
-
 void	PassCommand::Run(void) {
+	Response	reply;
+
 	try {
-		if (CheckClientAuth() == false)
-			return;
-	
-		std::string	error_message = AnyOfError();
-		if (error_message.empty() == false) {
-			error_message += CRLF;
-			SendResponse(this->client_sock_, error_message);
-			log::cout << "PASS send : " << YELLOW << error_message << RESET << "\n";
+		reply << AnyOfError();
+		if (reply.IsError() == true) {
+			SendResponse(this->client_sock_, reply.get_format_str());
 			DisconnectClient();
 			return;
 		}
@@ -44,3 +44,4 @@ void	PassCommand::Run(void) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
 }
+

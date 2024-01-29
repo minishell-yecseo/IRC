@@ -3,6 +3,21 @@
 UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
+void	UserCommand::Run(void) {
+	Response	reply;
+
+	try {
+		reply << AnyOfError();
+		if (reply.IsError()) {
+			SendResponse(this->client_sock_, reply.get_format_str());
+			return;
+		}
+		SetUserInfo();
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
+}
+
 std::string	UserCommand::AnyOfError(void) {
 	std::string	dummy;
 
@@ -38,19 +53,3 @@ void	UserCommand::SetUserInfo(void) {
 	AuthCheckReply();
 }
 
-void	UserCommand::Run(void) {
-	Response	reply;
-
-	try {
-		// <username> <hostname> <servername> <realname>
-		// realname must be prefix ':' but not irssi
-		reply << AnyOfError();
-		if (reply.IsError()) {
-			SendResponse(this->client_sock_, reply.get_format_str());
-			return;
-		}
-		SetUserInfo();
-	} catch(std::exception& e) {
-		log::cout << BOLDRED << e.what() << RESET << "\n";
-	}
-}
