@@ -131,7 +131,7 @@ class Server {
 	/* private member functions*/
 	private:
 		void	MutexInit(void);
-		void	ServerSocketInit(void);
+		void	ServerSocketInit(char **argv);
 		void	KqueueInit(void);
 		void	HandleEvents(int nev);
 		void	HandleTimeout(void);
