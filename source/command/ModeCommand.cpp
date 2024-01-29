@@ -32,103 +32,81 @@ bool	ModeCommand::IsValidMode(const std::string& str) {
 	return true;
 }
 
-int	ModeCommand::ReturnFlagIndex(char c) {
-	if (c == 'i')
-		return 0;
-	if (c == 't')
-		return 1;
-	if (c == 'k')
-		return 2;
-	if (c == 'o')
-		return 3;
-	if (c == 'l')
-		return 4;
-	return 4;
+bool	ModeCommand::IsLimitNumber(const std::string& param) {
+	if (param.size() > 9)
+		return false;
+	for (size_t i = 0; i < param.size(); ++i) {
+		if (param[i] < '0' || param[i] > '9')
+			return false;
+	}
+	return true;
 }
 
-// i t k o l
-char	*ModeCommand::ConvertMode(const std::string& modestr) {
-	char	*flag = new char[5]();
-	bool	sign = true;
+void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_index) {
+	if (sign == true) {
+		switch (mode) {
+			case 'i':
+				c->set_mode(MODE_INVITE, true);
+				break ;
+			case 'o': {
+				int user = this->server_->SearchClientByNick(this->params_[(*param_index)++]);
+				if (user == FT_INIT_CLIENT_FD)
+					return ;
+				c->PromoteMember(user);
+				break ;
+			}
+			case 't':
+				c->set_mode(MODE_TOPIC, true);
+				break ;
+			case 'k':
+				c->set_mode(MODE_KEY, true);
+				c->set_password(this->params_[(*param_index)++]);
+				break ;
+			case 'l': {
+				if (IsLimitNumber(this->params_[*param_index]) == true) {
+					c->set_mode(MODE_LIMIT, true);
+					c->set_limit(std::atoi(this->params_[(*param_index)++].c_str()));
+				}
+				break ;
+			}
+		}
+	}
+	else {
+		switch (mode) {
+			case 'i':
+				c->set_mode(MODE_INVITE, false);
+				break ;
+			case 'o': {
+				int user = this->server_->SearchClientByNick(this->params_[(*param_index)++]);
+				if (user == FT_INIT_CLIENT_FD)
+					return ;
+				c->DegradeMember(user);
+				break ;
+			}
+			case 't':
+				c->set_mode(MODE_TOPIC, false);
+				break ;
+			case 'k':
+				c->set_mode(MODE_KEY, false);
+				break ;
+			case 'l':
+				c->set_mode(MODE_LIMIT, false);
+				break ;
+		}
+	}
+}
 
-	int	order = 2;
-	int	index;
+void	ModeCommand::SetModeInChannel(Channel *c, const std::string& modestr) {
+	bool	sign;
+	int		param_index = 2;
+
 	for (size_t i = 0; i < modestr.size(); ++i) {
 		if (modestr[i] == '+')
 			sign = true;
 		else if (modestr[i] == '-')
 			sign = false;
-		else {
-			index = ReturnFlagIndex(modestr[i]);
-			if (sign == true) {
-				if (modestr[i] == 'i' || modestr[i] == 't')
-					flag[index] = 1;
-				else
-					flag[index] = order++;
-			}
-			else
-				flag[index] = -1;
-		}
-	}
-	return flag;
-}
-
-bool	ModeCommand::IsLimitNumber(char	*mode_list) {
-	if (mode_list[4] > 0) {
-		std::string&	limit_param = this->params_[mode_list[4]];
-		if (limit_param.size() > 9)
-			return false;
-		for (size_t i = 0; i < limit_param.size(); ++i)
-			if (limit_param[i] < '0' || limit_param[i] > '9')
-				return false;
-	}
-	return true;
-}
-
-bool	ModeCommand::IsParamEnough(char	*mode_list) {
-	size_t	max = 1;
-
-	for (int i = 0; i < 5; ++i) {
-		if (mode_list[i] > 0 && max < static_cast<size_t>(mode_list[i]))
-			max = static_cast<size_t>(mode_list[i]);
-	}
-	return (this->params_.size() == max + 1);
-}
-
-void	ModeCommand::SetModeInChannel(Channel& c, char* mode_list) {
-	// i t k o l
-	if (mode_list[0] == -1) 
-		c.set_mode(MODE_INVITE, false);
-	else if (mode_list[0] > 0) 
-		c.set_mode(MODE_INVITE, true);
-	if (mode_list[1] == -1) 
-		c.set_mode(MODE_TOPIC, false);
-	else if (mode_list[1] > 0) {
-		c.set_mode(MODE_TOPIC, true);
-		c.set_topic(this->params_[mode_list[1]]);
-	};
-	if (mode_list[2] == -1) 
-		c.set_mode(MODE_KEY, false);
-	else if (mode_list[2] > 0) {
-		c.set_mode(MODE_KEY, true);
-		c.set_password(this->params_[mode_list[2]]);
-	}
-	int	user = this->server_->SearchClientByNick(this->params_[mode_list[3]]);
-	if (user == FT_INIT_CLIENT_FD)
-		;
-	else if (mode_list[3] == -1)
-		c.DegradeMember(user);
-	else if (mode_list[3] > 0) {
-		c.PromoteMember(user);
-	}
-	if (mode_list[4] == -1) {
-		c.set_mode(MODE_LIMIT, false);
-		c.unset_limit();
-	}
-	else if (mode_list[4] > 0) {
-		c.set_mode(MODE_LIMIT, true);
-		//c.set_limit(params[mode_list[4]])
-		c.set_limit(std::atoi(this->params_[mode_list[4]].c_str()));
+		else
+			ModifyChannel(c, modestr[i], sign, &param_index);
 	}
 }
 
@@ -146,23 +124,36 @@ std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	}
 	this->server_->UnlockChannelListMutex();
 
-	char*	mode_list = ConvertMode(this->params_[1]);
-	
-	if (IsParamEnough(mode_list) == false || IsLimitNumber(mode_list) == false) {
-		delete[] mode_list;
-		return dummy + ERR_NEEDMOREPARAMS + " MODE :Not enough params";
-	}
-
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
 		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else
-		SetModeInChannel(chan->second, mode_list);
+		SetModeInChannel(&(chan->second), this->params_[1]);
 	this->server_->UnlockChannelMutex(chan->first);
-	delete[] mode_list;
 	return dummy;
+}
+
+bool	ModeCommand::CheckParamCount(const std::string& modestr) {
+	bool	sign;
+	size_t	count = 0;
+
+	for (size_t i = 0; i < modestr.size(); ++i) {
+		if (modestr[i] == '+')
+			sign = true;
+		else if (modestr[i] == '-')
+			sign = false;
+		if (sign == true) {
+			if (modestr[i] == 'o' || modestr[i] == 'k' || modestr[i] == 'l')
+				++count;
+		}
+		else if (sign == false) {
+			if (modestr[i] == 'o')
+				++count;
+		}
+	}
+	return (this->params_.size() - 2 == count);
 }
 
 std::string	ModeCommand::AnyOfError(void) {
@@ -174,8 +165,10 @@ std::string	ModeCommand::AnyOfError(void) {
 		return dummy + RPL_CHANNELMODEIS + " :Not given modestring";
 	if (IsValidMode(this->params_[1]) == false)
 		return dummy + ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
+	if (CheckParamCount(this->params_[1]) == false)
+		return dummy + ERR_NEEDMOREPARAMS + " :No match param count";
 	if (CheckKeyParam(this->params_[1]) == false)
-		return dummy + ERR_KEYSET;
+		return dummy + ERR_KEYSET + " :Keyset is unvliad";
 	return CheckChannel(this->params_[0]);
 }
 

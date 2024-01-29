@@ -13,11 +13,10 @@ class ModeCommand: public Command {
 		std::string	AnyOfError(void);
 		bool		CheckKeyParam(const std::string& str);
 		bool		IsValidMode(const std::string& str);
-		int			ReturnFlagIndex(char c);
-		char		*ConvertMode(const std::string& modestr);
 		std::string	CheckChannel(const std::string& chan);
-		bool		IsParamEnough(char *mode_list);
-		bool		IsLimitNumber(char *mode_list);
-		void		SetModeInChannel(Channel &c, char *mode_list);
+		bool		IsLimitNumber(const std::string& param);
+		void		SetModeInChannel(Channel *c, const std::string& modestr);
+		void		ModifyChannel(Channel *c, char mode, bool sing, int *param_index);
+		bool		CheckParamCount(const std::string& modestr);
 };
 #endif

@@ -18,12 +18,10 @@ std::string	PassCommand::AnyOfError(void) {
 			return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
 
 	if (this->params_.empty() || this->params_.size() != 1)
-		return (dummy + ERR_UNKNOWNERROR + " : parameter number error");
+		return (dummy + ERR_UNKNOWNERROR + " :parameter number error");
 
 	if (server_->AuthPassword(this->params_[0]) == false)
-		return (dummy + ERR_PASSWDMISMATCH);
-
-	dummy = "";
+		return (dummy + ERR_PASSWDMISMATCH) + " :Password incorrect";
 	return dummy;
 }
 
