@@ -26,20 +26,24 @@ bool	PassCommand::CheckClientAuth(void) {
 }
 
 void	PassCommand::Run(void) {
-	if (CheckClientAuth() == false)
-		return;
-
-	std::string	error_message = AnyOfError();
-	if (error_message.empty() == false) {
-		error_message += CRLF;
-		SendResponse(this->client_sock_, error_message);
-		log::cout << "PASS send : " << YELLOW << error_message << RESET << "\n";
-		DisconnectClient();
-		return;
+	try {
+		if (CheckClientAuth() == false)
+			return;
+	
+		std::string	error_message = AnyOfError();
+		if (error_message.empty() == false) {
+			error_message += CRLF;
+			SendResponse(this->client_sock_, error_message);
+			log::cout << "PASS send : " << YELLOW << error_message << RESET << "\n";
+			DisconnectClient();
+			return;
+		}
+	
+		this->server_->LockClientMutex(this->client_sock_);
+		client_->SetAuthFlag(FT_AUTH_PASS);
+		this->server_->UnlockClientMutex(this->client_sock_);
+		AuthCheckReply();
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-
-	this->server_->LockClientMutex(this->client_sock_);
-	client_->SetAuthFlag(FT_AUTH_PASS);
-	this->server_->UnlockClientMutex(this->client_sock_);
-	AuthCheckReply();
 }

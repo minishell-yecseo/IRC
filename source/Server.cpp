@@ -11,6 +11,41 @@ Server::Server(int argc, char **argv) {
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
+
+	ServerSocketInit(argv);
+	MutexInit();
+	KqueueInit();
+	p_server_info();
+}
+
+bool	Server::Run(void) {
+	// main loop of ircserv with kqueue
+	int nev;
+	while (true) {
+		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
+		chlist_.clear();
+		if (nev == -1)
+			error_handling("kevent() error\n");
+		else if (nev == 0)
+			HandleTimeout();
+		else if (nev > 0)
+			HandleEvents(nev);
+
+		DeleteInvalidClient();
+		print_clients();
+		print_channels();
+	}
+	return true;
+}
+
+void	Server::MutexInit(void) {
+	this->list_mutex_.init(NULL);
+	this->del_clients_mutex_.init(NULL);
+	this->clients_mutex_.init(NULL);
+	this->channels_mutex_.init(NULL);
+}
+
+void	Server::ServerSocketInit(char **argv) {
 	name_ = FT_SERVER_NAME;
 	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
@@ -18,9 +53,31 @@ Server::Server(int argc, char **argv) {
 	password_ = argv[2];
 	createtime_ = set_create_time();
 
-	MutexInit();
-	ServerSocketInit();
-	KqueueInit();
+	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+		error_handling("socket() error\n");
+	
+	memset(&addr_, 0, sizeof(addr_));
+	addr_.sin_family = AF_INET;
+	addr_.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr_.sin_port = htons(port_);
+	int reuse = 1;
+	setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
+	if (bind(sock_, (struct sockaddr*)&addr_, sizeof(addr_)) == -1)
+		error_handling("socket bind() error\n");
+	if (listen(sock_, FT_SOCK_QUEUE_SIZE) == -1)
+		error_handling("socket listen() error\n");
+	fcntl(sock_, F_SETFL, O_NONBLOCK);
+}
+
+void	Server::KqueueInit(void) {
+	if ((kq_ = kqueue()) == -1)
+		error_handling("kqueue() error\n");
+	struct kevent	server_event;
+	EV_SET(&server_event, sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	chlist_.push_back(server_event);
+	timeout_.tv_sec = FT_TIMEOUT_SEC;
+	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
 }
 
 std::string	Server::set_create_time(void) {
@@ -37,28 +94,6 @@ std::string	Server::set_create_time(void) {
 		<< localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec;
 
 	return timeStream.str();
-}
-
-bool	Server::Run(void) {
-	// main loop of ircserv with kqueue
-	int nev;
-	while (true) {
-		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
-		chlist_.clear();
-
-		log::cout << BOLDMAGENTA << "nev: " << nev << RESET << "\n";
-	
-		if (nev == -1)
-			error_handling("kevent() error\n");
-		else if (nev == 0)
-			HandleTimeout();
-		else if (nev > 0)
-			HandleEvents(nev);
-		DeleteInvalidClient();
-		print_clients();
-		print_channels();
-	}
-	return true;
 }
 
 const std::string&	Server::get_name(void) {
@@ -221,12 +256,10 @@ bool	Server::LockClientMutex(const int& sock) {
 	std::map<int, Mutex*>::iterator	mutex_it = client_mutex_list_.find(sock);
 	if (mutex_it == client_mutex_list_.end()) {
 		this->list_mutex_.unlock();//unlock
-		log::cout << BOLDBLUE << sock << ": no such client mutex\n" << RESET;
 		return false;
 	}
 	this->list_mutex_.unlock();//unlock
 	if (mutex_it->second->lock() == 0) {
-		log::cout << pthread_self() << ": LockClientMutex " << sock << " END\n" << RESET;
 		return true;
 	}
 	return false;
@@ -288,45 +321,9 @@ void	Server::UnlockChannelMutex(const std::string& name) {
 		(mutex_it->second)->unlock();
 }
 
-void	Server::MutexInit(void) {
-	this->list_mutex_.init(NULL);
-	this->del_clients_mutex_.init(NULL);
-	this->clients_mutex_.init(NULL);
-	this->channels_mutex_.init(NULL);
-}
-
-void	Server::ServerSocketInit(void) {
-	if ((sock_ = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-		error_handling("socket() error\n");
-
-	memset(&addr_, 0, sizeof(addr_));
-	addr_.sin_family = AF_INET;
-	addr_.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr_.sin_port = htons(port_);
-	int reuse = 1;
-	setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-
-	if (bind(sock_, (struct sockaddr*)&addr_, sizeof(addr_)) == -1)
-		error_handling("socket bind() error\n");
-	if (listen(sock_, FT_SOCK_QUEUE_SIZE) == -1)
-		error_handling("socket listen() error\n");
-	fcntl(sock_, F_SETFL, O_NONBLOCK);
-}
-
-void	Server::KqueueInit(void) {
-	if ((kq_ = kqueue()) == -1)
-		error_handling("kqueue() error\n");
-	struct kevent	server_event;
-	EV_SET(&server_event, sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	chlist_.push_back(server_event);
-	timeout_.tv_sec = FT_TIMEOUT_SEC;
-	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
-}
-
 void	Server::HandleEvents(int nev) {
 	struct kevent	event;
 	for (int i = 0; i < nev; ++i) {
-		log::cout << BOLDBLUE << "kevent: " << i << RESET << "\n";
 		event = evlist_[i];
 		if (event.flags & EV_ERROR)
 			HandleEventError(event);
@@ -354,7 +351,6 @@ void	Server::HandleClientEvent(struct kevent event) {
 	int read_byte = read(event.ident, buff, sizeof(buff));
 	if (read_byte == -1) {
 		UnlockClientMutex(event.ident);//unlock
-		
 		log::cout << "client read error\n";
 	}
 	else if (read_byte == 0) {
@@ -367,11 +363,8 @@ void	Server::HandleClientEvent(struct kevent event) {
 		std::vector<Command *> cmds;
 		int	offset;
 		cmds = Request::ParseRequest(this, client, buffer, &offset);
-		for (size_t i = 0; i < cmds.size(); ++i) {
-			
-			log::cout << "index : " << i << "\n";
+		for (size_t i = 0; i < cmds.size(); ++i) 
 			pool_->Enqueue(cmds[i]);
-		}
 		UnlockClientMutex(event.ident);//unlock
 		buffer.erase(0, offset);
 	}
@@ -413,10 +406,7 @@ void	Server::HandleEventError(struct kevent event) {
 	if (event.ident == (uintptr_t)this->sock_)
 		error_handling("server socket event error\n");
 	else
-	{
-		log::cout << "client socket event error\n";
 		DisconnectClient(event.ident);//need to implement fucntion
-	}
 }
 
 void	Server::AddDeleteClient(const int& sock) {
@@ -465,12 +455,10 @@ void	Server::DisconnectClient(const int& sock) {
 	client_it = clients_.find(sock);
 	if (client_it == clients_.end()) {
 		this->clients_mutex_.unlock();//unlock
-		log::cout << pthread_self() << ": Disconnect " << sock << "fail: no such Client\n";
 		return;
 	}
 
 	if (LockClientMutex(sock) == false) {
-		log::cout << BOLDRED << pthread_self() << ": LockClientMutex(" << sock << ") fail\n";
 		this->clients_mutex_.unlock();//unlock
 		UnlockClientMutex(sock);
 		return;
@@ -504,12 +492,17 @@ void	Server::DisconnectClient(const int& sock) {
 	this->clients_mutex_.unlock();//unlock
 
 	DeleteClientMutex(client_it->second.get_sock());
-	log::cout << CYAN << "client " << sock << " disconnected\n" << RESET;
 }
 
 void	Server::HandleTimeout(void) {
 	/* handle timeout */
 	log::cout << "time out!\n";
+}
+
+void	Server::p_server_info(void) {
+	log::cout << "IRC server:" << GREEN << this->name_ << RESET << " started at ";
+	log::cout << GREEN << inet_ntoa(this->addr_.sin_addr) << RESET;
+	log::cout << " :: " << GREEN << this->port_ << RESET << "\n";
 }
 
 /* wooseoki functions */

@@ -53,20 +53,24 @@ std::string	JoinCommand::AnyOfError(void) {
  */
 
 void	JoinCommand::Run(void) {
-	// It can be empty in params_ because irssi send only 'JOIN'
-	if (IsRegistered(this->client_sock_) == false)
-		return;
-
-	ParseParam();
-	std::string	error_message = AnyOfError();
-
-	if (error_message.empty() == false) {
-		error_message += CRLF;
-		SendResponse(this->client_sock_, error_message);
-		return;
+	try {
+		// It can be empty in params_ because irssi send only 'JOIN'
+		if (IsRegistered(this->client_sock_) == false)
+			return;
+	
+		ParseParam();
+		std::string	error_message = AnyOfError();
+	
+		if (error_message.empty() == false) {
+			error_message += CRLF;
+			SendResponse(this->client_sock_, error_message);
+			return;
+		}
+		GetSenderInfo();//PASS
+		JoinChannels();
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-	GetSenderNick();//PASS
-	JoinChannels();
 }
 
 void	JoinCommand::JoinChannels(void) {
@@ -136,8 +140,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 			reply << "@"; 
 		else
 			reply << "%";
-		if (cur_channel.get_host_sock() == *citr)
-			reply << "!";
 		reply << this->server_->SearchClientBySock(*citr) << " ";
 		citr++;
 	}
@@ -250,7 +252,8 @@ void	JoinCommand::SendNotifyToMember(std::map<int, std::string> *members, \
 										const channel_info& info) {
 	Response notify;
 
-	notify << ":" << this->sender_nick_ << " JOIN" <<  " " << info.name;
+	notify << ":" << this->sender_nick_ << "!" << this->sender_user_name_;
+	notify << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
 	std::map<int, std::string>::iterator	itr = members->begin();
 	while (itr != members->end()) {
 		SendResponse(itr->first, notify.get_format_str());
@@ -265,9 +268,11 @@ void	JoinCommand::AddChannelForClient(const std::string& chname) {
 	this->server_->UnlockClientMutex(this->client_sock_);
 }
 
-void	JoinCommand::GetSenderNick(void) {
+void	JoinCommand::GetSenderInfo(void) {
 	this->server_->LockClientMutex(this->client_sock_);
 	this->sender_nick_ = this->client_->get_nick();
+	this->sender_user_name_ = this->client_->get_user_name();
+	this->sender_host_name_ = this->client_->get_host_name();
 	this->server_->UnlockClientMutex(this->client_sock_);
 }
 

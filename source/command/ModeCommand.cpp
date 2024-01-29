@@ -112,12 +112,13 @@ void	ModeCommand::SetModeInChannel(Channel *c, const std::string& modestr) {
 
 std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
+	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
 	this->server_->LockChannelListMutex();
-	std::map<std::string, Channel> &channel_list = this->server_->get_channels();
-	chan = channel_list.find(channel_name);
-	if (chan == channel_list.end()) {
+	channel_list = &(this->server_->get_channels());
+	chan = channel_list->find(channel_name);
+	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 	}
@@ -173,17 +174,18 @@ std::string	ModeCommand::AnyOfError(void) {
 
 void	ModeCommand::Run() {
 	Response	r;
-	
-	r << AnyOfError();
-	if (r.IsError() == true) {
-		log::cout << r.get_str();
-		return SendResponse(this->client_sock_, r.get_format_str());
+
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+		r << ":" << sender << " MODE";
+		for (size_t i = 0; i < this->params_.size(); ++i) {
+			r << " " << this->params_[i];
+		}
+		SendResponse(this->client_sock_, r.get_format_str());
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
-	r << ":" << sender << " MODE";
-	for (size_t i = 0; i < this->params_.size(); ++i) {
-		r << " " << this->params_[i];
-	}
-	log::cout << r.get_str();
-	SendResponse(this->client_sock_, r.get_format_str());
 }

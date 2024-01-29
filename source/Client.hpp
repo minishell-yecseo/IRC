@@ -24,6 +24,13 @@ class Client {
 		Client(void);
 		int set_sock(int fd);
 		void set_nick(const std::string& nick);
+		void set_user_name(const std::string& user_name);
+		void set_host_name(const std::string& host_name);
+		void set_server_name(const std::string& server_name);
+		void set_real_name(const std::string& real_name);
+		const std::string&	get_host_name(void);
+		const std::string&	get_server_name(void);
+		const std::string&	get_user_name(void);
 		const int& get_sock(void);
 		const std::string& get_nick(void);
 		bool	IsAuth(void);
@@ -41,7 +48,11 @@ class Client {
 		char	auth_flag_;
 		int		sock_;
 		std::string	nick_;//UNIQUE
-		std::string	user_;
+		std::string	user_name_;
+		std::string	host_name_;
+		std::string	server_name_;
+		std::string	real_name_;
+
 		struct sockaddr_in	addr_;
 		socklen_t	addr_size_;
 		std::string	password_;//sent from client at first access

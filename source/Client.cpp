@@ -4,7 +4,6 @@ Client::Client(void) {
 	sock_ = FT_INIT_CLIENT_FD;
 	memset(&addr_, 0, sizeof(addr_));
 	nick_ = "unknown_nick";
-	user_ = "unknown_user";
 	auth_flag_ = 0;
 }
 
@@ -42,13 +41,16 @@ Client Client::operator = (const Client& client) {
 	if (this == &client)
 		return *this;
 
-	auth_flag_ = client.auth_flag_;
-	sock_ = client.sock_;
-	nick_ = client.nick_;
-	user_ = client.user_;
-	addr_ = client.addr_;
-	addr_size_ = client.addr_size_;
-	password_ = client.password_;
+	this->auth_flag_ = client.auth_flag_;
+	this->sock_ = client.sock_;
+	this->nick_ = client.nick_;
+	this->user_name_ = client.user_name_;
+	this->host_name_ = client.host_name_;
+	this->server_name_ = client.server_name_;
+	this->real_name_ = client.real_name_;
+	this->addr_ = client.addr_;
+	this->addr_size_ = client.addr_size_;
+	this->password_ = client.password_;
 	return *this;
 }
 
@@ -90,4 +92,32 @@ const std::vector<std::string>&	Client::get_channels(void) {
 
 void	Client::add_channel(const std::string& channel_name) {
 	this->channels_.push_back(channel_name);
+}
+
+void	Client::set_user_name(const std::string& user_name) {
+	this->user_name_ = user_name;
+}
+
+void	Client::set_host_name(const std::string& host_name) {
+	this->host_name_ = host_name;
+}
+
+void	Client::set_server_name(const std::string& server_name) {
+	this->server_name_ = server_name;
+}
+
+void	Client::set_real_name(const std::string& real_name) {
+	this->real_name_ = real_name;
+}
+
+const std::string&	Client::get_user_name(void) {
+	return this->user_name_;
+}
+
+const std::string&	Client::get_host_name(void) {
+	return this->host_name_;
+}
+
+const std::string&	Client::get_server_name(void) {
+	return this->server_name_;
 }

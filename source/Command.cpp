@@ -58,7 +58,6 @@ void	Command::DisconnectClient(void) {
 
  //:server 004 <nick> <servername> <version> <available umodes> <available cmodes> [<cmodes with param>]
 void	Command::AuthCheckReply(void) {
-	log::cout << "Command::AuthCheckReply call()\n";
 	Response	auth_message;
 
 	char	flag;
@@ -66,7 +65,6 @@ void	Command::AuthCheckReply(void) {
 	bool	send_status = false;
 
 	if (this->server_->LockClientMutex(this->client_sock_) == false) {//Lock
-		log::cout << "AuthCheckReply: NO such client\n";
 		this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 		return;
 	}
@@ -90,6 +88,5 @@ void	Command::AuthCheckReply(void) {
 		auth_message << ":" << serv_name << " " << RPL_MYINFO << " " << nick 
 			<< " " << serv_name << " " << this->server_->get_version() << CRLF;
 		SendResponse(this->client_sock_, auth_message.get_str());
-		log::cout << RED << "send 001\n" << RESET;
 	}
 }

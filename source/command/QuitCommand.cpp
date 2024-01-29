@@ -12,7 +12,11 @@ std::string	QuitCommand::AnyOfError(void) {
 void	QuitCommand::Run(void) {
 	Response	r;
 
-	Command::DisconnectClient();
-	r << ":" << this->server_->SearchClientBySock(this->client_sock_) << " QUIT :Quit: Bye for now!";
-	SendResponse(this->client_sock_, r.get_format_str());
+	try {
+		Command::DisconnectClient();
+		r << ":" << this->server_->SearchClientBySock(this->client_sock_) << " QUIT :Quit: Bye for now!";
+		SendResponse(this->client_sock_, r.get_format_str());
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }
