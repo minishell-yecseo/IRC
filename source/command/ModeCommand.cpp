@@ -181,14 +181,18 @@ std::string	ModeCommand::AnyOfError(void) {
 
 void	ModeCommand::Run() {
 	Response	r;
-	
-	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
-	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
-	r << ":" << sender << " MODE";
-	for (size_t i = 0; i < this->params_.size(); ++i) {
-		r << " " << this->params_[i];
+
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+		r << ":" << sender << " MODE";
+		for (size_t i = 0; i < this->params_.size(); ++i) {
+			r << " " << this->params_[i];
+		}
+		SendResponse(this->client_sock_, r.get_format_str());
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-	SendResponse(this->client_sock_, r.get_format_str());
 }

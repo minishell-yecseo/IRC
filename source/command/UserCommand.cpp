@@ -30,16 +30,20 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 void	UserCommand::Run(void) {
 	Response	reply;
 
-	// <username> <hostname> <servername> <realname>
-	// realname must be prefix ':' but not irssi
-	reply << AnyOfError();
-	if (reply.IsError()) {
-		SendResponse(this->client_sock_, reply.get_format_str());
-		return;
+	try {
+		// <username> <hostname> <servername> <realname>
+		// realname must be prefix ':' but not irssi
+		reply << AnyOfError();
+		if (reply.IsError()) {
+			SendResponse(this->client_sock_, reply.get_format_str());
+			return;
+		}
+	
+		this->server_->LockClientMutex(this->client_sock_);
+		client_->SetAuthFlag(FT_AUTH_USER);
+		this->server_->UnlockClientMutex(this->client_sock_);
+		AuthCheckReply();
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-
-	this->server_->LockClientMutex(this->client_sock_);
-	client_->SetAuthFlag(FT_AUTH_USER);
-	this->server_->UnlockClientMutex(this->client_sock_);
-	AuthCheckReply();
 }

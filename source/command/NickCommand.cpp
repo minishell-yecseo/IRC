@@ -78,42 +78,46 @@ void	NickCommand::Run() {
 	Response	out;
 	std::string	error_message;
 
-	sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
-	if (IsRegistered(this->client_sock_) == true) {
-		error_message = AuthClientError();
-		if (error_message.empty() == false) {
-			out << error_message;
-			SendResponse(this->client_sock_, out.get_format_str());
+	try {
+		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
+		if (IsRegistered(this->client_sock_) == true) {
+			error_message = AuthClientError();
+			if (error_message.empty() == false) {
+				out << error_message;
+				SendResponse(this->client_sock_, out.get_format_str());
+				return;
+			}
+		}
+		else {
+			error_message = AnyOfError();
+			if (error_message.empty() == false) {
+				out << error_message;
+				SendResponse(this->client_sock_, out.get_format_str());
+				DisconnectClient();
+			}
+		}
+	
+		/* success case : nick can be changed */
+		bool	auth_check = false;
+		if (this->server_->LockClientMutex(this->client_sock_) == false) {//lock
+			this->server_->UnlockClientMutex(this->client_sock_);
 			return;
 		}
-	}
-	else {
-		error_message = AnyOfError();
-		if (error_message.empty() == false) {
-			out << error_message;
-			SendResponse(this->client_sock_, out.get_format_str());
-			DisconnectClient();
-		}
-	}
-
-	/* success case : nick can be changed */
-	bool	auth_check = false;
-	if (this->server_->LockClientMutex(this->client_sock_) == false) {//lock
+		client_->set_nick(params_[0]);
+		client_->SetAuthFlag(FT_AUTH_NICK);
+		auth_check = this->client_->IsAuth();
 		this->server_->UnlockClientMutex(this->client_sock_);
-		return;
+	
+		/* send message with SUCCESS cases */
+		out << params_[0];
+		SendResponse(this->client_sock_, out.get_format_str());
+	
+		/* auth process */
+		if (auth_check == false)
+			AuthCheckReply();
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
-	client_->set_nick(params_[0]);
-	client_->SetAuthFlag(FT_AUTH_NICK);
-	auth_check = this->client_->IsAuth();
-	this->server_->UnlockClientMutex(this->client_sock_);
-
-	/* send message with SUCCESS cases */
-	out << params_[0];
-	SendResponse(this->client_sock_, out.get_format_str());
-
-	/* auth process */
-	if (auth_check == false)
-		AuthCheckReply();
 }
 
 std::string	NickCommand::AuthClientError(void) {

@@ -14,11 +14,15 @@ std::string	CapCommand::AnyOfError(void) {
 void	CapCommand::Run() {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.size() > 0)
-		return SendResponse(this->client_sock_, r.get_format_str());
-	if (this->params_[0].compare("LS") == 0)
-		r << "CAP * LS :";
-		
-	SendResponse(this->client_sock_, r.get_format_str());
+	try {
+		r << AnyOfError();
+		if (r.size() > 0)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		if (this->params_[0].compare("LS") == 0)
+			r << "CAP * LS :";
+			
+		SendResponse(this->client_sock_, r.get_format_str());
+	} catch (std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }

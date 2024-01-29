@@ -18,11 +18,15 @@ std::string	WhoisCommand::AnyOfError(void) {
 void	WhoisCommand::Run(void) {
 	Response	r;
 
-	r << AnyOfError();
-	if (r.IsError() == true)
-		return SendResponse(this->client_sock_, r.get_format_str());
-	r << RPL_ENDOFWHOIS << " WHOISEND";
-	SendResponse(this->client_sock_, r.get_format_str());
-	std::string dum = BOLDMAGENTA;
-	log::cout << dum + "Whois send: " + r.get_str() + RESET + "\n";
+	try {
+		r << AnyOfError();
+		if (r.IsError() == true)
+			return SendResponse(this->client_sock_, r.get_format_str());
+		r << RPL_ENDOFWHOIS << " WHOISEND";
+		SendResponse(this->client_sock_, r.get_format_str());
+		std::string dum = BOLDMAGENTA;
+		log::cout << dum + "Whois send: " + r.get_str() + RESET + "\n";
+	} catch(std::exception& e) {
+		log::cout << BOLDRED << e.what() << RESET << "\n";
+	}
 }

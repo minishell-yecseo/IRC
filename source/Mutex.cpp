@@ -17,9 +17,15 @@ int	Mutex::destroy(void) {
 
 int	Mutex::lock(void) {
 	int ret = pthread_mutex_lock(&this->mutex_);
+	if (ret != 0)
+		throw FailLock();
 	return ret;
 }
 
 int	Mutex::unlock(void) {
 	return pthread_mutex_unlock(&this->mutex_);
+}
+
+const char*	Mutex::FailLock::what(void) const throw() {
+	return "Mutex : Lock Failed";
 }

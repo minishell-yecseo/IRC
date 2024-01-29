@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <exception>
 
 class ThreadPool;
 class Channel;
