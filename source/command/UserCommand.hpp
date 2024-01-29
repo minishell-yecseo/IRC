@@ -9,5 +9,6 @@ class UserCommand: public Command {
 		void		Run(void);
 		std::string	AnyOfError(void);
 		bool		IsNonwhite(const std::string& str);
+		void		SetUserInfo(void);
 };
 #endif
