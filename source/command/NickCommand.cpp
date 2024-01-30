@@ -39,9 +39,7 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 	/*error case : prefix exist but not equal to the request client's current name */
 	std::string current_nick;
 
-	this->server_->LockClientMutex(this->client_sock_);//lock
 	current_nick = client_->get_nick();
-	this->server_->UnlockClientMutex(this->client_sock_);//unlock
 
 	if (prev_nick.empty() == false && prev_nick.compare(current_nick) != 0)
 		return false;
@@ -80,7 +78,7 @@ void	NickCommand::Run() {
 
 	try {
 		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
-		if (IsRegistered(this->client_sock_) == true) {
+		if (IsRegistered() == true) {
 			error_message = AuthClientError();
 			if (error_message.empty() == false) {
 				out << error_message;
@@ -99,14 +97,10 @@ void	NickCommand::Run() {
 	
 		/* success case : nick can be changed */
 		bool	auth_check = false;
-		if (this->server_->LockClientMutex(this->client_sock_) == false) {//lock
-			this->server_->UnlockClientMutex(this->client_sock_);
-			return;
-		}
+
 		client_->set_nick(params_[0]);
 		client_->SetAuthFlag(FT_AUTH_NICK);
 		auth_check = this->client_->IsAuth();
-		this->server_->UnlockClientMutex(this->client_sock_);
 	
 		/* send message with SUCCESS cases */
 		out << params_[0];

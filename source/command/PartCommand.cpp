@@ -16,17 +16,11 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::set<int>	chan_member_list;
 	int	channel_left_num = 1;
 
-	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
-	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+	if (chan == channel_list->end())
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
-	}
-	this->server_->UnlockChannelListMutex();
 
-
-	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else {
@@ -36,9 +30,7 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 			chan_member_list = (chan->second).get_members();
 	}
 
-	this->server_->UnlockChannelMutex(chan->first);
 	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
-
 	if (channel_left_num == 0)
 		this->server_->CeaseChannel(channel_name);
 
@@ -66,7 +58,7 @@ void	PartCommand::ParseParam(void) {
 std::string	PartCommand::AnyOfError(void) {
 	std::string	dummy;
 
-	if (Command::IsRegistered(this->client_sock_) == false)
+	if (Command::IsRegistered() == false)
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty())
 		return dummy + ERR_NEEDMOREPARAMS + " :Not enough params";

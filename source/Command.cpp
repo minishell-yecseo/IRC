@@ -3,18 +3,13 @@
 Command::~Command(void){
 }
 
-bool	Command::IsRegistered(const int&fd) {
-	this->server_->LockClientMutex(fd);
+bool	Command::IsRegistered() {
 	bool result = this->client_->IsAuth();
-	this->server_->UnlockClientMutex(fd);
-
 	return result;
 }
 
 void	Command::SendResponse(const int& sock, const std::string& str) {
-	this->server_->LockClientMutex(sock);
 	send(sock, str.c_str(), str.size(), 0);
-	this->server_->UnlockClientMutex(sock);
 }
 
 Command::Command(const std::vector<std::string> &token_list) {
@@ -64,17 +59,12 @@ void	Command::AuthCheckReply(void) {
 	bool	auth_status = false;
 	bool	send_status = false;
 
-	if (this->server_->LockClientMutex(this->client_sock_) == false) {//Lock
-		this->server_->UnlockClientMutex(this->client_sock_);//Unlock
-		return;
-	}
 	auth_status = this->client_->IsAuth();
 	flag = this->client_->get_auth_flag(FT_AUTH_ALL);
 	if (auth_status == false && ((flag & FT_AUTH_ALL) == FT_AUTH_ALL)) {
 		send_status = true;
 		this->client_->SetAuthFlag(FT_AUTH);
 	}
-	this->server_->UnlockClientMutex(this->client_sock_);//Unlock
 	
 	if (send_status) {
 		std::string	nick = this->server_->SearchClientBySock(this->client_sock_);

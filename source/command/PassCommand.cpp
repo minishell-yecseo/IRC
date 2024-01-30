@@ -1,10 +1,8 @@
 #include "PassCommand.hpp"
 
-inline bool	CheckClientAuth(Server *server, Client *client, const int& client_sock) {
+inline bool	CheckClientAuth(Client *client) {
 	bool	status;
-	server->LockClientMutex(client_sock);
 	status = client->IsAuth(); 
-	server->UnlockClientMutex(client_sock);
 	return status;
 }
 
@@ -14,8 +12,8 @@ PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(t
 std::string	PassCommand::AnyOfError(void) {
 	std::string dummy;
 	
-	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
-			return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
+	if (CheckClientAuth(this->client_))
+		return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
 
 	if (this->params_.empty() || this->params_.size() != 1)
 		return (dummy + ERR_UNKNOWNERROR + " :parameter number error");
@@ -36,9 +34,7 @@ void	PassCommand::Run(void) {
 			return;
 		}
 	
-		this->server_->LockClientMutex(this->client_sock_);
 		client_->SetAuthFlag(FT_AUTH_PASS);
-		this->server_->UnlockClientMutex(this->client_sock_);
 		AuthCheckReply();
 	} catch (std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";

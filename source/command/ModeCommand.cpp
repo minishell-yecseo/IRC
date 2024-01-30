@@ -115,23 +115,17 @@ std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
-	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
-	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+	if (chan == channel_list->end())
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
-	}
-	this->server_->UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
 		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else
 		SetModeInChannel(&(chan->second), this->params_[1]);
-	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
 }
 

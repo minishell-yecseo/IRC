@@ -25,9 +25,7 @@ class Server;
 #include "Command.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
-#include "ThreadPool.hpp"
 #include "Utils.hpp"
-#include "Mutex.hpp"
 #include "log.hpp"
 
 #define FT_SOCK_QUEUE_SIZE 100
@@ -45,13 +43,9 @@ class Server;
 
 class Server {
 	public:
-		void	print_channels(void);
-		void	print_clients(void);
-	
 		~Server();
 		Server(int argc, char **argv);
 		bool	Run(void);
-		ThreadPool	*pool_;
 
 		const std::string& get_name(void);
 		const std::string& get_version(void);
@@ -79,22 +73,6 @@ class Server {
 								const int& flag, \
 								const int& sock);
 
-	/* mutex list functions */
-		bool	AddClientMutex(const int& sock);
-		bool	AddChannelMutex(const std::string& name);
-		bool	DeleteClientMutex(const int& sock);
-		bool	DeleteChannelMutex(const std::string& name);
-
-		bool	LockClientMutex(const int& sock);
-		bool	LockChannelMutex(const std::string& name);
-		void	UnlockClientMutex(const int& sock);
-		void	UnlockChannelMutex(const std::string& name);
-
-		bool	LockClientListMutex(void);
-		void	UnlockClientListMutex(void);
-		bool	LockChannelListMutex(void);
-		void	UnlockChannelListMutex(void);
-
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
 
@@ -115,22 +93,12 @@ class Server {
 		std::vector<struct kevent>	chlist_;
 
 		std::map<int, std::string>		buffers_;
-		std::map<int, Client>			clients_;//일단, socket fd 를 key로 지정
-		Mutex							clients_mutex_;
-		
+		std::map<int, Client>			clients_;
 		std::map<std::string, Channel>	channels_;
-		Mutex							channels_mutex_;
-		
 		std::set<int>					del_clients_;
-		Mutex							del_clients_mutex_;
-
-		Mutex							list_mutex_;
-		std::map<int, Mutex*>			client_mutex_list_;
-		std::map<std::string, Mutex*>	channel_mutex_list_;
 
 	/* private member functions*/
 	private:
-		void	MutexInit(void);
 		void	ServerSocketInit(char **argv);
 		void	KqueueInit(void);
 		void	HandleEvents(int nev);
@@ -147,7 +115,9 @@ class Server {
 		void	p_event_filter(struct kevent *event);
 		void	p_event_flags(struct kevent*event);
 		void	p_server_info(void);
-
+		void	print_channels(void);
+		void	print_clients(void);
+	
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
 	
