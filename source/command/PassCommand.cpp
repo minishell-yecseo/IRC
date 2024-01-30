@@ -12,7 +12,7 @@ PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(t
 }
 
 std::string	PassCommand::AnyOfError(void) {
-	std::string dummy = this->server_->get_name();
+	std::string dummy;
 	
 	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
 			return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
