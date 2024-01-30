@@ -13,16 +13,11 @@ std::string	KickCommand::CheckChannel(const std::string& channel_name, const std
 
 	if (target == FT_INIT_CLIENT_FD)
 		return dummy + ERR_NOSUCHNICK + " " + nick + " :No such nick.";
-	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
-	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+	if (chan == channel_list->end())
 		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
-	}
-	this->server_->UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if((chan->second).IsMember(target) == false)
@@ -31,7 +26,6 @@ std::string	KickCommand::CheckChannel(const std::string& channel_name, const std
 		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else
 		(chan->second).Kick(target);
-	this->server_->UnlockChannelMutex(chan->first);
 	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
 	return dummy + ":" + sender + " KICK " + channel_name + " " + nick;
 }

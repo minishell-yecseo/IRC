@@ -8,32 +8,24 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
-	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
-	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+	if (chan == channel_list->end())
 		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
-	}
-	this->server_->UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
 		dummy = dummy + ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
 	else if ((chan->second).get_size() < 2)
 		dummy = dummy + ERR_NORECIPIENT + " :No recepient given.";
-	this->server_->UnlockChannelMutex(chan->first);
 	if (dummy.empty() == false)
 		return dummy;
 
-	this->server_->LockChannelMutex(chan->first);
 	const std::set<int>	&members = (chan->second).get_members();
 	for (std::set<int>::iterator it = members.begin(); it != members.end(); ++it) {
 		if (*it == this->client_sock_)
 			continue;
 		SendResponse(*it, text);
 	}
-	this->server_->UnlockChannelMutex(chan->first);
 	return dummy;
 }
 
@@ -63,7 +55,7 @@ std::string	PrivmsgCommand::CheckTarget(void) {
 std::string	PrivmsgCommand::AnyOfError(void) {
 	std::string	dummy;
 
-	if (Command::IsRegistered(this->client_sock_) == false)
+	if (Command::IsRegistered() == false)
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty())
 		return dummy + ERR_NOTEXTTOSEND + " :No text to send";

@@ -15,7 +15,7 @@ ERR_INVITEONLYCHAN (473)
 std::string	JoinCommand::AnyOfError(void) {
 	std::string	dummy;
 
-	if (IsRegistered(this->client_sock_) == false)
+	if (IsRegistered() == false)
 		return (dummy + ": " + ERR_UNKNOWNERROR + " " + \
 			this->sender_nick_ + " JOIN : Not registered in Server");
 
@@ -104,15 +104,12 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	if (this->server_->SearchChannelByName(info.name) == false)
 		return;
 
-	this->server_->channels_mutex_.lock();
 	std::map<std::string, Channel>& serv_channels = this->server_->get_channels();
 	std::map<std::string, Channel>::iterator	itr = serv_channels.find(info.name);
-	this->server_->channels_mutex_.unlock();
 
 	if (itr == serv_channels.end())
 		return;
 
-	this->server_->LockChannelMutex(info.name);//lock
 	Channel& cur_channel = itr->second;
 	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
 	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
@@ -125,7 +122,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 		reply << this->server_->SearchClientBySock(*citr) << " ";
 		citr++;
 	}
-	this->server_->UnlockChannelMutex(info.name);//unlock
 	
 	//"<client> <channel> :End of /NAMES list"
 	reply << CRLF;
@@ -138,9 +134,7 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 	Response	reply;
 	bool	join_succ = false;
 
-	this->server_->LockChannelMutex(info.name);
 	join_succ = this->server_->channels_[info.name].Join(this->client_sock_);
-	this->server_->UnlockChannelMutex(info.name);
 
 	if (join_succ == false) {
 		/* false caused by client limit in channel */
@@ -165,13 +159,7 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
 		/* 1. check invite_list */
 		bool is_invited = false;
-		if (this->server_->LockChannelMutex(info.name) == false) {
-			this->server_->UnlockChannelMutex(info.name);
-			return false;
-		}
 		is_invited = this->server_->channels_[info.name].IsInvited(this->client_sock_);
-		this->server_->UnlockChannelMutex(info.name);
-
 		if (is_invited == true)
 			return true;
 	
@@ -202,7 +190,6 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 }
 
 void	JoinCommand::CreateChannel(channel_info *info) {
-	this->server_->channels_mutex_.lock();//channels lock
 	Channel	new_ch(info->name);
 	if (info->mode & MODE_KEY)
 		new_ch.set_mode(MODE_KEY, true);
@@ -211,10 +198,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_host_sock(this->client_sock_);
 	new_ch.Join(this->client_sock_);
 	new_ch.PromoteMember(this->client_sock_);
-	this->server_->AddChannelMutex(info->name);
 	this->server_->channels_.insert(make_pair(info->name, new_ch));
-
-	this->server_->channels_mutex_.unlock();//channels unlock
 
 	std::map<int, std::string>	members;
 	members.insert(make_pair(this->client_sock_, this->sender_nick_));
@@ -245,27 +229,21 @@ void	JoinCommand::SendNotifyToMember(std::map<int, std::string> *members, \
 
 void	JoinCommand::AddChannelForClient(const std::string& chname) {
 	/* this client's channels add this channel */
-	this->server_->LockClientMutex(this->client_sock_);
 	this->client_->add_channel(chname);
-	this->server_->UnlockClientMutex(this->client_sock_);
 }
 
 void	JoinCommand::GetSenderInfo(void) {
-	this->server_->LockClientMutex(this->client_sock_);
 	this->sender_nick_ = this->client_->get_nick();
 	this->sender_user_name_ = this->client_->get_user_name();
 	this->sender_host_name_ = this->client_->get_host_name();
-	this->server_->UnlockClientMutex(this->client_sock_);
 }
 
 void	JoinCommand::GetChannelInfo(channel_info *info) {
-	this->server_->LockChannelMutex(info->name);
 	info->is_member = this->server_->channels_[info->name].IsMember(this->client_sock_);
 	info->is_auth = this->server_->channels_[info->name].AuthPassword(info->key);
 	info->is_banned = this->server_->channels_[info->name].IsBanClient(this->client_sock_);
 	info->mode = this->server_->channels_[info->name].get_mode();
 	info->topic = this->server_->channels_[info->name].get_topic();
-	this->server_->UnlockChannelMutex(info->name);
 }
 
 void	JoinCommand::ParseParam(void) {

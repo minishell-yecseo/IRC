@@ -5,12 +5,10 @@
 #include <vector>
 #include <exception>
 
-class ThreadPool;
 class Channel;
 class Client;
 class Server;
 
-#include "ThreadPool.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -30,7 +28,7 @@ class Command
 		Client* get_client(void);
 		void	DisconnectClient(void);
 		void	SendResponse(const int& sock, const std::string& str);
-		bool	IsRegistered(const int& fd);
+		bool	IsRegistered();
 		void	AuthCheckReply(void);
 
 	protected:
