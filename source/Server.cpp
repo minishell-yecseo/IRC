@@ -22,18 +22,21 @@ bool	Server::Run(void) {
 	// main loop of ircserv with kqueue
 	int nev;
 	while (true) {
-		nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
-		chlist_.clear();
-		if (nev == -1)
-			error_handling("kevent() error\n");
-		else if (nev == 0)
-			HandleTimeout();
-		else if (nev > 0)
-			HandleEvents(nev);
-
-		DeleteInvalidClient();
-		print_clients();
-		print_channels();
+		try {
+			nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
+			chlist_.clear();
+			if (nev == -1)
+				error_handling("kevent() error\n");
+			else if (nev == 0)
+				HandleTimeout();
+			else if (nev > 0)
+				HandleEvents(nev);
+			DeleteInvalidClient();
+		} catch (std::exception& e) {
+			log::cout << BOLDRED << e.what() << "\n";
+		}
+		//print_clients();
+		//print_channels();
 	}
 	return true;
 }
@@ -339,13 +342,16 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
+	this->clients_mutex_.lock();//lock
+	Client	*client = &(clients_[event.ident]);
+	this->clients_mutex_.unlock();//lock
+	
 	if (LockClientMutex(event.ident) == false) {//lock
 		log::cout << "HandleClientEvent() error\n";
 		UnlockClientMutex(event.ident);
 		return ;
 	}
 
-	Client	*client = &(clients_[event.ident]);
 	char	buff[FT_BUFF_SIZE];
 	std::string& buffer = buffers_[client->get_sock()];
 	int read_byte = read(event.ident, buff, sizeof(buff));
@@ -413,6 +419,13 @@ void	Server::AddDeleteClient(const int& sock) {
 	this->del_clients_mutex_.lock();
 	del_clients_.insert(sock);
 	this->del_clients_mutex_.unlock();
+}
+
+void	Server::AddChannel(Channel ch) {
+	//need to implement
+	LockChannelListMutex();
+	this->channels_.insert(make_pair(ch.get_name(), ch));
+	UnlockChannelListMutex();
 }
 
 void	Server::DeleteInvalidClient(void) {
@@ -542,52 +555,6 @@ void	Server::p_event_flags(struct kevent *event) {
 	if (event->flags & EV_ERROR) log::cout << "EV_ERROR | ";
 	if (event->flags & EV_EOF) log::cout << "EV_EOF | ";
 	log::cout << RESET << "\n";
-}
-
-// queries for command process
-bool	Server::get_channel_members(std::map<int, std::string>* ret, \
-									const std::string& channel_name, \
-									const int& flag) {
-	if (SearchChannelByName(channel_name) == false)
-		return false;
-
-	std::set<int>	client_list;
-	LockChannelMutex(channel_name);
-	if (flag & FT_CH_MEMBER)
-		client_list = this->channels_[channel_name].get_members();
-	else if (flag & FT_CH_OPERATOR)
-		client_list = this->channels_[channel_name].get_operators();
-	else if (flag & FT_CH_BAN_LIST)
-		client_list = this->channels_[channel_name].get_ban_list();
-	UnlockChannelMutex(channel_name);
-
-	std::set<int>::iterator	itr = client_list.begin();
-	while (itr != client_list.end()) {
-		std::pair<int, std::string>	tmp;
-		tmp.first = *itr;
-		if (LockClientMutex(tmp.first) == false) {//lock
-			tmp.first = FT_INIT_CLIENT_FD;
-			tmp.second = "";
-		} else {
-			tmp.second = this->clients_[tmp.first].get_nick();
-		}
-		UnlockClientMutex(*itr);//unlock
-		ret->insert(tmp);
-		itr++;
-	}
-	return true;
-}
-
-bool	Server::AddChannelMember(const std::string& channel_name, \
-								const int& flag, \
-								const int& sock) {
-	bool lock = LockChannelMutex(channel_name);
-	if (lock && (flag & FT_CH_MEMBER || flag & FT_CH_OPERATOR))
-		this->channels_[channel_name].Join(sock);
-	if (lock && flag & FT_CH_OPERATOR)
-		this->channels_[channel_name].PromoteMember(sock);
-	UnlockChannelMutex(channel_name);
-	return true;
 }
 
 void	Server::print_clients(void) {

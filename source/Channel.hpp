@@ -26,6 +26,7 @@ class Channel {
 	public:
 		Channel(void);
 		Channel(const std::string& name);
+		Channel	operator=(const Channel& ch);
 		bool	IsMember(int sock);
 		bool	IsOperator(int sock);
 		bool	IsBanClient(int sock);

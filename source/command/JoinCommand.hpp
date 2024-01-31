@@ -37,8 +37,7 @@ class JoinCommand: public Command
 		bool	JoinErrorCheck(const channel_info& info);
 		bool	TryJoin(const channel_info& inf);
 		void	GetSenderInfo(void);
-		void	SendNotifyToMember(std::map<int, std::string> *members, \
-									const channel_info& info);
+		void	SendNotifyToMember(const channel_info& info);
 		void	SendTopic(const channel_info& info);
 		void	SendMemberList(const channel_info& info);
 		void	AddChannelForClient(const std::string& chname);
