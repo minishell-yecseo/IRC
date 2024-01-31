@@ -67,6 +67,7 @@ class Server {
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
+		void	AddChannel(Channel ch);
 
 		void	CeaseChannel(const std::string& channel_name);
 		void	DeleteChannel(const std::string& channel_name);
@@ -142,9 +143,6 @@ class Server {
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
-	
-	friend class Command;
-	friend class JoinCommand;
 };
 
 #endif

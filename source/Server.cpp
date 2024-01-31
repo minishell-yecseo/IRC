@@ -421,6 +421,13 @@ void	Server::AddDeleteClient(const int& sock) {
 	this->del_clients_mutex_.unlock();
 }
 
+void	Server::AddChannel(Channel ch) {
+	//need to implement
+	LockChannelListMutex();
+	this->channels_.insert(make_pair(ch.get_name(), ch));
+	UnlockChannelListMutex();
+}
+
 void	Server::DeleteInvalidClient(void) {
 	this->del_clients_mutex_.lock();
 	std::set<int>::iterator	itr = this->del_clients_.begin();

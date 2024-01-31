@@ -12,6 +12,21 @@ Channel::Channel(const std::string& name) {
 	this->mode_ = 0;
 }
 
+Channel	Channel::operator=(const Channel& ch) {
+	this->name_ = ch.name_;
+	this->password_ = ch.password_;
+	this->topic_ = ch.topic_;
+	this->host_ = ch.host_;
+	this->host_sock_ = ch.host_sock_;
+	this->mode_ = ch.mode_;
+	this->limit_ = ch.limit_;
+	this->members_ = ch.members_;
+	this->operators_ = ch.operators_;
+	this->ban_list_ = ch.ban_list_;
+	this->invite_list_ = ch.invite_list_;
+	return *this;
+}
+
 void	Channel::set_topic(const std::string& topic) {
 	this->topic_ = topic;
 }
