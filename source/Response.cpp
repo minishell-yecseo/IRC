@@ -21,6 +21,11 @@ Response& Response::operator << (const int i) {
 	return *this;
 }
 
+Response& Response::operator << (const char c) {
+	buffer_ += c;
+	return *this;
+}
+
 const std::string&	Response::get_str(void) {
 	return buffer_;
 }
