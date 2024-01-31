@@ -158,9 +158,6 @@ Command	*Request::CommandFactory(const std::vector<std::string> &token_list) {
 		case INVITE:
 			c = new InviteCommand(token_list);
 			break ;
-		case NOTICE:
-			c = new NoticeCommand(token_list);
-			break ;
 		case PRIVMSG:
 			c = new PrivmsgCommand(token_list);
 			break ;

@@ -12,7 +12,6 @@
 #include "QuitCommand.hpp"
 #include "NickCommand.hpp"
 #include "TopicCommand.hpp"
-#include "NoticeCommand.hpp"
 #include "UserCommand.hpp"
 #include "PartCommand.hpp"
 #include "WhoisCommand.hpp"
