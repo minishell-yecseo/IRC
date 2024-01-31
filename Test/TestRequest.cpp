@@ -12,11 +12,18 @@
 #include "Channel.hpp"
 #include "PingCommand.hpp"
 #include "PartCommand.hpp"
+#include "CapCommand.hpp"
 
 Mutex print;
 
 void	MakeToken(std::vector<std::string>* token_list) {
 	
+}
+
+void	IsEmpty(const char *a) {
+	if (strcmp(a, "") != 0) {
+		std::cerr << a << " :is not empty\n";
+	}
 }
 
 void	IsEqual(const char *a, const char *b) {
@@ -25,6 +32,28 @@ void	IsEqual(const char *a, const char *b) {
 		assert(false);
 	}
 	std::cout << a << " == " << b << "\n";
+}
+
+void	TestCapCommand(Server *s, Client *dc) {
+	std::cout << "====== CAPCOMMAND ======\n";
+	std::vector<std::string> token_list;
+	token_list.push_back("CAP");
+
+	CapCommand com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	
+	IsEqual("461 CAP :Not enough parameters", com.AnyOfError().c_str());
+
+	token_list.push_back("LS");
+	CapCommand comm(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+
+	IsEmpty(comm.AnyOfError().c_str());
+	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteChannelInTest("#dummy");
+	dc->UnsetAuthFlagInTest();
 }
 
 void	TestPingCommand(Server *s, Client *dc) {
@@ -42,7 +71,6 @@ void	TestPingCommand(Server *s, Client *dc) {
 	s->DeleteClientInTest(dc->get_sock());
 	s->DeleteChannelInTest("#dummy");
 	dc->UnsetAuthFlagInTest();
-
 }
 
 void	TestPartCommand(Server *s, Client* dc) {
@@ -73,7 +101,9 @@ void	TestPartCommand(Server *s, Client* dc) {
 	s->AddChannelMutex("#dummy");
 	s->AddChannelInTest("#dummy", dummy_channel);
 	IsEqual("442 #dummy :You're not on that channel", comm.CheckChannel("#dummy").c_str());
-	s->AddChannelMember("#dummy", FT_CH_MEMBER, dc->get_sock());
+	Channel *ch_ptr;
+	ch_ptr = s->get_channel_ptr("#dummy");
+	ch_ptr->Join(dc->get_sock());
 	IsEqual(":wooseoki PART #dummy", comm.CheckChannel("#dummy").c_str());
 	s->DeleteClientInTest(dc->get_sock());
 	s->DeleteChannelInTest("#dummy");
@@ -106,4 +136,5 @@ int main() {
 
 	TestPingCommand(&s, &c);
 	TestPartCommand(&s, &c);
+	TestCapCommand(&s, &c);
 }

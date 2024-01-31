@@ -7,7 +7,7 @@ std::string	CapCommand::AnyOfError(void) {
 	std::string	dummy;
 
 	if (this->params_.empty())
-		return dummy + ERR_NEEDMOREPARAMS + " Need more param";
+		return dummy + ERR_NEEDMOREPARAMS + " CAP :Not enough parameters";
 	return dummy;
 }
 
