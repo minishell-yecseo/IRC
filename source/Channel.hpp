@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 
 class Client;
 
@@ -33,17 +34,15 @@ class Channel {
 		bool	IsInvited(int sock);
 		bool	AuthPassword(const std::string& pw);
 		int		Kick(int sock);
-		bool	Join(int sock);
+		bool	Join(int sock, char prefix);
 		bool	Invite(int sock);
-		void	PromoteMember(int sock);
-		void	DegradeMember(int sock);
+		void	Mode(int sock, char prefix);//add
 
 		/* getter & setter */
-		const std::set<int>&	get_members(void);
-		const std::set<int>&	get_operators(void);
-		const std::set<int>&	get_ban_list(void);
-		const std::string&		get_name(void);
-		const std::string&		get_password(void);
+		const std::map<int, char>&	get_members(void);
+		const std::set<int>&		get_ban_list(void);
+		const std::string&			get_name(void);
+		const std::string&			get_password(void);
 		bool	set_mode(const int& flag, const bool& enable);
 		const char&	get_mode(void);
 		size_t	get_size();
@@ -57,6 +56,7 @@ class Channel {
 		void	set_host(const std::string& host);
 		void	set_host_sock(const int& sock);
 		void	unset_limit(void);
+		bool	IsValidPrefix(char);
 
 	private:
 		std::string	name_;
@@ -67,10 +67,9 @@ class Channel {
 		char	mode_;
 		int		limit_;
 	
-		std::set<int>	members_;
-		std::set<int>	operators_;
-		std::set<int>	ban_list_;
-		std::set<int>	invite_list_;
+		std::map<int, char>	members_;
+		std::set<int>		ban_list_;
+		std::set<int>		invite_list_;
 	};
 
 #endif

@@ -21,7 +21,6 @@ Channel	Channel::operator=(const Channel& ch) {
 	this->mode_ = ch.mode_;
 	this->limit_ = ch.limit_;
 	this->members_ = ch.members_;
-	this->operators_ = ch.operators_;
 	this->ban_list_ = ch.ban_list_;
 	this->invite_list_ = ch.invite_list_;
 	return *this;
@@ -60,23 +59,29 @@ const int&	Channel::get_host_sock(void) {
 }
 
 int	Channel::Kick(int sock) {
-	std::set<int>::iterator	it = members_.find(sock);
+	std::map<int, char>::iterator	it = members_.find(sock);
 	if (it != members_.end())
 		members_.erase(it);
-	it = operators_.find(sock);
-	if (it != operators_.end())
-		operators_.erase(it);
 	return (this->members_.size());
 }
 
-bool	Channel::Join(int sock) {
+bool	Channel::Join(int sock, char prefix) {
+	if (IsValidPrefix(prefix) == false)
+		return false;
+
 	if (this->members_.size() < (size_t) this->limit_) {
-		members_.insert(sock);
+		members_.insert(std::make_pair(sock, prefix));
 		if (this->invite_list_.find(sock) != this->invite_list_.end())
 			this->invite_list_.erase(sock);
 		return true;
 	}
 	return false;
+}
+
+bool	Channel::IsValidPrefix(char c) {
+	if (c != '@' && c != ' ')
+		return false;
+	return true;
 }
 
 bool	Channel::Invite(int sock) {
@@ -88,12 +93,11 @@ bool	Channel::Invite(int sock) {
 	return ret;
 }
 
-void	Channel::PromoteMember(int sock) {
-	operators_.insert(sock);
-}
-
-void	Channel::DegradeMember(int sock) {
-	operators_.erase(sock);
+void	Channel::Mode(int sock, char prefix) {
+	std::map<int, char>::iterator	itr = this->members_.find(sock);
+	if (itr == this->members_.end() || IsValidPrefix(prefix) == false)
+		return;
+	itr->second = prefix;
 }
 
 bool	Channel::AuthPassword(const std::string& password) {
@@ -103,16 +107,19 @@ bool	Channel::AuthPassword(const std::string& password) {
 }
 
 bool	Channel::IsMember(int sock) {
-	std::set<int>::iterator	it = members_.find(sock);
+	std::map<int, char>::iterator	it = members_.find(sock);
 	if (it != members_.end())
 		return true;
 	return false;
 }
 
 bool	Channel::IsOperator(int sock) {
-	std::set<int>::iterator	it = operators_.find(sock);
-	if (it != operators_.end())
+	std::map<int, char>::iterator	it = members_.find(sock);
+	if ((it != members_.end()) && (it->second == '@')) {
+		log::cout << sock << ": operator true\n";
 		return true;
+	}
+	log::cout << sock << ": operator false\n";
 	return false;
 }
 
@@ -157,12 +164,8 @@ void	Channel::unset_limit(void) {
 	this->limit_ = CLIENT_LIMIT;
 }
 
-const std::set<int>&	Channel::get_members(void) {
-	return members_;
-};
-
-const std::set<int>&	Channel::get_operators(void) {
-	return operators_;
+const std::map<int, char>&	Channel::get_members(void) {
+	return this->members_;
 };
 
 const std::set<int>&	Channel::get_ban_list(void) {
