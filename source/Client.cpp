@@ -121,3 +121,7 @@ const std::string&	Client::get_host_name(void) const {
 const std::string&	Client::get_server_name(void) const {
 	return this->server_name_;
 }
+
+void	Client::UnsetAuthFlagInTest(void) {
+	this->auth_flag_ = 0;
+}

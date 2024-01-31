@@ -49,6 +49,8 @@ class Client {
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;
 
+		//test
+		void	UnsetAuthFlagInTest(void);
 	private:
 		char	auth_flag_;
 		int		sock_;

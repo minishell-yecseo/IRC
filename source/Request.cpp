@@ -115,7 +115,7 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 	return acc;
 }
 
-Command *	Request::CommandFactory(const std::vector<std::string> &token_list) {
+Command	*Request::CommandFactory(const std::vector<std::string> &token_list) {
 	Command *c = NULL;
 
 	switch (SearchCommand(token_list)) {

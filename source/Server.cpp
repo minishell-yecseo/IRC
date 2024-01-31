@@ -619,3 +619,18 @@ void	Server::print_channels(void) {
 	log::cout << logging.get_str();
 }
 
+void	Server::AddClientInTest(const int& sock, Client c) {
+	this->clients_[sock] = c;
+}
+
+void	Server::DeleteClientInTest(const int& sock) {
+	this->clients_.erase(sock);
+}
+
+void	Server::AddChannelInTest(const std::string& channel_name, Channel c){
+	this->channels_.insert(std::make_pair(channel_name, c));
+}
+
+void	Server::DeleteChannelInTest(const std::string& channel_name) {
+	this->channels_.erase(channel_name);
+}
