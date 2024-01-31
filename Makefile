@@ -1,4 +1,8 @@
+ifeq ($(filter $(MAKECMDGOALS), test), test)
+include ./Makefile_Test
+else
 include ./Makefile_Variable
+endif
 
 $(NAME) : $(ALL_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
@@ -8,12 +12,14 @@ $(OBJ_DIR):
 
 all : $(OBJ_DIR) $(NAME)
 
+test : $(OBJ_DIR) $(NAME)
+
 clean :
 	@$(RM) $(RMFLAGS) $(OBJ_DIR)
 
 fclean :
 	@$(RM) $(RMFLAGS) $(OBJ_DIR)
-	@$(RM) $(RMFLAGS) $(NAME)
+	@$(RM) $(RMFLAGS) ircserv ircserv_test
 
 re :
 	@$(MAKE) fclean

@@ -21,14 +21,16 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel";
 	}
 	this->server_->UnlockChannelListMutex();
 
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
-		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+	if ((chan->second).IsMember(this->client_sock_) == false) {
+		this->server_->UnlockChannelMutex(chan->first);
+		return dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
+	}
 	else {
 		// Run KICK here!
 		channel_left_num = (chan->second).Kick(this->client_sock_);
@@ -69,7 +71,7 @@ std::string	PartCommand::AnyOfError(void) {
 	if (Command::IsRegistered(this->client_sock_) == false)
 		return dummy + ERR_NOTREGISTERED + " :You have not registered";
 	if (this->params_.empty())
-		return dummy + ERR_NEEDMOREPARAMS + " :Not enough params";
+		return dummy + ERR_NEEDMOREPARAMS + " PART :Not enough parameters";
 	return dummy;
 }
 

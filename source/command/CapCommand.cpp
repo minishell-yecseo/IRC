@@ -16,7 +16,7 @@ void	CapCommand::Run() {
 
 	try {
 		r << AnyOfError();
-		if (r.size() > 0)
+		if (r.IsError() == true)
 			return SendResponse(this->client_sock_, r.get_format_str());
 		if (this->params_[0].compare("LS") == 0)
 			r << "CAP * LS :";

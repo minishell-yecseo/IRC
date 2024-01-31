@@ -98,6 +98,11 @@ class Server {
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
 
+	/* Test */
+		void	AddClientInTest(const int& sock, Client c);
+		void	DeleteClientInTest(const int& sock);
+		void	AddChannelInTest(const std::string& channel_name, Channel c);
+		void	DeleteChannelInTest(const std::string& channel_name);
 	/* private member variables */
 	protected:
 		std::string	name_;
