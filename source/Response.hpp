@@ -25,6 +25,7 @@ class Response {
 		Response& operator << (const char * char_ptr);
 		Response& operator << (const std::string& str);
 		Response& operator << (const int i);
+		Response& operator << (const char c);
 };
 
 #endif

@@ -393,7 +393,7 @@ void	Server::ConnectClient(void) {
 	clients_[client.get_sock()] = client;
 	this->clients_mutex_.unlock();//unlock
 	buffers_[client.get_sock()] = "";
-	log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
+	//log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
 }
 
 bool	Server::AuthPassword(const std::string& password) {
@@ -603,12 +603,12 @@ void	Server::print_channels(void) {
 		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second.get_topic() << "\n";
 		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_password() << "\n";
 		logging << BOLDWHITE << "\tSIZE: " << RESET;
-		std::set<int>	mem = iter->second.get_members();
+		const std::map<int, char>&	mem = iter->second.get_members();
 		size_t	s = mem.size();
 		logging << RESET << (int)s << "\n" << RESET;
-		std::set<int>::iterator itr = mem.begin();
+		std::map<int, char>::const_iterator itr = mem.begin();
 		for (size_t i = 0; i < s; ++i) {
-			logging << BOLDMAGENTA << "\tMEM." << i << ": " << RESET <<  *itr << "\n";
+			logging << BOLDMAGENTA << "\tMEM." << (int)i << ": " << RESET <<  itr->first << "\n";
 			itr++;
 		}
 		UnlockChannelMutex(iter->first);//unlock
