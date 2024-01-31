@@ -112,14 +112,11 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 
 	this->server_->LockChannelMutex(info.name);//lock
 	Channel& cur_channel = itr->second;
-	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
+	std::map<int, char>::const_iterator citr = cur_channel.get_members().begin();
 
 	while (citr != cur_channel.get_members().end()) {
-		if (cur_channel.IsOperator(*citr) == true)
-			reply << "@"; 
-		else
-			reply << "%";
-		reply << this->server_->SearchClientBySock(*citr) << " ";
+		reply << citr->second;
+		reply << this->server_->SearchClientBySock(citr->first) << " ";
 		citr++;
 	}
 	this->server_->UnlockChannelMutex(info.name);//unlock
@@ -137,7 +134,7 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 
 	ch_ptr = this->server_->get_channel_ptr(info.name);
 	this->server_->LockChannelMutex(info.name);
-	join_succ = ch_ptr->Join(this->client_sock_);
+	join_succ = ch_ptr->Join(this->client_sock_, ' ');//normal : +
 	this->server_->UnlockChannelMutex(info.name);
 
 	if (join_succ == false) {
@@ -209,8 +206,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_password(info->key);
 	new_ch.set_host(this->sender_nick_);
 	new_ch.set_host_sock(this->client_sock_);
-	new_ch.Join(this->client_sock_);
-	new_ch.PromoteMember(this->client_sock_);
+	new_ch.Join(this->client_sock_, '@');
 	this->server_->AddChannelMutex(info->name);
 
 	this->server_->AddChannel(new_ch);
@@ -235,11 +231,11 @@ void	JoinCommand::SendNotifyToMember(const channel_info& info) {
 
 	Channel *ch = this->server_->get_channel_ptr(info.name);
 	this->server_->LockChannelMutex(info.name);
-	std::set<int> members = ch->get_members();
-	std::set<int>::iterator	itr = members.begin();
-	std::set<int>::iterator	end_itr = members.end();
+	const std::map<int, char> &members = ch->get_members();
+	std::map<int, char>::const_iterator	itr = members.begin();
+	std::map<int, char>::const_iterator	end_itr = members.end();
 	while (itr != end_itr) {
-		SendResponse(*itr, notify.get_format_str());
+		SendResponse(itr->first, notify.get_format_str());
 		itr++;
 	}
 	this->server_->UnlockChannelMutex(info.name);

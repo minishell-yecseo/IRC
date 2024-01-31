@@ -52,7 +52,7 @@ void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_ind
 				int user = this->server_->SearchClientByNick(this->params_[(*param_index)++]);
 				if (user == FT_INIT_CLIENT_FD)
 					return ;
-				c->PromoteMember(user);
+				c->Mode(user, '@');
 				break ;
 			}
 			case 't':
@@ -80,7 +80,7 @@ void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_ind
 				int user = this->server_->SearchClientByNick(this->params_[(*param_index)++]);
 				if (user == FT_INIT_CLIENT_FD)
 					return ;
-				c->DegradeMember(user);
+				c->Mode(user, ' ');
 				break ;
 			}
 			case 't':

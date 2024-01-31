@@ -13,7 +13,7 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::string	dummy;
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
-	std::set<int>	chan_member_list;
+	std::map<int, char>	chan_member_list;
 	int	channel_left_num = 1;
 
 	this->server_->LockChannelListMutex();
@@ -46,8 +46,8 @@ std::string	PartCommand::CheckChannel(const std::string& channel_name) {
 
 	std::string send_message = dummy + ":" + sender + " PART " + channel_name;
 	if (channel_left_num > 0) {
-		std::set<int>::const_iterator	iter = chan_member_list.begin();
-		SendResponse(*iter, (send_message + CRLF));
+		std::map<int, char>::const_iterator	iter = chan_member_list.begin();
+		SendResponse(iter->first, (send_message + CRLF));
 	}
 	//return dummy + ":" + sender + " PART " + channel_name;
 	return send_message;
