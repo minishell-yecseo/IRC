@@ -342,13 +342,16 @@ void	Server::HandleEvents(int nev) {
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
+	this->clients_mutex_.lock();//lock
+	Client	*client = &(clients_[event.ident]);
+	this->clients_mutex_.unlock();//lock
+	
 	if (LockClientMutex(event.ident) == false) {//lock
 		log::cout << "HandleClientEvent() error\n";
 		UnlockClientMutex(event.ident);
 		return ;
 	}
 
-	Client	*client = &(clients_[event.ident]);
 	char	buff[FT_BUFF_SIZE];
 	std::string& buffer = buffers_[client->get_sock()];
 	int read_byte = read(event.ident, buff, sizeof(buff));

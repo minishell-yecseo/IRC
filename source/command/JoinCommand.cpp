@@ -81,9 +81,7 @@ void	JoinCommand::Join(const int& idx) {
 	if (TryJoin(info) == false)
 		return;
 	
-	std::map<int, std::string>	members;
-	this->server_->get_channel_members(&members, info.name, FT_CH_MEMBER);
-	SendNotifyToMember(&members, info);
+	SendNotifyToMember(info);
 	if (info.mode & MODE_TOPIC)
 		SendTopic(info);
 	SendMemberList(info);
@@ -115,7 +113,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	this->server_->LockChannelMutex(info.name);//lock
 	Channel& cur_channel = itr->second;
 	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
-	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
 
 	while (citr != cur_channel.get_members().end()) {
 		if (cur_channel.IsOperator(*citr) == true)
@@ -131,7 +128,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	reply << CRLF;
 	reply << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
 	SendResponse(this->client_sock_, reply.get_format_str());
-	log::cout << BOLDYELLOW << reply.get_str() << "\n" << RESET;
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
@@ -216,9 +212,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->channels_mutex_.unlock();//channels unlock
 
-	std::map<int, std::string>	members;
-	members.insert(make_pair(this->client_sock_, this->sender_nick_));
-	SendNotifyToMember(&members, *info);
+	SendNotifyToMember(*info);
 	//New channel is always in -t mode.
 	SendMemberList(*info);
 }
@@ -230,17 +224,22 @@ void	JoinCommand::SendTopic(const channel_info& info) {
 	SendResponse(this->client_sock_, reply.get_format_str());
 }
 
-void	JoinCommand::SendNotifyToMember(std::map<int, std::string> *members, \
-										const channel_info& info) {
+void	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	Response notify;
 
 	notify << ":" << this->sender_nick_ << "!" << this->sender_user_name_;
 	notify << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
-	std::map<int, std::string>::iterator	itr = members->begin();
-	while (itr != members->end()) {
-		SendResponse(itr->first, notify.get_format_str());
+
+	Channel *ch = this->server_->get_channel_ptr(info.name);
+	this->server_->LockChannelMutex(info.name);
+	std::set<int> members = ch->get_members();
+	std::set<int>::iterator	itr = members.begin();
+	std::set<int>::iterator	end_itr = members.end();
+	while (itr != end_itr) {
+		SendResponse(*itr, notify.get_format_str());
 		itr++;
 	}
+	this->server_->UnlockChannelMutex(info.name);
 }
 
 void	JoinCommand::AddChannelForClient(const std::string& chname) {
