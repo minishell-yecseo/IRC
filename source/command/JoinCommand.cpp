@@ -112,7 +112,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 
 	Channel& cur_channel = itr->second;
 	std::set<int>::const_iterator citr = cur_channel.get_members().begin();
-	log::cout << BOLDGREEN << "SendNotify:: channel_members size : " << cur_channel.get_members().size() << "\n" << RESET;
 
 	while (citr != cur_channel.get_members().end()) {
 		if (cur_channel.IsOperator(*citr) == true)
@@ -127,7 +126,6 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	reply << CRLF;
 	reply << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
 	SendResponse(this->client_sock_, reply.get_format_str());
-	log::cout << BOLDYELLOW << reply.get_str() << "\n" << RESET;
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
