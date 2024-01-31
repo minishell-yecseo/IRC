@@ -30,8 +30,8 @@ bool	Server::Run(void) {
 			HandleEvents(nev);
 
 		DeleteInvalidClient();
-		print_clients();
-		print_channels();
+		//print_clients();
+		//print_channels();
 	}
 	return true;
 }
