@@ -70,14 +70,6 @@ class Server {
 
 		void	CeaseChannel(const std::string& channel_name);
 		void	DeleteChannel(const std::string& channel_name);
-	
-	/* queries for command process */
-		bool	get_channel_members(std::map<int, std::string>* ret, \
-									const std::string& channel_name, \
-									const int& flag);
-		bool	AddChannelMember(const std::string& channel_name, \
-								const int& flag, \
-								const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
