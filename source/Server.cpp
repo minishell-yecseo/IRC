@@ -397,7 +397,8 @@ void	Server::ConnectClient(void) {
 	/* handle new client */
 	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	this->clients_mutex_.lock();//lock
-	clients_[client.get_sock()] = client;
+	clients_.insert(std::make_pair(client.get_sock(), client));
+	//clients_[client.get_sock()] = client;
 	this->clients_mutex_.unlock();//unlock
 	buffers_[client.get_sock()] = "";
 	//log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";

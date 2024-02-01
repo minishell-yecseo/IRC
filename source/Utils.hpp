@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "Colors.hpp"
+#include "log.hpp"
 
 # ifndef ERR_WRITE
 #  define ERR_WRITE 2
