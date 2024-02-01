@@ -133,6 +133,8 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 	Channel		*ch_ptr = NULL;
 
 	ch_ptr = this->server_->get_channel_ptr(info.name);
+	if (ch_ptr == NULL)
+		return false;
 	this->server_->LockChannelMutex(info.name);
 	join_succ = ch_ptr->Join(this->client_sock_, ' ');//normal : +
 	this->server_->UnlockChannelMutex(info.name);

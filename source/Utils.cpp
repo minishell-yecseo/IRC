@@ -11,3 +11,8 @@ void error_handling(const char *message) {
 void error_handling(std::string message) {
 	error_handling((const char *)message.c_str());
 }
+
+void	HandleSIGPIPE(int sig) {
+	if (sig == SIGPIPE)
+		std::cerr << BOLDRED << "SIGPIPE\n" << RESET;
+}
