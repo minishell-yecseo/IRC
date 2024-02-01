@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -54,6 +55,7 @@ class Server {
 		bool	Run(void);
 		ThreadPool	*pool_;
 
+		struct sigaction	act;
 		const std::string& get_name(void);
 		const std::string& get_version(void);
 		const std::string& get_create_time(void);
@@ -132,6 +134,7 @@ class Server {
 		void	MutexInit(void);
 		void	ServerSocketInit(char **argv);
 		void	KqueueInit(void);
+		void	SignalInit(void);
 		void	HandleEvents(int nev);
 		void	HandleTimeout(void);
 		void	HandleEventError(struct kevent event);

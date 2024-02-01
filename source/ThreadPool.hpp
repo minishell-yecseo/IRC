@@ -8,6 +8,7 @@ class	Client;
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <map>
 #include <queue>
 #include <map>

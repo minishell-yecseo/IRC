@@ -1,12 +1,15 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
+#include <sys/errno.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
 #include <unistd.h>
-#include <sys/errno.h>
+#include <iostream>
+
 #include "Colors.hpp"
 
 # ifndef ERR_WRITE
@@ -19,5 +22,6 @@
 
 void error_handling(std::string);
 void error_handling(const char *);
+void HandleSIGPIPE(int sig);
 
 #endif

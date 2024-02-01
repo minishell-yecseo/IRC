@@ -11,10 +11,10 @@ Server::Server(int argc, char **argv) {
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
-
 	ServerSocketInit(argv);
 	MutexInit();
 	KqueueInit();
+	SignalInit();
 	p_server_info();
 }
 
@@ -81,6 +81,13 @@ void	Server::KqueueInit(void) {
 	chlist_.push_back(server_event);
 	timeout_.tv_sec = FT_TIMEOUT_SEC;
 	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
+}
+
+void	Server::SignalInit(void) {
+	this->act.sa_handler = HandleSIGPIPE;
+	sigemptyset(&this->act.sa_mask);
+	this->act.sa_flags = 0;
+	sigaction(SIGPIPE, &act, 0);
 }
 
 std::string	Server::set_create_time(void) {

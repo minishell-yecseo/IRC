@@ -43,6 +43,13 @@ void	ThreadPool::Enqueue(void *arg) {
 }
 
 void	*ThreadPool::Worker(void *arg) {
+	// signal
+	struct sigaction	act;
+	act.sa_handler = HandleSIGPIPE;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	sigaction(SIGPIPE, &act, 0);
+
 	ThreadPool	*pool = (ThreadPool *)arg;
 	Command	*c;
 
