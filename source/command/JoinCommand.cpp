@@ -71,7 +71,6 @@ void	JoinCommand::Join(const int& idx) {
 
 	if (this->server_->SearchChannelByName(info.name) == false) {
 		CreateChannel(&info);
-		AddChannelForClient(info.name);
 		return;
 	}
 
@@ -81,7 +80,8 @@ void	JoinCommand::Join(const int& idx) {
 	if (TryJoin(info) == false)
 		return;
 	
-	SendNotifyToMember(info);
+	if (SendNotifyToMember(info) == false)
+		return;
 	if (info.mode & MODE_TOPIC)
 		SendTopic(info);
 	SendMemberList(info);
@@ -160,6 +160,8 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	}
 
 	ch_ptr = this->server_->get_channel_ptr(info.name);
+	if (ch_ptr == NULL)
+		return false;
 	if (info.mode & MODE_INVITE) {
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
 		/* 1. check invite_list */
@@ -213,9 +215,11 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 
 	this->server_->AddChannel(new_ch);
 
-	SendNotifyToMember(*info);
+	if (SendNotifyToMember(*info) == false)
+		return;
 	//New channel is always in -t mode.
 	SendMemberList(*info);
+	AddChannelForClient(info->name);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
@@ -225,13 +229,15 @@ void	JoinCommand::SendTopic(const channel_info& info) {
 	SendResponse(this->client_sock_, reply.get_format_str());
 }
 
-void	JoinCommand::SendNotifyToMember(const channel_info& info) {
+bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	Response notify;
 
 	notify << ":" << this->sender_nick_ << "!" << this->sender_user_name_;
 	notify << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
 
 	Channel *ch = this->server_->get_channel_ptr(info.name);
+	if (ch == NULL)
+		return false;
 	this->server_->LockChannelMutex(info.name);
 	const std::map<int, char> &members = ch->get_members();
 	std::map<int, char>::const_iterator	itr = members.begin();
@@ -241,6 +247,7 @@ void	JoinCommand::SendNotifyToMember(const channel_info& info) {
 		itr++;
 	}
 	this->server_->UnlockChannelMutex(info.name);
+	return true;
 }
 
 void	JoinCommand::AddChannelForClient(const std::string& chname) {

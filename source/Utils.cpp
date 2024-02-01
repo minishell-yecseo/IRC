@@ -14,5 +14,5 @@ void error_handling(std::string message) {
 
 void	HandleSIGPIPE(int sig) {
 	if (sig == SIGPIPE)
-		std::cerr << BOLDRED << "SIGPIPE\n" << RESET;
+		log::cout << BOLDRED << "SIGPIPE\n" << RESET;
 }
