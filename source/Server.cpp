@@ -153,9 +153,9 @@ int	Server::SearchClientByNick(const std::string& nick) {
 	LockClientListMutex();
 	std::map<int, Client>::iterator	iter = this->clients_.begin();
 	while (iter != this->clients_.end()) {
-		//LockClientMutex(iter->first);
+		LockClientMutex(iter->first);
 		tmp_nick = (iter->second).get_nick();
-		//UnlockClientMutex(iter->first);
+		UnlockClientMutex(iter->first);
 		if (nick.compare(tmp_nick) == 0) {
 			ret = iter->first;
 			break ;
