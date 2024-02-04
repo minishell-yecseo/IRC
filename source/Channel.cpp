@@ -115,11 +115,8 @@ bool	Channel::IsMember(int sock) {
 
 bool	Channel::IsOperator(int sock) {
 	std::map<int, char>::iterator	it = members_.find(sock);
-	if ((it != members_.end()) && (it->second == '@')) {
-		log::cout << sock << ": operator true\n";
+	if ((it != members_.end()) && (it->second == '@'))
 		return true;
-	}
-	log::cout << sock << ": operator false\n";
 	return false;
 }
 
@@ -137,15 +134,11 @@ bool	Channel::IsInvited(int sock) {
 }
 
 /* return true when the mode has changed */
-bool	Channel::set_mode(const int& flag, const bool& enable) {
-	if ((mode_ & flag) && !enable) {
-		mode_ &= !flag;
-		return true;
-	} else if (!(mode_ & flag) && enable) {
+void	Channel::set_mode(const int& flag, const bool& enable) {
+	if (!enable)
+		mode_ &= ~flag;
+	else if (enable)
 		mode_ |= flag;
-		return true;
-	}
-	return false;
 }
 
 const char&	Channel::get_mode(void) {
