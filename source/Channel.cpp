@@ -115,11 +115,8 @@ bool	Channel::IsMember(int sock) {
 
 bool	Channel::IsOperator(int sock) {
 	std::map<int, char>::iterator	it = members_.find(sock);
-	if ((it != members_.end()) && (it->second == '@')) {
-		log::cout << sock << ": operator true\n";
+	if ((it != members_.end()) && (it->second == '@'))
 		return true;
-	}
-	log::cout << sock << ": operator false\n";
 	return false;
 }
 
