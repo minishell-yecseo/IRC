@@ -34,6 +34,7 @@ class Command
 		void	AuthCheckReply(void);
 
 	protected:
+		Response					resp_;
 		std::string					prefix_;
 		std::string					command_;
 		std::vector<std::string>	params_;
