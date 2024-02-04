@@ -3,6 +3,11 @@
 Response::Response(void) : buffer_("") {
 }
 
+Response& Response::operator = (const char * c) {
+	this->buffer_ = c;
+	return *this;
+}
+
 Response& Response::operator << (const char * char_ptr) {
 	buffer_ += char_ptr;
 	return *this;
@@ -22,6 +27,29 @@ Response& Response::operator << (const int i) {
 }
 
 Response& Response::operator << (const char c) {
+	buffer_ += c;
+	return *this;
+}
+
+Response& Response::operator + (const char * char_ptr) {
+	buffer_ += char_ptr;
+	return *this;
+}
+
+Response& Response::operator + (const std::string& str) {
+	buffer_ += str;
+	return *this;
+}
+
+Response& Response::operator + (const int i) {
+	std::stringstream ss;
+	ss << i;
+
+	buffer_ += ss.str();
+	return *this;
+}
+
+Response& Response::operator + (const char c) {
 	buffer_ += c;
 	return *this;
 }
