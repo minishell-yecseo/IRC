@@ -11,27 +11,22 @@ inline bool	CheckClientAuth(Server *server, Client *client, const int& client_so
 PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-std::string	PassCommand::AnyOfError(void) {
-	std::string dummy;
-	
+void	PassCommand::AnyOfError(void) {
 	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
-			return (dummy + ":" + ERR_UNKNOWNERROR + " PASS : already registered");
-
-	if (this->params_.empty() || this->params_.size() != 1)
-		return (dummy + ERR_UNKNOWNERROR + " :parameter number error");
-
-	if (server_->AuthPassword(this->params_[0]) == false)
-		return (dummy + ERR_PASSWDMISMATCH) + " :Password incorrect";
-	return dummy;
+		this->resp_ = this->resp_ + ":" + ERR_UNKNOWNERROR + " PASS : already registered";
+	else if (this->params_.empty() || this->params_.size() != 1)
+		this->resp_ = this->resp_ + ERR_UNKNOWNERROR + " :parameter number error";
+	else if (server_->AuthPassword(this->params_[0]) == false)
+		this->resp_ = this->resp_ + ERR_PASSWDMISMATCH + " :Password incorrect";
+	else
+		this->is_success_ = true;
 }
 
 void	PassCommand::Run(void) {
-	Response	reply;
-
 	try {
-		reply << AnyOfError();
-		if (reply.IsError() == true) {
-			SendResponse(this->client_sock_, reply.get_format_str());
+		AnyOfError();
+		if (this->is_success_ == false) {
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
 			DisconnectClient();
 			return;
 		}

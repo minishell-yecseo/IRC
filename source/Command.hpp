@@ -22,7 +22,7 @@ class Command
 	public:
 		virtual ~Command(void);
 		virtual void	Run(void) = 0;
-		virtual std::string	AnyOfError(void) = 0;
+		virtual void	AnyOfError(void) = 0;
 		Command(const std::vector<std::string> &token);
 		void set_server(Server *server);
 		void set_client(Client *client);
@@ -35,6 +35,7 @@ class Command
 
 	protected:
 		Response					resp_;
+		bool						is_success_;
 		std::string					prefix_;
 		std::string					command_;
 		std::vector<std::string>	params_;

@@ -3,8 +3,7 @@
 PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std::string& text) {
-	std::string	dummy;
+void PrivmsgCommand::BroadCast(const std::string& channel_name, const std::string& text) {
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
@@ -13,70 +12,67 @@ std::string PrivmsgCommand::BroadCast(const std::string& channel_name, const std
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		return dummy + ERR_NOSUCHCHANNEL + " :No such channel.";
+		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		dummy = dummy + ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
+		this->resp_ = this->resp_ + ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
 	else if ((chan->second).get_size() < 2)
-		dummy = dummy + ERR_NORECIPIENT + " :No recepient given.";
+		this->resp_ = this->resp_ + ERR_NORECIPIENT + " :No recepient given.";
 	this->server_->UnlockChannelMutex(chan->first);
-	if (dummy.empty() == false)
-		return dummy;
+	if (this->resp_.IsError() == true)
+		return ;
 
 	this->server_->LockChannelMutex(chan->first);
 	const std::map<int, char>	&members = (chan->second).get_members();
+	this->is_success_ = true;
 	for (std::map<int, char>::const_iterator it = members.begin(); it != members.end(); ++it) {
 		if (it->first == this->client_sock_)
 			continue;
 		SendResponse(it->first, text);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
-	return dummy;
 }
 
-std::string	PrivmsgCommand::UniCast(const std::string& client_name, const std::string& text) {
-	std::string	dummy;
+void	PrivmsgCommand::UniCast(const std::string& client_name, const std::string& text) {
 	int	sock;
 
 	sock = this->server_->SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) 
-		return dummy + ERR_NOSUCHNICK + " :No such nick.";
-	SendResponse(sock, text);
-	return dummy;
+		this->resp_ = this->resp_ + ERR_NOSUCHNICK + " :No such nick.";
+	else
+		SendResponse(sock, text);
 }
 
-std::string	PrivmsgCommand::CheckTarget(void) {
-	std::string&	target = this->params_[0];
+void	PrivmsgCommand::CheckTarget(void) {
+	std::string	&target = this->params_[0];
 	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
 	std::string	text = ":" + sender + " PRIVMSG " + target + " :" + this->params_[this->params_.size() - 1] + CRLF;
 
 	if (sender.empty())
-		return "Client not found";
-	if (target[0] == '#' || target[0] == '&')
-		return BroadCast(target, text);
-	return UniCast(target, text);
+		this->resp_ = this->resp_ + "Client not found";
+	else if (target[0] == '#' || target[0] == '&')
+		BroadCast(target, text);
+	else
+		UniCast(target, text);
 }
 
-std::string	PrivmsgCommand::AnyOfError(void) {
-	std::string	dummy;
-
+void	PrivmsgCommand::AnyOfError(void) {
 	if (Command::IsRegistered(this->client_sock_) == false)
-		return dummy + ERR_NOTREGISTERED + " :You have not registered";
-	if (this->params_.empty())
-		return dummy + ERR_NOTEXTTOSEND + " :No text to send";
-	return CheckTarget();
+		this->resp_ = this->resp_ + ERR_NOTREGISTERED + " :You have not registered";
+	else if (this->params_.empty())
+		this->resp_ = this->resp_ + ERR_NOTEXTTOSEND + " :No text to send";
+	else
+		CheckTarget();
 }
 
 void	PrivmsgCommand::Run(void) {
-	Response	r;
-
 	try {
-		r << AnyOfError();
-		if (r.IsError() == true)
-			return SendResponse(this->client_sock_, r.get_format_str());
+		AnyOfError();
+		if (this->is_success_ == false)
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

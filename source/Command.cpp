@@ -32,6 +32,7 @@ Command::Command(const std::vector<std::string> &token_list) {
 	for (size_t index = param_index; index < token_list.size(); ++index) {
 		this->params_.push_back(token_list[index]);
 	}
+	this->is_success_ = false;
 }
 
 void	Command::set_server(Server *server) {

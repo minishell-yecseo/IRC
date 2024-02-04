@@ -3,19 +3,17 @@
 QuitCommand::QuitCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-std::string	QuitCommand::AnyOfError(void) {
-    return "";
+void	QuitCommand::AnyOfError(void) {
+    ;
 }
 
 //:dan-!d@localhost QUIT :Quit: Bye for now!
 
 void	QuitCommand::Run(void) {
-	Response	r;
-
 	try {
 		Command::DisconnectClient();
-		r << ":" << this->server_->SearchClientBySock(this->client_sock_) << " QUIT :Quit: Bye for now!";
-		SendResponse(this->client_sock_, r.get_format_str());
+		this->resp_ = this->resp_ + ":" + this->server_->SearchClientBySock(this->client_sock_) + " QUIT :Quit: Bye for now!";
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

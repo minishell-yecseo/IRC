@@ -7,10 +7,10 @@ class PartCommand: public Command {
 	public:
 		PartCommand(const std::vector<std::string> &token_list);
 		void	Run(void);
-		std::string	AnyOfError(void);
-		std::string	CheckChannel(const std::string& channel_name);
+		void	AnyOfError(void);
+		void	CheckChannel(const std::string& channel_name);
 		void	ParseParam(void);
-		void	PartEachTarget(Response *r);
+		void	PartEachTarget(void);
 
 	private:
 		std::vector<std::string> target_channels_;

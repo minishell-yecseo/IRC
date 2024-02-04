@@ -9,7 +9,7 @@ class NickCommand: public Command {
 	public:
 		NickCommand(const std::vector<std::string> &token_list);
 		void	Run(void);
-		std::string	AnyOfError(void);
+		void	AnyOfError(void);
 		bool	IsValidNick(const std::string& str);
 		bool	IsSpecial(char c);
 		bool	IsUniqueNick(const std::string& nick);

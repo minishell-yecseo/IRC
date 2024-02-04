@@ -105,13 +105,12 @@ void	ModeCommand::SetModeInChannel(Channel *c, const std::string& modestr) {
 			sign = true;
 		else if (modestr[i] == '-')
 			sign = false;
-		else
+		else 
 			ModifyChannel(c, modestr[i], sign, &param_index);
 	}
 }
 
-std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
-	std::string	dummy;
+void	ModeCommand::CheckChannel(const std::string& channel_name) {
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
 
@@ -120,19 +119,21 @@ std::string	ModeCommand::CheckChannel(const std::string& channel_name) {
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		return dummy + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		dummy = dummy + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+		this->resp_ = this->resp_ + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
-		dummy = dummy + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
-	else
+		this->resp_ = this->resp_ + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+	else {
+		this->is_success_ = true;
 		SetModeInChannel(&(chan->second), this->params_[1]);
+	}
 	this->server_->UnlockChannelMutex(chan->first);
-	return dummy;
 }
 
 bool	ModeCommand::CheckParamCount(const std::string& modestr) {
@@ -156,35 +157,35 @@ bool	ModeCommand::CheckParamCount(const std::string& modestr) {
 	return (this->params_.size() - 2 == count);
 }
 
-std::string	ModeCommand::AnyOfError(void) {
-	std::string	dummy;
-
+void	ModeCommand::AnyOfError(void) {
 	if (this->params_.empty())
-		return dummy + ERR_NEEDMOREPARAMS + " :Not enough params";
-	if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)
-		return dummy + RPL_CHANNELMODEIS + " :Not given modestring";
-	if (IsValidMode(this->params_[1]) == false)
-		return dummy + ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
-	if (CheckParamCount(this->params_[1]) == false)
-		return dummy + ERR_NEEDMOREPARAMS + " :No match param count";
-	if (CheckKeyParam(this->params_[1]) == false)
-		return dummy + ERR_KEYSET + " :Keyset is unvliad";
-	return CheckChannel(this->params_[0]);
+		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :Not enough params";
+	else if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)
+		this->resp_ = this->resp_ + RPL_CHANNELMODEIS + " :Not given modestring";
+	else if (IsValidMode(this->params_[1]) == false)
+		this->resp_ = this->resp_ + ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
+	else if (CheckParamCount(this->params_[1]) == false)
+		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :No match param count";
+	else if (CheckKeyParam(this->params_[1]) == false)
+		this->resp_ = this->resp_ + ERR_KEYSET + " :Keyset is unvliad";
+	else
+		CheckChannel(this->params_[0]);
 }
 
 void	ModeCommand::Run() {
-	Response	r;
-
 	try {
-		r << AnyOfError();
-		if (r.IsError() == true)
-			return SendResponse(this->client_sock_, r.get_format_str());
-		std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
-		r << ":" << sender << " MODE";
-		for (size_t i = 0; i < this->params_.size(); ++i) {
-			r << " " << this->params_[i];
+		AnyOfError();
+		if (this->is_success_ == false)
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		else {
+			std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+			// :sender MODE param param?
+			this->resp_ = this->resp_ + ":" + sender + " MODE";
+			for (size_t i = 0; i < this->params_.size(); ++i) {
+				this->resp_ = this->resp_ + " " + this->params_[i];
+			}
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		}
-		SendResponse(this->client_sock_, r.get_format_str());
 	} catch (std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

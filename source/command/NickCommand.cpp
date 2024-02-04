@@ -55,8 +55,7 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 # define ERR_ERRONEUSNICKNAME	"432"
 */
 
-std::string	NickCommand::AnyOfError(void) {
-	std::string	dummy;
+void	NickCommand::AnyOfError(void) {
 	/* This function checks only about the parameter */
 	if (this->params_.empty() == false) {
 		if (IsUniqueNick(this->params_[0]) == false)
@@ -68,10 +67,11 @@ std::string	NickCommand::AnyOfError(void) {
 				this->sender_nick_ + " " + this->params_[0] + \
 				" :Erroneus nickname";
 	}
-	if (this->params_.empty() == true)
+	else if (this->params_.empty() == true)
 		return dummy + ERR_NONICKNAMEGIVEN + " " + this->sender_nick_ + \
 			" :No nickname given";
-	return "";
+	else
+		this->is_success_ = true;
 }
 
 void	NickCommand::Run() {
