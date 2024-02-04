@@ -136,7 +136,7 @@ bool	Channel::IsInvited(int sock) {
 /* return true when the mode has changed */
 void	Channel::set_mode(const int& flag, const bool& enable) {
 	if (!enable)
-		mode_ &= !flag;
+		mode_ &= ~flag;
 	else if (enable)
 		mode_ |= flag;
 }
