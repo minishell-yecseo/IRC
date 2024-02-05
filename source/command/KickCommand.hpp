@@ -9,5 +9,12 @@ class KickCommand: public Command {
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& channel_name, const std::string& nick);
+		bool	SetInfo(void);
+
+	private:
+		std::string	target_nick_;
+		std::string	channel_name_;
+		std::string	sender_;
+		int	target_;
 };
 #endif

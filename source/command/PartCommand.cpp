@@ -26,19 +26,20 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	}
 	else {
+		this->is_success_ = true;
 		channel_left_num = (chan->second).Kick(this->client_sock_);
 		if (channel_left_num)
 			chan_member_list = (chan->second).get_members();
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 
-	// need seperate here
 	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
 
 	if (channel_left_num == 0)
 		this->server_->CeaseChannel(channel_name);
 
 	std::string send_message = ":" + sender + " PART " + channel_name;
+	// MUST FIX HERE
 	if (channel_left_num > 0) {
 		std::map<int, char>::const_iterator	iter = chan_member_list.begin();
 		SendResponse(iter->first, (send_message + CRLF));
@@ -68,19 +69,23 @@ void	PartCommand::AnyOfError(void) {
 void	PartCommand::PartEachTarget(void) {
 	ParseParam();
 	for (size_t i = 0; i < this->target_channels_.size(); ++i) {
+		this->is_success_ = false;
 		CheckChannel(this->target_channels_[i]);
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
+		if (this->is_success_ == false)
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		else {
+			this->resp_ = (std::string)"PART " + this->target_channels_[i];
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		}
 	}
 }
 
+// :dan-!d@localhost PART #test
 void	PartCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
-		else
-		// need fix
-			;
 	} catch (std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

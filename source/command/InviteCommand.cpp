@@ -3,11 +3,14 @@
 InviteCommand::InviteCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
-void	InviteCommand::SetInfo(void) {
+bool	InviteCommand::SetInfo(void) {
 	this->client_nick_ = this->server_->SearchClientBySock(this->client_sock_);
 	this->receiver_ = this->server_->SearchClientByNick(this->params_[0]);
+	if (this->receiver_ == FT_INIT_CLIENT_FD)
+		return false;
 	this->receive_nick_ = this->params_[0];
 	this->channel_name_ = this->params_[1];
+	return true;
 }
 
 void	InviteCommand::CheckChannel(const std::string& nick, const std::string& channel_name) {
@@ -43,13 +46,10 @@ void	InviteCommand::AnyOfError(void) {
 		this->resp_ = (std::string)ERR_NOTREGISTERED + " :You have not registered";
 	else if (this->params_.size() < 2)
 		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " Invite :Not enough parameters";
-	else {
-		SetInfo();
-		if (this->receiver_ == FT_INIT_CLIENT_FD)
-			this->resp_ = (std::string)ERR_NOSUCHNICK + " " + this->receive_nick_ + " :No such user";
-		else
-			CheckChannel(this->params_[0], this->params_[1]);
-	}
+	else if (SetInfo() == false)
+		this->resp_ = (std::string)ERR_NOSUCHNICK + " " + this->receive_nick_ + " :No such user";
+	else 
+		CheckChannel(this->params_[0], this->params_[1]);
 }
 
 void	InviteCommand::Run() {

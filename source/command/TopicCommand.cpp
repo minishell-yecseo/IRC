@@ -24,6 +24,7 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel.";
+		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 

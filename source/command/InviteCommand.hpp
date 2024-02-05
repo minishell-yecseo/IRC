@@ -9,7 +9,7 @@ class InviteCommand: public Command {
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& nick, const std::string& chan);
-		void	SetInfo(void);
+		bool	SetInfo(void);
 
 	private:
 		std::string	channel_name_;

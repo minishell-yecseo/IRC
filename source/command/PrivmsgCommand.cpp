@@ -13,6 +13,7 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name, const std::strin
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel.";
+		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 
@@ -21,17 +22,14 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name, const std::strin
 		this->resp_ = (std::string)ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
 	else if ((chan->second).get_size() < 2)
 		this->resp_ = (std::string)ERR_NORECIPIENT + " :No recepient given.";
-	this->server_->UnlockChannelMutex(chan->first);
-	if (this->resp_.IsError() == true)
-		return ;
-
-	this->server_->LockChannelMutex(chan->first);
-	const std::map<int, char>	&members = (chan->second).get_members();
-	this->is_success_ = true;
-	for (std::map<int, char>::const_iterator it = members.begin(); it != members.end(); ++it) {
-		if (it->first == this->client_sock_)
-			continue;
-		SendResponse(it->first, text);
+	else {
+		const std::map<int, char>	&members = (chan->second).get_members();
+		this->is_success_ = true;
+		for (std::map<int, char>::const_iterator it = members.begin(); it != members.end(); ++it) {
+			if (it->first == this->client_sock_)
+				continue;
+			SendResponse(it->first, text);
+		}
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }
@@ -53,10 +51,14 @@ void	PrivmsgCommand::CheckTarget(void) {
 
 	if (sender.empty())
 		this->resp_ = (std::string)"Client not found";
-	else if (target[0] == '#' || target[0] == '&')
+	else if (target[0] == '#' || target[0] == '&') {
+		this->resp_ = (std::string)"PRIVMSG " + target + " " + text;
 		BroadCast(target, text);
-	else
+	}
+	else {
+		this->resp_ = (std::string)":" + sender + " PRIVMSG " + target + " " + text; 
 		UniCast(target, text);
+	}
 }
 
 void	PrivmsgCommand::AnyOfError(void) {
@@ -68,11 +70,16 @@ void	PrivmsgCommand::AnyOfError(void) {
 		CheckTarget();
 }
 
+//:dan!~h@localhost PRIVMSG #coolpeople :Hi everyone!
+
 void	PrivmsgCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		else {
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		}
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}

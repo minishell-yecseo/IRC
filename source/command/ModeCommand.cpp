@@ -158,7 +158,9 @@ bool	ModeCommand::CheckParamCount(const std::string& modestr) {
 }
 
 void	ModeCommand::AnyOfError(void) {
-	if (this->params_.empty())
+	if (Command::IsRegistered(this->client_sock_) == false)
+		this->resp_ = (std::string)ERR_NOTREGISTERED + " :You have not registered";
+	else if (this->params_.empty())
 		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :Not enough params";
 	else if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)
 		this->resp_ = (std::string)RPL_CHANNELMODEIS + " :Not given modestring";

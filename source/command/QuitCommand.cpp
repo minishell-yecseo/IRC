@@ -7,8 +7,6 @@ void	QuitCommand::AnyOfError(void) {
     ;
 }
 
-//:dan-!d@localhost QUIT :Quit: Bye for now!
-
 void	QuitCommand::Run(void) {
 	try {
 		Command::DisconnectClient();
