@@ -119,16 +119,16 @@ void	ModeCommand::CheckChannel(const std::string& channel_name) {
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else {
 		this->is_success_ = true;
 		SetModeInChannel(&(chan->second), this->params_[1]);
@@ -159,15 +159,15 @@ bool	ModeCommand::CheckParamCount(const std::string& modestr) {
 
 void	ModeCommand::AnyOfError(void) {
 	if (this->params_.empty())
-		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :Not enough params";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :Not enough params";
 	else if ((this->params_[0][0] != '#' && this->params_[0][0] != '&') || this->params_.size() < 2)
-		this->resp_ = this->resp_ + RPL_CHANNELMODEIS + " :Not given modestring";
+		this->resp_ = (std::string)RPL_CHANNELMODEIS + " :Not given modestring";
 	else if (IsValidMode(this->params_[1]) == false)
-		this->resp_ = this->resp_ + ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
+		this->resp_ = (std::string)ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
 	else if (CheckParamCount(this->params_[1]) == false)
-		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :No match param count";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :No match param count";
 	else if (CheckKeyParam(this->params_[1]) == false)
-		this->resp_ = this->resp_ + ERR_KEYSET + " :Keyset is unvliad";
+		this->resp_ = (std::string)ERR_KEYSET + " :Keyset is unvliad";
 	else
 		CheckChannel(this->params_[0]);
 }
@@ -180,9 +180,9 @@ void	ModeCommand::Run() {
 		else {
 			std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
 			// :sender MODE param param?
-			this->resp_ = this->resp_ + ":" + sender + " MODE";
+			this->resp_ = (std::string)":" + sender + " MODE";
 			for (size_t i = 0; i < this->params_.size(); ++i) {
-				this->resp_ = this->resp_ + " " + this->params_[i];
+				this->resp_ = (std::string)" " + this->params_[i];
 			}
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		}

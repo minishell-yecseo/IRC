@@ -23,16 +23,16 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " :No such channel.";
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if (((chan->second).get_mode() & MODE_TOPIC)) {
 		if ((chan->second).IsOperator(this->client_sock_) == false)
-			this->resp_ = this->resp_ + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+			this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 		else {
 			chan->second.set_mode(MODE_TOPIC, true);
 			chan->second.set_topic(topic);
@@ -49,9 +49,9 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 
 void	TopicCommand::AnyOfError(void) {
 	if (this->params_.empty())
-		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :Not enough params";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :Not enough params";
 	else if (this->params_.size() == 1)
-		this->resp_ = this->resp_ + RPL_NOTOPIC + " :No topic is set";
+		this->resp_ = (std::string)RPL_NOTOPIC + " :No topic is set";
 	else
 		CheckChannel(this->params_[0], this->params_[1]);
 }

@@ -3,8 +3,8 @@
 Response::Response(void) : buffer_("") {
 }
 
-Response& Response::operator = (const char * c) {
-	this->buffer_ = c;
+Response& Response::operator = (const std::string& str) {
+	this->buffer_ = str;
 	return *this;
 }
 

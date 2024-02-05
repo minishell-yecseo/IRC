@@ -13,11 +13,11 @@ PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(t
 
 void	PassCommand::AnyOfError(void) {
 	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
-		this->resp_ = this->resp_ + ":" + ERR_UNKNOWNERROR + " PASS : already registered";
+		this->resp_ = (std::string)":" + ERR_UNKNOWNERROR + " PASS : already registered";
 	else if (this->params_.empty() || this->params_.size() != 1)
-		this->resp_ = this->resp_ + ERR_UNKNOWNERROR + " :parameter number error";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :parameter number error";
 	else if (server_->AuthPassword(this->params_[0]) == false)
-		this->resp_ = this->resp_ + ERR_PASSWDMISMATCH + " :Password incorrect";
+		this->resp_ = (std::string)ERR_PASSWDMISMATCH + " :Password incorrect";
 	else
 		this->is_success_ = true;
 }

@@ -6,8 +6,8 @@ UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(t
 void	UserCommand::Run(void) {
 	try {
 		AnyOfError();
-		if (this->IsSuccess == false) {
-			SendResponse(this->client_sock_, reply.get_format_str());
+		if (this->is_success_ == false) {
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
 			return;
 		}
 		SetUserInfo();
@@ -17,24 +17,22 @@ void	UserCommand::Run(void) {
 }
 
 void	UserCommand::AnyOfError(void) {
-	std::string	dummy = "";
-
 	if (this->params_.size() < 4) {
-		this->resp_ = ERR_NEEDMOREPARAMS;
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS;
 		return;
 	}
 	if (IsNonwhite(this->params_[0]) == false) {
-		this->resp_ = dummy + ERR_UNKNOWNERROR + " : username must not has whitespace";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " : username must not has whitespace";
 		return;
 	}
 	this->server_->LockClientMutex(this->client_sock_);
 	bool isRegistered = this->client_->IsAuth();
 	this->server_->UnlockClientMutex(this->client_sock_);
 	if (isRegistered == true) {
-		this->resp_ = dummy + ERR_ALREADYREGISTERED;
+		this->resp_ = (std::string)ERR_ALREADYREGISTERED;
 		return;
 	}
-	this->IsSuccess = true;
+	this->is_success_ = true;
 }
 
 bool	UserCommand::IsNonwhite(const std::string& str) {

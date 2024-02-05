@@ -22,7 +22,7 @@ class Response {
 		bool				empty(void);
 		bool				IsError(void);
 
-		Response& operator = (const char * c);
+		Response& operator = (const std::string& str);
 
 		Response& operator << (const char * char_ptr);
 		Response& operator << (const std::string& str);

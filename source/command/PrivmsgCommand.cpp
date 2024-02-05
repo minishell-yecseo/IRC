@@ -12,15 +12,15 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name, const std::strin
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " :No such channel.";
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel.";
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
+		this->resp_ = (std::string)ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel.";
 	else if ((chan->second).get_size() < 2)
-		this->resp_ = this->resp_ + ERR_NORECIPIENT + " :No recepient given.";
+		this->resp_ = (std::string)ERR_NORECIPIENT + " :No recepient given.";
 	this->server_->UnlockChannelMutex(chan->first);
 	if (this->resp_.IsError() == true)
 		return ;
@@ -41,7 +41,7 @@ void	PrivmsgCommand::UniCast(const std::string& client_name, const std::string& 
 
 	sock = this->server_->SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) 
-		this->resp_ = this->resp_ + ERR_NOSUCHNICK + " :No such nick.";
+		this->resp_ = (std::string)ERR_NOSUCHNICK + " :No such nick.";
 	else
 		SendResponse(sock, text);
 }
@@ -52,7 +52,7 @@ void	PrivmsgCommand::CheckTarget(void) {
 	std::string	text = ":" + sender + " PRIVMSG " + target + " :" + this->params_[this->params_.size() - 1] + CRLF;
 
 	if (sender.empty())
-		this->resp_ = this->resp_ + "Client not found";
+		this->resp_ = (std::string)"Client not found";
 	else if (target[0] == '#' || target[0] == '&')
 		BroadCast(target, text);
 	else
@@ -61,9 +61,9 @@ void	PrivmsgCommand::CheckTarget(void) {
 
 void	PrivmsgCommand::AnyOfError(void) {
 	if (Command::IsRegistered(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_NOTREGISTERED + " :You have not registered";
+		this->resp_ = (std::string)ERR_NOTREGISTERED + " :You have not registered";
 	else if (this->params_.empty())
-		this->resp_ = this->resp_ + ERR_NOTEXTTOSEND + " :No text to send";
+		this->resp_ = (std::string)ERR_NOTEXTTOSEND + " :No text to send";
 	else
 		CheckTarget();
 }

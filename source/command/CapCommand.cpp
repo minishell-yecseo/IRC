@@ -9,7 +9,7 @@ void	CapCommand::SetInfo(void) {
 
 void	CapCommand::AnyOfError(void) {
 	if (this->params_.empty())
-		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " " + this->client_nick_ + " CAP :Not enough parameters";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " " + this->client_nick_ + " CAP :Not enough parameters";
 	else
 		this->is_success_ = true;
 }
@@ -20,7 +20,7 @@ void	CapCommand::Run() {
 		if (this->is_success_ == false)
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		else if (this->params_[0].compare("LS") == 0) {
-			this->resp_ = this->resp_ + "CAP * LS :";
+			this->resp_ = (std::string)"CAP * LS :";
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		}
 	} catch (std::exception& e) {

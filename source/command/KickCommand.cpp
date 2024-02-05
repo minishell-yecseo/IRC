@@ -9,24 +9,24 @@ void	KickCommand::CheckChannel(const std::string& channel_name, const std::strin
 	int target = this->server_->SearchClientByNick(nick);
 
 	if (target == FT_INIT_CLIENT_FD)
-		this->resp_ = this->resp_ + ERR_NOSUCHNICK + " " + nick + " :No such nick.";
+		this->resp_ = (std::string)ERR_NOSUCHNICK + " " + nick + " :No such nick.";
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		this->resp_ = this->resp_ + ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel.";
 		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
 	else if((chan->second).IsMember(target) == false)
-		this->resp_ = this->resp_ + ERR_USERNOTINCHANNEL + " " + nick + " " + channel_name + " :They aren't on the channel";
+		this->resp_ = (std::string)ERR_USERNOTINCHANNEL + " " + nick + " " + channel_name + " :They aren't on the channel";
 	else if ((chan->second).IsOperator(this->client_sock_) == false)
-		this->resp_ = this->resp_ + ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
+		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else {
 		(chan->second).Kick(target);
 		this->is_success_ = true;
@@ -36,7 +36,7 @@ void	KickCommand::CheckChannel(const std::string& channel_name, const std::strin
 
 void	KickCommand::AnyOfError(void) {
 	if (this->params_.size() < 2)
-		this->resp_ = this->resp_ + ERR_NEEDMOREPARAMS + " :Not enough params";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :Not enough params";
 	else
 		CheckChannel(this->params_[0], this->params_[1]);
 }
@@ -49,7 +49,7 @@ void	KickCommand::Run(void) {
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		else{
 			std::string sender = this->server_->SearchClientBySock(this->client_sock_);
-			this->resp_ = this->resp_ + ":" + sender + " KICK " + channel_name + " " + nick;
+			this->resp_ = (std::string)":" + sender + " KICK " + channel_name + " " + nick;
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		}
 	} catch(std::exception& e) {
