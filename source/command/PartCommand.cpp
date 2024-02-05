@@ -19,7 +19,6 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 	}
 	this->server_->UnlockChannelListMutex();
 
-
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false) {
 		this->server_->UnlockChannelMutex(chan->first);
@@ -49,7 +48,7 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 void	PartCommand::ParseParam(void) {
 	std::string target = this->params_[0];
 	size_t	start = 0, end = 0;
-
+	
 	while ((end = target.find(',', start)) != std::string::npos) {
 		this->target_channels_.push_back(target.substr(start, end - start));
 		start = end + 1;

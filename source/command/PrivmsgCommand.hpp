@@ -9,7 +9,7 @@ class PrivmsgCommand: public Command {
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckTarget(void);
-		void	UniCast(const std::string& client_name, const std::string& text);
-		void	BroadCast(const std::string& channel_name, const std::string& text);
+		void	UniCast(const std::string& client_namet);
+		void	BroadCast(const std::string& channel_namet);
 };
 #endif

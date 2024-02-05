@@ -5,12 +5,12 @@ TopicCommand::TopicCommand(const std::vector<std::string> &token_list) : Command
 
 void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 	std::string	nick = this->server_->SearchClientBySock(this->client_sock_);
-	std::string notice = ":" + nick + " TOPIC " + c->get_name() + " :" + topic + CRLF;
 	const std::map<int, char>	&member_list = c->get_members();
 
 	this->is_success_ = true;
+	this->resp_ = ":" + nick + " TOPIC " + c->get_name() + " :" + topic;
 	for (std::map<int, char>::const_iterator it = member_list.begin(); it != member_list.end(); ++it) {
-		SendResponse(it->first, notice);
+		SendResponse(it->first, this->resp_.get_format_str());
 	}
 }
 
@@ -23,14 +23,14 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
 		this->server_->UnlockChannelListMutex();
-		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel.";
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel";
 		return ;
 	}
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
 	if ((chan->second).IsMember(this->client_sock_) == false)
-		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel.";
+		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	else if (((chan->second).get_mode() & MODE_TOPIC)) {
 		if ((chan->second).IsOperator(this->client_sock_) == false)
 			this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
@@ -49,8 +49,10 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 }
 
 void	TopicCommand::AnyOfError(void) {
-	if (this->params_.empty())
-		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :Not enough params";
+	if (Command::IsRegistered(this->client_sock_) == false)
+		this->resp_ = (std::string)ERR_NOTREGISTERED + " :You have not registered";
+	else if (this->params_.empty())
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " TOPIC :Not enough parameters";
 	else if (this->params_.size() == 1)
 		this->resp_ = (std::string)RPL_NOTOPIC + " :No topic is set";
 	else
