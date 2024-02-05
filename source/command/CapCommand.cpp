@@ -9,7 +9,7 @@ void	CapCommand::SetInfo(void) {
 
 void	CapCommand::AnyOfError(void) {
 	if (this->params_.empty())
-		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " " + this->client_nick_ + " CAP :Not enough parameters";
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " CAP :Not enough parameters";
 	else
 		this->is_success_ = true;
 }

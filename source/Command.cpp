@@ -88,3 +88,8 @@ void	Command::AuthCheckReply(void) {
 		SendResponse(this->client_sock_, auth_message.get_str());
 	}
 }
+
+const std::string&	Command::RunAndReturnRespInTest(void) {
+	this->Run();
+	return this->resp_.get_str();
+}

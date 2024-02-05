@@ -32,6 +32,7 @@ class Command
 		void	SendResponse(const int& sock, const std::string& str);
 		bool	IsRegistered(const int& fd);
 		void	AuthCheckReply(void);
+		const std::string&	RunAndReturnRespInTest(void);
 
 	protected:
 		Response					resp_;
