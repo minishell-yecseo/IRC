@@ -19,7 +19,7 @@ class JoinCommand: public Command
 	public:
 		JoinCommand(const std::vector<std::string> &token_list);
 		void		Run(void);
-		std::string	AnyOfError(void);
+		void		AnyOfError(void);
 	
 	private:
 		std::string					sender_nick_;
