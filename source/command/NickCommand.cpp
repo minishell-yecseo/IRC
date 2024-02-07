@@ -50,19 +50,14 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 
 void	NickCommand::AnyOfError(void) {
 	/* This function checks only about the parameter */
-	if (this->params_.empty() == false) {
-		if (IsUniqueNick(this->params_[0]) == false)
-			this->resp_ = (std::string)ERR_NICKNAMEINUSE + " " + \
-				this->sender_nick_ + " " + this->params_[0] + \
-				" :Nickname is already in use";
-		else if (IsValidNick(this->params_[0]) == false)
-			this->resp_ = (std::string)ERR_ERRONEUSNICKNAME + " " + \
-				this->sender_nick_ + " " + this->params_[0] + \
-				" :Erroneus nickname";
-	}
+	if (this->params_.empty() == false && IsUniqueNick(this->params_[0]) == false)
+		this->resp_ = (std::string)ERR_NICKNAMEINUSE + " " + this->params_[0] + \
+		" :Nickname is already in use";
+	else if (this->params_.empty() == false && IsValidNick(this->params_[0]) == false)
+		this->resp_ = (std::string)ERR_ERRONEUSNICKNAME + " " + this->params_[0] + \
+		" :Erroneus nickname";
 	else if (this->params_.empty() == true)
-		this->resp_ = (std::string)ERR_NONICKNAMEGIVEN + " " + this->sender_nick_ + \
-			" :No nickname given";
+		this->resp_ = (std::string)ERR_NONICKNAMEGIVEN + " :No nickname given";
 	else
 		this->is_success_ = true;
 }
@@ -82,6 +77,7 @@ void	NickCommand::Run() {
 			if (this->is_success_ == false) {
 				SendResponse(this->client_sock_, this->resp_.get_format_str());
 				DisconnectClient();
+				return;
 			}
 		}
 	
