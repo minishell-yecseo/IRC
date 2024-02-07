@@ -15,11 +15,11 @@ bool	NickCommand::IsValidNick(const std::string& str) {
 		return false;
 	if (str.size() > 9)
 		return false;
-	for (size_t i = 0; i < str.size(); ++i) {
-		if (i == 0 && (str[i] == '#' || str[i] == ':'))
-			return false;
+	if (str[0] == '#' || str[0] == ':')
+		return false;
+	for (size_t i = 1; i < str.size(); ++i) {
 		if (isalpha(str[i]) || isdigit(str[i]) || IsSpecial(str[i]))
-			;
+			continue;
 		else
 			return false;
 	}
