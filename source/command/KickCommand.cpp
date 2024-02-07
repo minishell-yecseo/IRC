@@ -13,6 +13,12 @@ bool	KickCommand::SetInfo(void) {
 	return true;
 }
 
+void	KickCommand::NoticeKick(const std::map<int, char>& chan_member_list) {
+	for (std::map<int, char>::const_iterator it = chan_member_list.begin(); it != chan_member_list.end(); ++it) {
+		SendResponse(it->first, this->resp_.get_format_str());
+	}
+}
+
 void	KickCommand::CheckChannel(const std::string& channel_name, const std::string& nick) {
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
@@ -36,7 +42,9 @@ void	KickCommand::CheckChannel(const std::string& channel_name, const std::strin
 		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else {
 		this->is_success_ = true;
+		this->resp_ = (std::string)":" + this->sender_ + " KICK " + this->channel_name_ + " " + this->target_nick_;
 		(chan->second).Kick(this->target_);
+		NoticeKick((chan->second).get_members());
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }
@@ -50,15 +58,13 @@ void	KickCommand::AnyOfError(void) {
 		CheckChannel(this->params_[0], this->params_[1]);
 }
 
-// Need SetInfo
 void	KickCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
 		else{
-			this->resp_ = (std::string)":" + this->sender_ + " KICK " + this->channel_name_ + " " + this->target_nick_;
-			SendResponse(this->client_sock_, this->resp_.get_format_str());
+			SendResponse(this->target_, this->resp_.get_format_str());
 		}
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";

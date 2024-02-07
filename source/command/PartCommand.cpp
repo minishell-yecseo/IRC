@@ -3,10 +3,21 @@
 PartCommand::PartCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
+void	PartCommand::SetInfo(void) {
+	this->client_nick_ = this->server_->SearchClientBySock(this->client_sock_);
+	if (this->params_.size() == 2)
+		this->reason_ = this->params_[1];
+}
+
+void	PartCommand::NoticePart(const std::map<int, char>& chan_member_list) {
+	for (std::map<int, char>::const_iterator it = chan_member_list.begin(); it != chan_member_list.end(); ++it) {
+		SendResponse(it->first, this->resp_.get_format_str());
+	}
+}
+
 void	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::map<std::string, Channel> *channel_list;
 	std::map<std::string, Channel>::iterator chan;
-	std::map<int, char>	chan_member_list;
 	int	channel_left_num = 1;
 
 	this->server_->LockChannelListMutex();
@@ -25,24 +36,17 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	}
 	else {
-		this->is_success_ = true;
+		this->resp_ = (std::string)":" + this->client_nick_ + " PART " + channel_name;
+		if (this->reason_.empty() == false)
+			this->resp_ = this->resp_ + " " + this->reason_;
 		channel_left_num = (chan->second).Kick(this->client_sock_);
-		if (channel_left_num)
-			chan_member_list = (chan->second).get_members();
+		if (channel_left_num > 0)
+			NoticePart((chan->second).get_members());
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 
-	std::string sender = this->server_->SearchClientBySock(this->client_sock_);
-
 	if (channel_left_num == 0)
 		this->server_->CeaseChannel(channel_name);
-
-	std::string send_message = ":" + sender + " PART " + channel_name;
-	// MUST FIX HERE
-	if (channel_left_num > 0) {
-		std::map<int, char>::const_iterator	iter = chan_member_list.begin();
-		SendResponse(iter->first, (send_message + CRLF));
-	}
 }
 
 void	PartCommand::ParseParam(void) {
@@ -62,29 +66,25 @@ void	PartCommand::AnyOfError(void) {
 	else if (this->params_.empty())
 		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " PART :Not enough parameters";
 	else
-		PartEachTarget();
+		this->is_success_ = true;
 }
 
 void	PartCommand::PartEachTarget(void) {
+	SetInfo();
 	ParseParam();
 	for (size_t i = 0; i < this->target_channels_.size(); ++i) {
-		this->is_success_ = false;
 		CheckChannel(this->target_channels_[i]);
-		if (this->is_success_ == false)
-			SendResponse(this->client_sock_, this->resp_.get_format_str());
-		else {
-			this->resp_ = (std::string)"PART " + this->target_channels_[i];
-			SendResponse(this->client_sock_, this->resp_.get_format_str());
-		}
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	}
 }
 
-// :dan-!d@localhost PART #test
 void	PartCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		else
+			PartEachTarget();
 	} catch (std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
