@@ -71,10 +71,9 @@ void	PrivmsgCommand::AnyOfError(void) {
 void	PrivmsgCommand::Run(void) {
 	try {
 		AnyOfError();
-		if (this->is_success_ == false)
+		if (this->is_success_ == false) {
 			SendResponse(this->client_sock_, this->resp_.get_format_str());
-		else {
-			SendResponse(this->client_sock_, this->resp_.get_format_str());
+			return;
 		}
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
