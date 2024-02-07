@@ -15,11 +15,11 @@ bool	NickCommand::IsValidNick(const std::string& str) {
 		return false;
 	if (str.size() > 9)
 		return false;
-	for (size_t i = 0; i < str.size(); ++i) {
-		if (i == 0 && (str[i] == '#' || str[i] == ':'))
-			return false;
+	if (str[0] == '#' || str[0] == ':')
+		return false;
+	for (size_t i = 1; i < str.size(); ++i) {
 		if (isalpha(str[i]) || isdigit(str[i]) || IsSpecial(str[i]))
-			;
+			continue;
 		else
 			return false;
 	}
@@ -50,19 +50,14 @@ bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 
 void	NickCommand::AnyOfError(void) {
 	/* This function checks only about the parameter */
-	if (this->params_.empty() == false) {
-		if (IsUniqueNick(this->params_[0]) == false)
-			this->resp_ = (std::string)ERR_NICKNAMEINUSE + " " + \
-				this->sender_nick_ + " " + this->params_[0] + \
-				" :Nickname is already in use";
-		else if (IsValidNick(this->params_[0]) == false)
-			this->resp_ = (std::string)ERR_ERRONEUSNICKNAME + " " + \
-				this->sender_nick_ + " " + this->params_[0] + \
-				" :Erroneus nickname";
-	}
+	if (this->params_.empty() == false && IsUniqueNick(this->params_[0]) == false)
+		this->resp_ = (std::string)ERR_NICKNAMEINUSE + " " + this->params_[0] + \
+		" :Nickname is already in use";
+	else if (this->params_.empty() == false && IsValidNick(this->params_[0]) == false)
+		this->resp_ = (std::string)ERR_ERRONEUSNICKNAME + " " + this->params_[0] + \
+		" :Erroneus nickname";
 	else if (this->params_.empty() == true)
-		this->resp_ = (std::string)ERR_NONICKNAMEGIVEN + " " + this->sender_nick_ + \
-			" :No nickname given";
+		this->resp_ = (std::string)ERR_NONICKNAMEGIVEN + " :No nickname given";
 	else
 		this->is_success_ = true;
 }
@@ -70,7 +65,8 @@ void	NickCommand::AnyOfError(void) {
 void	NickCommand::Run() {
 	try {
 		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
-		if (IsRegistered(this->client_sock_) == true) {
+		this->is_registered_ = IsRegistered(this->client_sock_);
+		if (this->is_registered_ == true) {
 			AuthClientError();
 			if (this->is_success_ == false) {
 				SendResponse(this->client_sock_, this->resp_.get_format_str());
@@ -82,6 +78,7 @@ void	NickCommand::Run() {
 			if (this->is_success_ == false) {
 				SendResponse(this->client_sock_, this->resp_.get_format_str());
 				DisconnectClient();
+				return;
 			}
 		}
 	
@@ -94,7 +91,9 @@ void	NickCommand::Run() {
 		this->server_->UnlockClientMutex(this->client_sock_);
 	
 		/* send message with SUCCESS cases */
-		this->resp_ = this->resp_ + params_[0];
+		if (this->is_registered_ == true)
+			this->resp_ = (std::string)":" + this->sender_nick_ + " ";
+		this->resp_ << "NICK " << params_[0];
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	
 		/* auth process */
@@ -107,9 +106,9 @@ void	NickCommand::Run() {
 
 void	NickCommand::AuthClientError(void) {
 	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : Wrong prefix name";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : Wrong prefix name";
 	else if (this->prefix_.empty() == false && IsEqualPrevNick(this->prefix_) == false) 
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : prefix does not match with previous name";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : prefix does not match with previous name";
 	else if (this->prefix_.empty() == true) 
 		AnyOfError();
 }

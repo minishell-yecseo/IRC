@@ -343,8 +343,6 @@ void	Server::HandleEvents(int nev) {
 			ConnectClient();
 		else if (event.filter == EVFILT_READ)
 			HandleClientEvent(event);
-		else if (event.filter == EVFILT_WRITE)
-			DisconnectClient(event.ident);
 	}
 }
 
