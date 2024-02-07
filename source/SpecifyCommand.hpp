@@ -15,4 +15,5 @@
 #include "UserCommand.hpp"
 #include "PartCommand.hpp"
 #include "WhoisCommand.hpp"
+#include "UnvalidCommand.hpp"
 #endif

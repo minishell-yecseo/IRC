@@ -162,11 +162,7 @@ Command	*Request::CommandFactory(const std::vector<std::string> &token_list) {
 			c = new PrivmsgCommand(token_list);
 			break ;
 		default:
-			log::cout << "Command not found : " ;
-			for (size_t i = 0; i < token_list.size(); ++i) {
-				log::cout << token_list[i] << " ";
-			}
-			log::cout << "\n";
+			c = new UnvalidCommand(token_list);
 	}
 	return c;
 }
