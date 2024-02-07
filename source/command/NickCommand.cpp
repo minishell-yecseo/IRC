@@ -103,9 +103,9 @@ void	NickCommand::Run() {
 
 void	NickCommand::AuthClientError(void) {
 	if (this->prefix_.empty() == false && IsValidNick(this->prefix_) == false)
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : Wrong prefix name";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : Wrong prefix name";
 	else if (this->prefix_.empty() == false && IsEqualPrevNick(this->prefix_) == false) 
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + "NICK : prefix does not match with previous name";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : prefix does not match with previous name";
 	else if (this->prefix_.empty() == true) 
 		AnyOfError();
 }
