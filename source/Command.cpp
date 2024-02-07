@@ -80,7 +80,7 @@ void	Command::AuthCheckReply(void) {
 		auth_message << ":" << serv_name << " " << RPL_WELCOME << " " << nick 
 			<< " :Welcome to the " << serv_name << " Network, " << nick << CRLF;
 		auth_message << ":" << serv_name << " " << RPL_YOURHOST << " " << nick 
-			<< " :Your host is  " << serv_name << ", running version " << this->server_->get_version() << CRLF;
+			<< " :Your host is " << serv_name << ", running version " << this->server_->get_version() << CRLF;
 		auth_message << ":" << serv_name << " " << RPL_CREATED << " " << nick 
 			<< " :This server was create " << this->server_->get_create_time() << CRLF;
 		auth_message << ":" << serv_name << " " << RPL_MYINFO << " " << nick 
