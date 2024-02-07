@@ -91,10 +91,10 @@ void	NickCommand::Run() {
 		this->server_->UnlockClientMutex(this->client_sock_);
 	
 		/* send message with SUCCESS cases */
-		if (this->is_registered_ == true)
-			this->resp_ = (std::string)":" + this->sender_nick_ + " ";
-		this->resp_ << "NICK " << params_[0];
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
+		if (this->is_registered_ == true) {
+			this->resp_ = (std::string)":" + this->sender_nick_ + " NICK " + this->params_[0];
+			SendResponse(this->client_sock_, this->resp_.get_format_str());
+		}
 	
 		/* auth process */
 		if (auth_check == false)
