@@ -283,6 +283,8 @@ void	JoinCommand::GetChannelInfo(channel_info *info) {
 
 void	JoinCommand::ParseParam(void) {
 	// empty case has considered at Run();
+	if (this->params_.empty() == true)
+		return;
 	std::string	channels_str = params_[0];
 	std::string	keys_str = params_.size() == 2 ? params_[1] : "";
 
