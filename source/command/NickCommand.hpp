@@ -17,6 +17,7 @@ class NickCommand: public Command {
 		void	AuthClientError(void);
 	private:
 		std::string	sender_nick_;
+		bool		is_registered_;
 };
 
 #endif

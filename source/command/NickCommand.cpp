@@ -65,7 +65,8 @@ void	NickCommand::AnyOfError(void) {
 void	NickCommand::Run() {
 	try {
 		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
-		if (IsRegistered(this->client_sock_) == true) {
+		this->is_registered_ = IsRegistered(this->client_sock_);
+		if (this->is_registered_ == true) {
 			AuthClientError();
 			if (this->is_success_ == false) {
 				SendResponse(this->client_sock_, this->resp_.get_format_str());
@@ -90,7 +91,9 @@ void	NickCommand::Run() {
 		this->server_->UnlockClientMutex(this->client_sock_);
 	
 		/* send message with SUCCESS cases */
-		this->resp_ = this->resp_ + params_[0];
+		if (this->is_registered_ == true)
+			this->resp_ = (std::string)":" + this->sender_nick_ + " ";
+		this->resp_ << "NICK " << params_[0];
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	
 		/* auth process */
