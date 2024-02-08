@@ -23,7 +23,6 @@
 #include "UnvalidCommand.hpp"
 #include "NickCommand.hpp"
 
-Mutex print;
 size_t	fail_count = 0;
 size_t	success_count = 0;
 
@@ -580,45 +579,18 @@ void	TestUnvalidCommand(Server *s, Client *dc) {
 	IsEqual("421 blahblah :Unknown command", com.RunAndReturnRespInTest());
 }
 
-/*
-void	TestParseRequest(Server *s, Client *c) {
-	int	dummy;
-	std::vector<Command *> dummy_list;
-
-	Request::SplitMessage(s, c, "", &dummy_list)
-	Request::ParseRequest(s, c, "TOPIC", &dummy);
-}
-*/
-
-int main() {
-
-	// for constructor error
-	print.init(NULL);
-	
-	
-	char	*argv[] = {"TEST", "9090", "1234"};
-	Server s(3, argv);
-	Client c;
-	int	offset;
-	//Request::ParseRequest(&s, &c, "a", &offset);
-	c.set_sock(9);
-	c.set_nick("wooseoki");
-
-	TestPingCommand(&s, &c);
-	TestPartCommand(&s, &c);
-	TestCapCommand(&s, &c);
-	TestWhoisCommand(&s, &c);
-	TestQuitCommand(&s, &c);
-	TestTopicCommand(&s, &c);
-	TestPrivmsgCommand(&s, &c);
-
-	TestKickCommand(&s, &c);
-	TestModeCommand(&s, &c);
-	TestInviteCommand(&s, &c);
-	TestUnvalidCommand(&s, &c);
-  
-  TestNickCommand(&s, &c);
-  
+void	TestResponse(Server *s, Client *c) {
+	TestPingCommand(s, c);
+	TestPartCommand(s, c);
+	TestCapCommand(s, c);
+	TestWhoisCommand(s, c);
+	TestQuitCommand(s, c);
+	TestTopicCommand(s, c);
+	TestPrivmsgCommand(s, c);
+	TestKickCommand(s, c);
+	TestModeCommand(s, c);
+	TestInviteCommand(s, c);
+	TestUnvalidCommand(s, c);
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }
