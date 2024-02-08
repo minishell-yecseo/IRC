@@ -37,13 +37,7 @@ bool	NickCommand::IsUniqueNick(const std::string& nick) {
 
 bool	NickCommand::IsEqualPrevNick(const std::string& prev_nick) {
 	/*error case : prefix exist but not equal to the request client's current name */
-	std::string current_nick;
-
-	this->server_->LockClientMutex(this->client_sock_);//lock
-	current_nick = client_->get_nick();
-	this->server_->UnlockClientMutex(this->client_sock_);//unlock
-
-	if (prev_nick.empty() == false && prev_nick.compare(current_nick) != 0)
+	if (prev_nick.empty() == false && prev_nick.compare(this->sender_nick_) != 0)
 		return false;
 	return true;
 }
@@ -64,6 +58,8 @@ void	NickCommand::AnyOfError(void) {
 
 void	NickCommand::Run() {
 	try {
+		if (this->prefix_.empty() == false)
+			this->prefix_ = this->prefix_.substr(1);
 		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
 		this->is_registered_ = IsRegistered(this->client_sock_);
 		if (this->is_registered_ == true) {
@@ -109,6 +105,7 @@ void	NickCommand::AuthClientError(void) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : Wrong prefix name";
 	else if (this->prefix_.empty() == false && IsEqualPrevNick(this->prefix_) == false) 
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + this->sender_nick_ + " NICK : prefix does not match with previous name";
-	else if (this->prefix_.empty() == true) 
+
+	if (this->resp_.size() == 0)
 		AnyOfError();
 }

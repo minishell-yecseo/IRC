@@ -11,7 +11,7 @@ Client::Client(int sock) {
 void	Client::Init(int sock) {
 	this->sock_ = sock;
 	memset(&this->addr_, 0, sizeof(this->addr_));
-	this->nick_ = "unknown_nick";
+	this->nick_ = "unknown-nick";
 	this->auth_flag_ = 0;
 }
 
