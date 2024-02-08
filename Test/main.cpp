@@ -1,4 +1,4 @@
-#include "TestRequest.hpp"
+#include "TestResponse.hpp"
 
 Server	*ServerInit(void) {
 	char *argv[] = {"TEST", "9090", "1234"};
