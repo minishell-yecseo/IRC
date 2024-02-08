@@ -471,21 +471,23 @@ void	Server::DeleteChannel(const std::string& channel_name) {
 }
 
 void	Server::DisconnectClient(const int& sock) {
-	std::map<int, Client>::iterator	client_it;
+	DeleteClientEvent(sock);
+	DeleteClient(sock);
+}
 
+void	Server::DeleteClient(const int& sock) {
+	Client	client;
+
+	std::map<int, Client>::iterator	client_it;
 	this->clients_mutex_.lock();//lock
-	
 	client_it = clients_.find(sock);
-	if (client_it == clients_.end()) {
-		this->clients_mutex_.unlock();//unlock
-		return;
-	}
-	this->clients_.erase(client_it);
+	if (client_it != clients_.end())
+		this->clients_.erase(client_it);
+	client = client_it->second;
 	this->clients_mutex_.unlock();//unlock
 
-	DeleteClientEvent(sock);
-	DeleteClientInChannel(sock, &(client_it->second));
-	DeleteClientMutex(client_it->second.get_sock());
+	DeleteClientInChannel(sock, &client);
+	DeleteClientMutex(sock);
 }
 
 void	Server::DeleteClientInChannel(const int& sock, Client *client)
