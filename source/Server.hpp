@@ -141,6 +141,8 @@ class Server {
 		void	HandleClientEvent(struct kevent event);
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);
+		void	DeleteClientInChannel(const int& sock, Client *client);
+		void	DeleteClientEvent(const int& sock);
 		void	ConnectClient(void);
 		void	AcceptClient(Client *client);
 		bool	AddClient(Client *client);

@@ -471,7 +471,6 @@ void	Server::DeleteChannel(const std::string& channel_name) {
 }
 
 void	Server::DisconnectClient(const int& sock) {
-	std::vector<std::string>	channels_of_client;
 	std::map<int, Client>::iterator	client_it;
 
 	this->clients_mutex_.lock();//lock
@@ -481,41 +480,41 @@ void	Server::DisconnectClient(const int& sock) {
 		this->clients_mutex_.unlock();//unlock
 		return;
 	}
+	this->clients_.erase(client_it);
+	this->clients_mutex_.unlock();//unlock
 
-	if (LockClientMutex(sock) == false) {
-		this->clients_mutex_.unlock();//unlock
-		UnlockClientMutex(sock);
-		return;
-	}
+	DeleteClientEvent(sock);
+	DeleteClientInChannel(sock, &(client_it->second));
+	DeleteClientMutex(client_it->second.get_sock());
+}
 
-	struct kevent del_evlist[2];
-	EV_SET(&del_evlist[0], sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-	EV_SET(&del_evlist[1], sock, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
-	close(sock);
-
-	channels_of_client = client_it->second.get_channels();
+void	Server::DeleteClientInChannel(const int& sock, Client *client)
+{
+	LockClientMutex(sock);
+	std::vector<std::string> channels_of_client = client->get_channels();
 	
-	/* Channel 에서 Client 삭제 */
 	std::vector<std::string>::iterator channel_itr = channels_of_client.begin();
 	int	left_client_num = 0;
 	while (channel_itr != channels_of_client.end()) {
-		
 		if (LockChannelMutex(*channel_itr))
 			left_client_num = this->channels_[*channel_itr].Kick(sock);
 		UnlockChannelMutex(*channel_itr);//unlock
 
-		if (left_client_num < 1) {
+		if (left_client_num < 1)
 			CeaseChannel(*channel_itr);
-		}
 		channel_itr++;
 	}
-	
-	this->clients_.erase(client_it);
 	UnlockClientMutex(sock);
-	this->clients_mutex_.unlock();//unlock
+}
 
-	DeleteClientMutex(client_it->second.get_sock());
+void	Server::DeleteClientEvent(const int& sock){
+	struct kevent del_evlist[2];
+
+	LockClientMutex(sock);
+	EV_SET(&del_evlist[0], sock, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	kevent(this->kq_, del_evlist, 2, NULL, 0, NULL);
+	close(sock);
+	UnlockClientMutex(sock);
 }
 
 void	Server::HandleTimeout(void) {
