@@ -1,5 +1,5 @@
-#ifndef TESTREQUEST_HPP
-# define TESTREQUEST_HPP
+#ifndef TESTRESPONSE_HPP
+# define TESTRESPONSE_HPP
 
 #include <cassert>
 #include <cstring>
