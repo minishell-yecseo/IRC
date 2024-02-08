@@ -59,10 +59,15 @@ void	JoinCommand::Run(void) {
 		GetSenderInfo();
 		ParseParam();
 		AnyOfError();
-		if (this->is_success_ == false)
+		if (this->is_success_ == false) {
 			return SendResponse(this->client_sock_, this->resp_.get_format_str());
-		for (size_t i = 0; i < this->channels_.size(); ++i)
+		}
+		for (size_t i = 0; i < this->channels_.size(); ++i) {
+			this->is_success_ = false;
 			Join(i);
+			if (this->is_success_ == false)
+				SendResponse(this->client_sock_, this->resp_.get_format_str());
+		}
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
 	}
@@ -88,12 +93,13 @@ void	JoinCommand::Join(const int& idx) {
 	if (info.mode & MODE_TOPIC)
 		SendTopic(info);
 	SendMemberList(info);
+	SendResponse(this->client_sock_, this->resp_.get_str());
 	AddChannelForClient(info.name);
 }
 
 void	JoinCommand::SendMemberList(const channel_info& info) {
 	/* basic RPL_NAMREPLY format */
-	this->resp_ = (std::string)RPL_NAMREPLY + " " + this->sender_nick_;
+	this->resp_ << (std::string)RPL_NAMREPLY << " " << this->sender_nick_;
 	if (!(info.mode & MODE_KEY))
 		this->resp_ << " @ ";
 	else
@@ -116,7 +122,8 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	std::map<int, char>::const_iterator citr = cur_channel.get_members().begin();
 
 	while (citr != cur_channel.get_members().end()) {
-		this->resp_ << citr->second;
+		if (citr->second != ' ')
+			this->resp_ << citr->second;
 		this->resp_ << this->server_->SearchClientBySock(citr->first) << " ";
 		citr++;
 	}
@@ -124,8 +131,8 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	
 	//"<client> <channel> :End of /NAMES list"
 	this->resp_ << CRLF;
-	this->resp_ << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name;
-	SendResponse(this->client_sock_, this->resp_.get_format_str());
+	this->resp_ << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name << CRLF;
+	//SendResponse(this->client_sock_, this->resp_.get_format_str());
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
@@ -138,7 +145,6 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 	ch_ptr = this->server_->get_channel_ptr(info.name);
 	if (ch_ptr == NULL) {
 		this->resp_ = ERR_NOSUCHCHANNEL;
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 
@@ -149,7 +155,6 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 	if (join_succ == false) {
 		this->resp_ = (std::string)ERR_CHANNELISFULL + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " :Cannot join channel (+l)";
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 	return true;
@@ -160,13 +165,11 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	ch_ptr = this->server_->get_channel_ptr(info.name);
 	if (ch_ptr == NULL) {
 		this->resp_ = ERR_NOSUCHCHANNEL;
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 
 	if (info.is_member) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :" + this->sender_nick_ + " is already in " + info.name;
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	} else if (info.mode & MODE_INVITE) {
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
 		/* 1. check invite_list */
@@ -178,22 +181,19 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		if (is_invited == true)
 			return true;
 	
-		this->resp_ << ": " << ERR_INVITEONLYCHAN << " " << this->sender_nick_ << " " << info.name;
+		this->resp_ = (std::string)ERR_INVITEONLYCHAN + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+i)";
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 	} else if (info.mode & MODE_KEY && info.is_auth == false) {
 		/* Auth Failed at key only mode channel */
 		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
-		this->resp_ << ": " << ERR_BADCHANNELKEY << " " << this->sender_nick_ << " " << info.name;
+		this->resp_ = (std::string)ERR_BADCHANNELKEY + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+k)";
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	} else if (info.is_banned) {
 		/* Can't Join because the sender(client) has banned */
 		/* SEND message : <client> <channel> :Cannot join channel (+b) */
-		this->resp_ << ": " << ERR_BANNEDFROMCHAN << " " << this->sender_nick_ << " " << info.name;
+		this->resp_ = (std::string)ERR_BANNEDFROMCHAN + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+b)";
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 	this->is_success_ = true;
@@ -208,14 +208,14 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_host(this->sender_nick_);
 	new_ch.set_host_sock(this->client_sock_);
 	info->join_membership = '@';
+	info->is_auth = true;
 	this->server_->AddChannelMutex(info->name);
 	
 	this->server_->AddChannel(new_ch);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
-	this->resp_ = (std::string)RPL_TOPIC + " " + this->sender_nick_ + " " + info.name + " :" + info.topic; 
-	SendResponse(this->client_sock_, this->resp_.get_format_str());
+	this->resp_ << (std::string)RPL_TOPIC << " " << this->sender_nick_ << " " << info.name << " :" << info.topic << CRLF; 
 }
 
 bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
@@ -225,7 +225,6 @@ bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	Channel *ch_ptr = this->server_->get_channel_ptr(info.name);
 	if (ch_ptr == NULL) {
 		this->resp_ = ERR_NOSUCHCHANNEL;
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 	this->server_->LockChannelMutex(info.name);
@@ -233,10 +232,15 @@ bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	std::map<int, char>::const_iterator	itr = members.begin();
 	std::map<int, char>::const_iterator	end_itr = members.end();
 	while (itr != end_itr) {
+		if (itr->first == this->client_sock_) {
+			itr++;
+			continue;
+		}
 		SendResponse(itr->first, this->resp_.get_format_str());
 		itr++;
 	}
 	this->server_->UnlockChannelMutex(info.name);
+	this->resp_ << CRLF;
 	return true;
 }
 
@@ -259,7 +263,6 @@ void	JoinCommand::GetChannelInfo(channel_info *info) {
 	Channel	*ch_ptr = this->server_->get_channel_ptr(info->name);
 	if (ch_ptr == NULL) {
 		this->resp_ = ERR_NOSUCHCHANNEL;
-		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return;
 	}
 	
