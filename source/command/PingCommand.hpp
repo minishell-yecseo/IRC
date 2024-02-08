@@ -8,7 +8,7 @@
 
 class PingCommand: public Command {
 	public:
-		PingCommand(const std::vector<std::string> &token_list);
+		PingCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 };

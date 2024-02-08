@@ -1,6 +1,6 @@
 #include "CapCommand.hpp"
 
-CapCommand::CapCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+CapCommand::CapCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	CapCommand::SetInfo(void) {

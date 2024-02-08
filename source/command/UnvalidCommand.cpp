@@ -1,6 +1,6 @@
 #include "UnvalidCommand.hpp"
 
-UnvalidCommand::UnvalidCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+UnvalidCommand::UnvalidCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	UnvalidCommand::AnyOfError(void) {

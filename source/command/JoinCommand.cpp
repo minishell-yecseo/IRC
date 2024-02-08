@@ -1,6 +1,6 @@
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+JoinCommand::JoinCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 /*

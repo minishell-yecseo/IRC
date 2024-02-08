@@ -1,14 +1,14 @@
 #include "PassCommand.hpp"
 
+PassCommand::PassCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
+}
+
 inline bool	CheckClientAuth(Server *server, Client *client, const int& client_sock) {
 	bool	status;
 	server->LockClientMutex(client_sock);
 	status = client->IsAuth(); 
 	server->UnlockClientMutex(client_sock);
 	return status;
-}
-
-PassCommand::PassCommand(const std::vector<std::string> &token_list) : Command(token_list) {
 }
 
 void	PassCommand::AnyOfError(void) {

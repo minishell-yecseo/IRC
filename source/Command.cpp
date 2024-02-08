@@ -17,7 +17,7 @@ void	Command::SendResponse(const int& sock, const std::string& str) {
 	this->server_->UnlockClientMutex(sock);
 }
 
-Command::Command(const std::vector<std::string> &token_list) {
+Command::Command(const std::vector<std::string> &token_list, Server *s, Client *c) {
 	size_t	param_index;
 
 	if (token_list[0][0] == ':') {
@@ -33,6 +33,8 @@ Command::Command(const std::vector<std::string> &token_list) {
 		this->params_.push_back(token_list[index]);
 	}
 	this->is_success_ = false;
+	set_server(s);
+	set_client(c);
 }
 
 void	Command::set_server(Server *server) {

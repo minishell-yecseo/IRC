@@ -24,7 +24,7 @@ class Command
 		virtual ~Command(void);
 		virtual void	Run(void) = 0;
 		virtual void	AnyOfError(void) = 0;
-		Command(const std::vector<std::string> &token);
+		Command(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void set_server(Server *server);
 		void set_client(Client *client);
 		Server* get_server(void);

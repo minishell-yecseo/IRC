@@ -1,6 +1,6 @@
 #include "PingCommand.hpp"
 
-PingCommand::PingCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+PingCommand::PingCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	PingCommand::AnyOfError(void) {

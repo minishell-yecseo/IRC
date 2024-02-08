@@ -1,6 +1,6 @@
 #include "TopicCommand.hpp"
 
-TopicCommand::TopicCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+TopicCommand::TopicCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {

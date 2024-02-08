@@ -5,7 +5,7 @@
 
 class TopicCommand: public Command {
 	public:
-		TopicCommand(const std::vector<std::string> &token_list);
+		TopicCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& channel_name, const std::string& topic);

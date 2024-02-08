@@ -1,6 +1,6 @@
 #include "UserCommand.hpp"
 
-UserCommand::UserCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+UserCommand::UserCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	UserCommand::Run(void) {

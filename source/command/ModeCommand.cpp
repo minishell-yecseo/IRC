@@ -1,6 +1,6 @@
 #include "ModeCommand.hpp"
 
-ModeCommand::ModeCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+ModeCommand::ModeCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 bool	ModeCommand::CheckKeyParam(const std::string& str) {

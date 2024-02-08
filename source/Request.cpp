@@ -28,7 +28,7 @@ int	Request::SplitRequest(const std::string &request, std::vector<std::string> *
 void	Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list) {
 	std::vector<std::string>	token_list;
 	std::string msg;
-	Command	*c;
+	Command	*com;
 
 	for (size_t i = 0; i < message_list.size(); ++i) {
 		if (message_list[i][0] == ' ')
@@ -36,12 +36,8 @@ void	Request::SplitMessage(Server *server, Client *client, const std::vector<std
 		msg = RemoveDuplicateSpace(message_list[i]);
 		token_list.clear();
 		SeperateWhiteSpace(msg, &token_list);
-		c = CommandFactory(token_list);
-		if (c != NULL) {
-			c->set_server(server);
-			c->set_client(client);
-			command_list->push_back(c);
-		}
+		com = CommandFactory(token_list, server, client);
+		command_list->push_back(com);
 	}
 }
 
@@ -115,54 +111,54 @@ int	Request::SearchCommand(const std::vector<std::string> &token_list) {
 	return acc;
 }
 
-Command	*Request::CommandFactory(const std::vector<std::string> &token_list) {
-	Command *c = NULL;
+Command	*Request::CommandFactory(const std::vector<std::string> &token_list, Server *s, Client *c) {
+	Command *com = NULL;
 
 	switch (SearchCommand(token_list)) {
 		case CAP:
-			c = new CapCommand(token_list);
+			com = new CapCommand(token_list, s, c);
 			break ;
 		case JOIN:
-			c = new JoinCommand(token_list);
+			com = new JoinCommand(token_list, s, c);
 			break ;
 		case KICK:
-			c = new KickCommand(token_list);
+			com = new KickCommand(token_list, s, c);
 			break ;
 		case MODE:
-			c = new ModeCommand(token_list);
+			com = new ModeCommand(token_list, s, c);
 			break ;
 		case NICK:
-			c = new NickCommand(token_list);
+			com = new NickCommand(token_list, s, c);
 			break ;
 		case PING:
-			c = new PingCommand(token_list);
+			com = new PingCommand(token_list, s, c);
 			break ;
 		case PASS:
-			c = new PassCommand(token_list);
+			com = new PassCommand(token_list, s, c);
 			break ;
 		case PART:
-			c = new PartCommand(token_list);
+			com = new PartCommand(token_list, s, c);
 			break ;
 		case USER:
-			c = new UserCommand(token_list);
+			com = new UserCommand(token_list, s, c);
 			break ;
 		case QUIT:
-			c = new QuitCommand(token_list);
+			com = new QuitCommand(token_list, s, c);
 			break ;
 		case TOPIC:
-			c = new TopicCommand(token_list);
+			com = new TopicCommand(token_list, s, c);
 			break ;
 		case WHOIS:
-			c = new WhoisCommand(token_list);
+			com = new WhoisCommand(token_list, s, c);
 			break ;
 		case INVITE:
-			c = new InviteCommand(token_list);
+			com = new InviteCommand(token_list, s, c);
 			break ;
 		case PRIVMSG:
-			c = new PrivmsgCommand(token_list);
+			com = new PrivmsgCommand(token_list, s, c);
 			break ;
 		default:
-			c = new UnvalidCommand(token_list);
+			com = new UnvalidCommand(token_list, s, c);
 	}
-	return c;
+	return com;
 }
