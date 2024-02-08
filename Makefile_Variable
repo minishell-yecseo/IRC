@@ -1,7 +1,7 @@
 NAME = ircserv
 CXX = c++
 CPPFLAGS = -MMD -MP
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 RMFLAGS = -rf
 
 IRC_SRC = Channel.cpp Request.cpp Utils.cpp \

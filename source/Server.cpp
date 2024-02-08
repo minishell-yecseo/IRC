@@ -371,12 +371,13 @@ void	Server::HandleClientEvent(struct kevent event) {
 	else {
 		buff[read_byte] = '\0';
 		buffer += buff;
-		std::vector<Command *> cmds;
+		std::vector<Command *> *cmds;
 		int	offset;
 		cmds = Request::ParseRequest(this, client, buffer, &offset);
-		for (size_t i = 0; i < cmds.size(); ++i) 
-			pool_->Enqueue(cmds[i]);
+		for (size_t i = 0; i < cmds->size(); ++i) 
+			pool_->Enqueue((*cmds)[i]);
 		UnlockClientMutex(event.ident);//unlock
+		delete cmds;
 		buffer.erase(0, offset);
 	}
 }

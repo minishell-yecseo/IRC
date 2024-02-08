@@ -1,31 +1,37 @@
 #include "Request.hpp"
 #include "SpecifyCommand.hpp"
 
-std::vector<Command*> Request::ParseRequest(Server *server, Client *client, std::string request, int *offset) {
-	std::vector<std::string> message_list;
-	std::vector<Command *> command_list;
+std::vector<Command*> *Request::ParseRequest(Server *server, Client *client, std::string request, int *offset) {
+	std::vector<std::string> *message_list;
+	std::vector<Command *> *command_list;
 
 	log::cout << "Request : " << request << "\n";
-	*offset = SplitRequest(request, &message_list);
-	SplitMessage(server, client, message_list, &command_list);
+	message_list = SplitRequest(request, offset);
+	command_list = SplitMessage(server, client, *message_list);
+
+	delete message_list;
+
 	return command_list;
 }
 
-int	Request::SplitRequest(const std::string &request, std::vector<std::string> *message_list) {
+std::vector<std::string>	*Request::SplitRequest(const std::string &request, int *offset) {
+	std::vector<std::string> *result = new std::vector<std::string>();
 	static const std::string	delimiter = "\r\n";
 	size_t start = 0, end = 0;
 
 	while ((end = request.find(delimiter, start)) != std::string::npos) {
-		message_list->push_back(request.substr(start, end - start));
+		result->push_back(request.substr(start, end - start));
 		start = end + delimiter.length();
 	}
 	// Need log file
 	if (start != request.length())
 		log::cout << "Unvalid message format\n";
-	return start;
+	*offset = start;
+	return result;
 }
 
-void	Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list) {
+std::vector<Command *>	*Request::SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list) {
+	std::vector<Command *> *command_list = new std::vector<Command *>();
 	std::vector<std::string>	token_list;
 	std::string msg;
 	Command	*com;
@@ -39,6 +45,7 @@ void	Request::SplitMessage(Server *server, Client *client, const std::vector<std
 		com = CommandFactory(token_list, server, client);
 		command_list->push_back(com);
 	}
+	return command_list;
 }
 
 // Message can be seperated one or more whitespace
@@ -46,15 +53,19 @@ std::string Request::RemoveDuplicateSpace(const std::string& str) {
 	std::string result;
 	bool space_flag = false;
 	bool colon_flag = false;
+	size_t	start = 0;
 
-	for (size_t i = 0; i < str.size(); ++i) {
+	while (str[start] == ' ')
+		++start;
+
+	for (size_t i = start; i < str.size(); ++i) {
 		if (str[i] == ' ' && colon_flag == false) {
 			if (space_flag == false) {
 				result += ' ';
 				space_flag = true;
 			}
 		}
-		else if (i != 0 && str[i] == ':' ) {
+		else if (i != start && str[i] == ':' ) {
 			result += str[i];
 			colon_flag = true;
 		}
