@@ -22,7 +22,7 @@ void	UserCommand::AnyOfError(void) {
 		return;
 	}
 	if (IsNonwhite(this->params_[0]) == false) {
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " : username must not has whitespace";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :username must not has whitespace";
 		return;
 	}
 	this->server_->LockClientMutex(this->client_sock_);
@@ -38,7 +38,7 @@ void	UserCommand::AnyOfError(void) {
 bool	UserCommand::IsNonwhite(const std::string& str) {
 	for (size_t i = 0; i < str.size(); ++i) {
 		// NUL WhiteSpace NewLine CarrigeReturn
-		if (str[i] == 0 || str[i] == 20 || str[i] == 12 || str[i] == 15)
+		if (isspace(str[i]) != 0 || str[i] == 0)
 			return false;
 	}
 	return true;
