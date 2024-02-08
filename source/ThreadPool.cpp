@@ -1,8 +1,5 @@
 #include "ThreadPool.hpp"
 
-ThreadPool::ThreadPool() {
-}
-
 ThreadPool::ThreadPool(int size) {
 	this->thread_count_ = size;
 	pthread_mutex_init(&(this->lock_), NULL);
@@ -49,9 +46,8 @@ void	*ThreadPool::Worker(void *arg) {
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 	sigaction(SIGPIPE, &act, 0);
-
 	ThreadPool	*pool = (ThreadPool *)arg;
-	Command	*c;
+	Command	*c = NULL;
 
 	for (;;) {
 		pthread_mutex_lock(&(pool->lock_));
@@ -63,15 +59,19 @@ void	*ThreadPool::Worker(void *arg) {
 			pthread_mutex_unlock(&(pool->lock_));
 			break ;
 		}
-
-		c = pool->queue_.front();
-		pool->queue_.pop();
-		pool->count_ -= 1;
+		if (pool->queue_.empty() == false) {
+			c = pool->queue_.front();
+			pool->queue_.pop();
+			pool->count_ -= 1;
+		}
+		
+		if (c == NULL)
+			continue;
 
 		pthread_mutex_unlock(&(pool->lock_));
-
 		c->Run();
 		delete c;
+		c = NULL;
 	}
 
 	pthread_mutex_unlock(&(pool->lock_));

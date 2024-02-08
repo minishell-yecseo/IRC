@@ -27,7 +27,6 @@ class ThreadPool
 		int						count_;
 		bool					shutdown_;
 
-		ThreadPool(void);
 		ThreadPool(int size);
 		~ThreadPool();
 
