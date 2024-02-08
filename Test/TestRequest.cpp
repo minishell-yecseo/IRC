@@ -23,10 +23,13 @@ void	IsVectorEqual(const std::vector<std::string> a, const std::vector<std::stri
 
 	for (size_t i = 0; i < a.size(); ++i) {
 		if (a[i].compare(b[i]) != 0)
-			std::cout << RED << a[i] << " != " << b[i] << "\n" << RESET;
+			std::cout << RED << a[i] << " != " << b[i] << RESET;
 		else
-			std::cerr << GREEN << a[i] << " == " << b[i] << "\n" << RESET;
+			std::cerr << GREEN << a[i] << " == " << b[i] << RESET;
+		if (i != a.size() - 1)
+			std::cout << ", ";
 	}
+	std::cout << "\n";
 }
 
 void	TestSplitRequest(void) {
@@ -109,8 +112,107 @@ void	TestRemoveDuplicateSpace(void) {
 	IsStringEqual(mock, result);
 }
 
+void	TestSeperateWhiteSpace(void) {
+	std::cout << "SEPREATEWHITESPACE\n";
+	std::string	request;
+	std::vector<std::string> mock;
+	std::vector<std::string> result;
+
+	request = "command";
+	mock.push_back("command");
+	Request::SeperateWhiteSpace(request, &result);
+	IsVectorEqual(mock, result);
+	mock.clear();
+	result.clear();
+
+	request = ":prefix command param";
+	mock.push_back(":prefix");
+	mock.push_back("command");
+	mock.push_back("param");
+	Request::SeperateWhiteSpace(request, &result);
+	IsVectorEqual(mock, result);
+	mock.clear();
+	result.clear();
+
+	request = ":prefix command param :last param with   multiple  space";
+	mock.push_back(":prefix");
+	mock.push_back("command");
+	mock.push_back("param");
+	mock.push_back("last param with   multiple  space");
+	Request::SeperateWhiteSpace(request, &result);
+	IsVectorEqual(mock, result);
+	mock.clear();
+	result.clear();
+}
+
+void	TestBaseAlphaToNumber(void) {
+	int	result;
+	std::string	request;
+
+	request = "CAP";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, CAP);
+
+	request = "INVITE";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, INVITE);
+
+	request = "JOIN";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, JOIN);
+
+	request = "KICK";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, KICK);
+
+	request = "MODE";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, MODE);
+
+	request = "NICK";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, NICK);
+
+	request = "PART";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, PART);
+
+	request = "PASS";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, PASS);
+
+	request = "PING";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, PING);
+
+	request = "PRIVMSG";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, PRIVMSG);
+
+	request = "QUIT";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, QUIT);
+
+	request = "TOPIC";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, TOPIC);
+
+	request = "USER";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, USER);
+
+	request = "WHOIS";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, WHOIS);
+
+	request = ":prefix";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, 0);
+}
+
 void	TestRequest(Server *s, Client *c) {
 	TestSplitRequest();
 	TestRemoveDuplicateSpace();
-
+	TestSeperateWhiteSpace();
+	TestBaseAlphaToNumber();
 }
