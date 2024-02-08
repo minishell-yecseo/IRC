@@ -22,7 +22,7 @@ void	UserCommand::AnyOfError(void) {
 		return;
 	}
 	if (IsNonwhite(this->params_[0]) == false) {
-		this->resp_ = (std::string)ERR_UNKNOWNERROR + " : username must not has whitespace";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :username must not has whitespace";
 		return;
 	}
 	this->server_->LockClientMutex(this->client_sock_);
