@@ -5,9 +5,8 @@
 
 class PassCommand: public Command {
 	public:
-		PassCommand(const std::vector<std::string> &token_list);
+		PassCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
-		//bool		CheckClientAuth(void);
 };
 #endif

@@ -39,7 +39,7 @@ class	Request
 		static std::vector<Command *> ParseRequest(Server *server, Client *client, std::string request, int *offset);
 		static int	SplitRequest(const std::string &request, std::vector<std::string> *message_list);
 		static void	SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list, std::vector<Command *> *command_list);
-		static Command *	CommandFactory(const std::vector<std::string> &token_list);
+		static Command *	CommandFactory(const std::vector<std::string> &token_list, Server *s, Client *c);
 		static std::string	RemoveDuplicateSpace(const std::string &str);
 		static int		BaseAlphaToNumber(const std::string &token);
 		static void	SeperateWhiteSpace(const std::string &str, std::vector<std::string> *token_list);

@@ -1,6 +1,6 @@
 #include "KickCommand.hpp"
 
-KickCommand::KickCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+KickCommand::KickCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 bool	KickCommand::SetInfo(void) {

@@ -5,7 +5,7 @@
 
 class InviteCommand: public Command {
 	public:
-		InviteCommand(const std::vector<std::string> &token_list);
+		InviteCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& nick, const std::string& chan);

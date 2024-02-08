@@ -1,6 +1,6 @@
 #include "PrivmsgCommand.hpp"
 
-PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void PrivmsgCommand::BroadCast(const std::string& channel_name) {

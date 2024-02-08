@@ -1,6 +1,6 @@
 #include "InviteCommand.hpp"
 
-InviteCommand::InviteCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+InviteCommand::InviteCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 bool	InviteCommand::SetInfo(void) {

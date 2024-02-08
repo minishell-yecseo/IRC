@@ -1,6 +1,6 @@
 #include "QuitCommand.hpp"
 
-QuitCommand::QuitCommand(const std::vector<std::string> &token_list) : Command(token_list) {
+QuitCommand::QuitCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
 void	QuitCommand::AnyOfError(void) {

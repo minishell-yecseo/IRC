@@ -8,7 +8,7 @@
 
 class ModeCommand: public Command {
 	public:
-		ModeCommand(const std::vector<std::string> &token_list);
+		ModeCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& chan);

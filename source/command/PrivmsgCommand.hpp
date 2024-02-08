@@ -5,7 +5,7 @@
 
 class PrivmsgCommand: public Command {
 	public:
-		PrivmsgCommand(const std::vector<std::string> &token_list);
+		PrivmsgCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckTarget(void);

@@ -5,7 +5,7 @@
 
 class UnvalidCommand: public Command {
 	public:
-		UnvalidCommand(const std::vector<std::string> &token_list);
+		UnvalidCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 };

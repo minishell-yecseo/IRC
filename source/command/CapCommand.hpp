@@ -6,7 +6,7 @@
 
 class CapCommand: public Command {
 	public:
-		CapCommand(const std::vector<std::string> &token_list);
+		CapCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	SetInfo(void);
