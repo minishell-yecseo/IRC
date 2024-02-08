@@ -1,10 +1,18 @@
 #include "Client.hpp"
 
 Client::Client(void) {
-	sock_ = FT_INIT_CLIENT_FD;
-	memset(&addr_, 0, sizeof(addr_));
-	nick_ = "unknown_nick";
-	auth_flag_ = 0;
+	Init();
+}
+
+Client::Client(int sock) {
+	Init(sock);
+}
+
+void	Client::Init(int sock) {
+	this->sock_ = sock;
+	memset(&this->addr_, 0, sizeof(this->addr_));
+	this->nick_ = "unknown-nick";
+	this->auth_flag_ = 0;
 }
 
 bool	Client::IsAuth(void) const {

@@ -22,6 +22,8 @@ class Client {
 	friend class Server;
 	public:
 		Client(void);
+		Client(int sock);
+		void	Init(int sock = FT_INIT_CLIENT_FD);
 		bool	IsAuth(void) const;
 		void	SetAuthFlag(const int& flag);
 		void	add_channel(const std::string& channel_name);

@@ -71,9 +71,11 @@ class Server {
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
 		void	AddChannel(Channel ch);
+		bool	AddClient(Client *client);
 
 		void	CeaseChannel(const std::string& channel_name);
 		void	DeleteChannel(const std::string& channel_name);
+		void	DeleteClient(const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
@@ -141,7 +143,10 @@ class Server {
 		void	HandleClientEvent(struct kevent event);
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);
+		void	DeleteClientInChannel(const int& sock, Client *client);
+		void	DeleteClientEvent(const int& sock);
 		void	ConnectClient(void);
+		void	AcceptClient(Client *client);
 		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
 						uint32_t fflags, intptr_t data, void *udata);
 
