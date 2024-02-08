@@ -24,6 +24,7 @@ CMD_SRC = PassCommand.cpp PrivmsgCommand.cpp \
 				UserCommand.cpp JoinCommand.cpp \
 				PingCommand.cpp InviteCommand.cpp \
 				PartCommand.cpp WhoisCommand.cpp \
+				UnvalidCommand.cpp
 
 CMD_DIR = ./source/command/
 CMD_OBJ_DIR = ./object/command/
@@ -33,7 +34,7 @@ CMD_SRC_PATH = $(addprefix $(CMD_DIR), $(CMD_SRC))
 CMD_OBJ_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_OBJ))
 CMD_DEB_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_DEP))
 
-TEST_SRC = TestRequest.cpp
+TEST_SRC = TestRequest.cpp main.cpp
 
 TEST_DIR = ./Test/
 TEST_OBJ_DIR = ./object/test/
