@@ -1,6 +1,7 @@
 #ifndef COMAND_HPP
 #define COMAND_HPP
 
+#include <cstring>
 #include <iostream>
 #include <vector>
 #include <exception>

@@ -69,23 +69,20 @@ void	JoinCommand::Run(void) {
 }
 
 void	JoinCommand::Join(const int& idx) {
-	this->resp_ = "";
 	channel_info	info;
+	memset(&info, 0, sizeof(info));
 	info.name = this->channels_[idx];
+	info.join_membership = ' ';
 	info.key = (size_t) idx < this->keys_.size() ? this->keys_[idx] : "";
 	info.mode = info.key.size() > 0 ? MODE_KEY : 0;
 
-	if (this->server_->SearchChannelByName(info.name) == false) {
+	if (this->server_->SearchChannelByName(info.name) == false)
 		CreateChannel(&info);
-		return;
-	}
+	else
+		GetChannelInfo(&info);//PASS
 
-	GetChannelInfo(&info);//PASS
-	if (JoinErrorCheck(info) == false)
-		return;
 	if (TryJoin(info) == false)
 		return;
-	
 	if (SendNotifyToMember(info) == false)
 		return;
 	if (info.mode & MODE_TOPIC)
@@ -132,72 +129,66 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
-	this->resp_ = "";
 	bool	join_succ = false;
 	Channel		*ch_ptr = NULL;
 
-	ch_ptr = this->server_->get_channel_ptr(info.name);
-	if (ch_ptr == NULL)
+	if (JoinErrorCheck(info) == false)
 		return false;
+
+	ch_ptr = this->server_->get_channel_ptr(info.name);
+	if (ch_ptr == NULL) {
+		this->resp_ = ERR_NOSUCHCHANNEL;
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
+		return false;
+	}
+
 	this->server_->LockChannelMutex(info.name);
-	join_succ = ch_ptr->Join(this->client_sock_, ' ');//normal : +
+	join_succ = ch_ptr->Join(this->client_sock_, info.join_membership);
 	this->server_->UnlockChannelMutex(info.name);
 
 	if (join_succ == false) {
-		/* false caused by client limit in channel */
-		/* SEND message :<client> <channel> :Cannot join channel (+l) */
-		this->resp_ << ": " << ERR_CHANNELISFULL << " " << this->sender_nick_ << " " << info.name;
+		this->resp_ = (std::string)ERR_CHANNELISFULL + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " :Cannot join channel (+l)";
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
+		return false;
 	}
-	this->is_success_ = true;
-	return join_succ;
+	return true;
 }
 
 bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
-	this->resp_ = "";
 	Channel		*ch_ptr = NULL;
-	
-	if (info.is_member) {
-		this->resp_ << ": " << ERR_UNKNOWNERROR << " :" << this->sender_nick_ << " is already in " << info.name;
+	ch_ptr = this->server_->get_channel_ptr(info.name);
+	if (ch_ptr == NULL) {
+		this->resp_ = ERR_NOSUCHCHANNEL;
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
 	}
 
-	ch_ptr = this->server_->get_channel_ptr(info.name);
-	if (ch_ptr == NULL)
-		return false;
-	if (info.mode & MODE_INVITE) {
+	if (info.is_member) {
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :" + this->sender_nick_ + " is already in " + info.name;
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
+	} else if (info.mode & MODE_INVITE) {
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
 		/* 1. check invite_list */
 		bool is_invited = false;
-		if (this->server_->LockChannelMutex(info.name) == false) {
-			this->server_->UnlockChannelMutex(info.name);
-			return false;
-		}
-
+		this->server_->LockChannelMutex(info.name);
 		is_invited = ch_ptr->IsInvited(this->client_sock_);
 		this->server_->UnlockChannelMutex(info.name);
-
+		
 		if (is_invited == true)
 			return true;
 	
 		this->resp_ << ": " << ERR_INVITEONLYCHAN << " " << this->sender_nick_ << " " << info.name;
 		this->resp_ << " : Cannot join channel (+i)";
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
-		return false;
-	}
-
-	if (info.mode & MODE_KEY && info.is_auth == false) {
+	} else if (info.mode & MODE_KEY && info.is_auth == false) {
 		/* Auth Failed at key only mode channel */
 		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
 		this->resp_ << ": " << ERR_BADCHANNELKEY << " " << this->sender_nick_ << " " << info.name;
 		this->resp_ << " : Cannot join channel (+k)";
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
-	}
-
-	if (info.is_banned) {
+	} else if (info.is_banned) {
 		/* Can't Join because the sender(client) has banned */
 		/* SEND message : <client> <channel> :Cannot join channel (+b) */
 		this->resp_ << ": " << ERR_BANNEDFROMCHAN << " " << this->sender_nick_ << " " << info.name;
@@ -216,16 +207,10 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_password(info->key);
 	new_ch.set_host(this->sender_nick_);
 	new_ch.set_host_sock(this->client_sock_);
-	new_ch.Join(this->client_sock_, '@');
+	info->join_membership = '@';
 	this->server_->AddChannelMutex(info->name);
-
+	
 	this->server_->AddChannel(new_ch);
-
-	if (SendNotifyToMember(*info) == false)
-		return;
-	//New channel is always in -t mode.
-	SendMemberList(*info);
-	AddChannelForClient(info->name);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
@@ -234,14 +219,17 @@ void	JoinCommand::SendTopic(const channel_info& info) {
 }
 
 bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
-	this->resp_ << ":" << this->sender_nick_ << "!" << this->sender_user_name_;
+	this->resp_ = (std::string)":" + this->sender_nick_ + "!" + this->sender_user_name_;
 	this->resp_ << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
 
-	Channel *ch = this->server_->get_channel_ptr(info.name);
-	if (ch == NULL)
+	Channel *ch_ptr = this->server_->get_channel_ptr(info.name);
+	if (ch_ptr == NULL) {
+		this->resp_ = ERR_NOSUCHCHANNEL;
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return false;
+	}
 	this->server_->LockChannelMutex(info.name);
-	const std::map<int, char> &members = ch->get_members();
+	const std::map<int, char> &members = ch_ptr->get_members();
 	std::map<int, char>::const_iterator	itr = members.begin();
 	std::map<int, char>::const_iterator	end_itr = members.end();
 	while (itr != end_itr) {
@@ -269,8 +257,11 @@ void	JoinCommand::GetSenderInfo(void) {
 
 void	JoinCommand::GetChannelInfo(channel_info *info) {
 	Channel	*ch_ptr = this->server_->get_channel_ptr(info->name);
-	if (ch_ptr == NULL)
+	if (ch_ptr == NULL) {
+		this->resp_ = ERR_NOSUCHCHANNEL;
+		SendResponse(this->client_sock_, this->resp_.get_format_str());
 		return;
+	}
 	
 	this->server_->LockChannelMutex(info->name);
 	info->is_member = ch_ptr->IsMember(this->client_sock_);

@@ -21,6 +21,7 @@
 #include "ModeCommand.hpp"
 #include "InviteCommand.hpp"
 #include "UnvalidCommand.hpp"
+#include "NickCommand.hpp"
 
 size_t	fail_count = 0;
 size_t	success_count = 0;
@@ -87,6 +88,106 @@ void	TestPingCommand(Server *s, Client *dc) {
 	IsEqual("PONG localhost", com2.RunAndReturnRespInTest());
 
 	dc->UnsetAuthFlagInTest();
+}
+
+void	TestNickCommand(Server *s, Client *dc) {
+	std::cout << "====== NICKCOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	//1 : Parameter number error 431
+	//1-1
+	std::cout << "case1) NICK with no parameters [Non-Auth Client]\n";
+	token_list.push_back("NICK");
+	s->AddClientInTest(dc->get_sock(), *dc);
+	NickCommand	com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	IsEqual("431 :No nickname given", com.RunAndReturnRespInTest());
+
+	//1-2
+	std::cout << "case2) NICK with no parameters [Auth Client]\n";
+	dc->SetAuthFlag(FT_AUTH);
+	s->AddClientInTest(dc->get_sock(), *dc);
+	IsEqual("431 :No nickname given", com.RunAndReturnRespInTest());
+	s->DeleteClientInTest(dc->get_sock());
+	dc->UnsetAuthFlagInTest();
+	token_list.clear();
+
+	//2 : Duplicated nickname error 433
+	Client	already_in_client;
+	std::string	dup_name = "dup";
+	already_in_client.set_nick(dup_name);
+	already_in_client.set_sock(100);
+	s->AddClientInTest(already_in_client.get_sock(), already_in_client);
+	token_list.push_back("NICK");
+	token_list.push_back(dup_name);
+	NickCommand	com2(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+
+	//2-1
+	std::cout << "case2) NICK not_unique_nick [Non-Auth Client]\n";
+	s->AddClientInTest(dc->get_sock(), *dc);
+	IsEqual("433 dup :Nickname is already in use", com2.RunAndReturnRespInTest());
+
+	//2-2
+	std::cout << "case3) NICK not_unique_nick [Auth Client]\n";
+	dc->SetAuthFlag(FT_AUTH);
+	s->AddClientInTest(dc->get_sock(), *dc);
+	IsEqual("433 dup :Nickname is already in use", com2.RunAndReturnRespInTest());
+	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteClientInTest(already_in_client.get_sock());
+	dc->UnsetAuthFlagInTest();
+
+	//3 : Invalid param 432
+	token_list.clear();
+	token_list.push_back("NICK");
+	token_list.push_back("#t");
+	NickCommand	com3(token_list);
+
+	//3-1
+	std::cout << "case3) NICK invalid_nick [Non-Auth Client]\n";
+	s->AddClientInTest(dc->get_sock(), *dc);
+	IsEqual("432 #t :Erroneus nickname", com2.RunAndReturnRespInTest());
+
+	std::cout << "case3) NICK invalid_nick [Auth Client]\n";
+	dc->SetAuthFlag(FT_AUTH);
+	s->AddClientInTest(dc->get_sock(), *dc);
+	IsEqual("432 #t :Erroneus nickname", com2.RunAndReturnRespInTest());
+	s->DeleteClientInTest(dc->get_sock());
+	dc->UnsetAuthFlagInTest();
+
+	//4 : Nick valid
+	token_list.clear();
+	token_list.push_back("NICK");
+	token_list.push_back("nick");
+	NickCommand com4(token_list);
+	s->AddClientInTest(dc->get_sock(), *dc);
+
+	//4-1
+	std::cout << "case4) NICK valid_nick [Non-Auth Client]\n";
+	IsEqual("", com2.RunAndReturnRespInTest());
+
+	token_list.clear();
+	token_list.push_back("NICK");
+	token_list.push_back("new_nick");
+	NickCommand com4_1(token_list);
+	std::cout << "case4) NICK valid_nick [Auth Client]\n";
+	IsEqual(":nick NICK new_nick", com4_1.RunAndReturnRespInTest());
+
+	token_list.clear();
+	token_list.push_back(":new_nick");
+	token_list.push_back("NICK");
+	token_list.push_back("new_nick_2");
+	NickCommand com4_2(token_list);
+	std::cout << "case4) :prev_nick NICK valid_nick [Auth Client]\n";
+	IsEqual(":new_nick NICK new_nick_2", com4_1.RunAndReturnRespInTest());
+}
+
+void	TestJoinCommand(Server *s, Client *dc) {
+	std::cout << "====== JOINCOMMAND ======\n";
+	std::vector<std::string> token_list;
+	token_list.push_back("JOIN");
 }
 
 void	TestPartCommand(Server *s, Client* dc) {
