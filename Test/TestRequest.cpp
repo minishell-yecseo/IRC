@@ -62,16 +62,17 @@ void	TestNickCommand(Server *s, Client *dc) {
 	//1-1
 	std::cout << "case1) NICK with no parameters [Non-Auth Client]\n";
 	token_list.push_back("NICK");
-	s->AddClientInTest(dc->get_sock(), *dc);
+	s->AddClient(dc);
 	NickCommand	com(token_list, s, dc);
 	IsEqual("431 :No nickname given", com.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 
 	//1-2
 	std::cout << "case2) NICK with no parameters [Auth Client]\n";
 	dc->SetAuthFlag(FT_AUTH);
-	s->AddClientInTest(dc->get_sock(), *dc);
+	s->AddClient(dc);
 	IsEqual("431 :No nickname given", com.RunAndReturnRespInTest());
-	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteClient(dc->get_sock());
 	dc->UnsetAuthFlagInTest();
 	token_list.clear();
 
@@ -80,41 +81,43 @@ void	TestNickCommand(Server *s, Client *dc) {
 	std::string	dup_name = "dup";
 	already_in_client.set_nick(dup_name);
 	already_in_client.set_sock(100);
-	s->AddClientInTest(already_in_client.get_sock(), already_in_client);
+	s->AddClient(&already_in_client);
 	token_list.push_back("NICK");
 	token_list.push_back(dup_name);
 	NickCommand	com2(token_list, s, dc);
 
 	//2-1
 	std::cout << "case2) NICK not_unique_nick [Non-Auth Client]\n";
-	s->AddClientInTest(dc->get_sock(), *dc);
+	s->AddClient(dc);
 	IsEqual("433 dup :Nickname is already in use", com2.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 
 	//2-2
 	std::cout << "case3) NICK not_unique_nick [Auth Client]\n";
 	dc->SetAuthFlag(FT_AUTH);
-	s->AddClientInTest(dc->get_sock(), *dc);
+	s->AddClient(dc);
 	IsEqual("433 dup :Nickname is already in use", com2.RunAndReturnRespInTest());
-	s->DeleteClientInTest(dc->get_sock());
-	s->DeleteClientInTest(already_in_client.get_sock());
+	s->DeleteClient(dc->get_sock());
+	s->DeleteClient(already_in_client.get_sock());
 	dc->UnsetAuthFlagInTest();
 
 	//3 : Invalid param 432
 	token_list.clear();
 	token_list.push_back("NICK");
-	token_list.push_back("#t");
+	token_list.push_back("#tt");
 	NickCommand	com3(token_list, s, dc);
 
 	//3-1
 	std::cout << "case3) NICK invalid_nick [Non-Auth Client]\n";
-	s->AddClientInTest(dc->get_sock(), *dc);
-	IsEqual("432 #t :Erroneus nickname", com2.RunAndReturnRespInTest());
+	s->AddClient(dc);
+	IsEqual("432 #tt :Erroneus nickname", com3.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 
 	std::cout << "case3) NICK invalid_nick [Auth Client]\n";
 	dc->SetAuthFlag(FT_AUTH);
-	s->AddClientInTest(dc->get_sock(), *dc);
-	IsEqual("432 #t :Erroneus nickname", com2.RunAndReturnRespInTest());
-	s->DeleteClientInTest(dc->get_sock());
+	s->AddClient(dc);
+	IsEqual("432 #tt :Erroneus nickname", com3.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 	dc->UnsetAuthFlagInTest();
 
 	//4 : Nick valid
@@ -122,26 +125,30 @@ void	TestNickCommand(Server *s, Client *dc) {
 	token_list.push_back("NICK");
 	token_list.push_back("nick");
 	NickCommand com4(token_list, s, dc);
-	s->AddClientInTest(dc->get_sock(), *dc);
+	s->AddClient(dc);
 
 	//4-1
 	std::cout << "case4) NICK valid_nick [Non-Auth Client]\n";
-	IsEqual("", com2.RunAndReturnRespInTest());
+	IsEqual("", com4.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 
+	dc->SetAuthFlag(FT_AUTH);
+	s->AddClient(dc);
 	token_list.clear();
 	token_list.push_back("NICK");
-	token_list.push_back("new_nick");
+	token_list.push_back("new-nick");
 	NickCommand com4_1(token_list, s, dc);
+
 	std::cout << "case4) NICK valid_nick [Auth Client]\n";
-	IsEqual(":nick NICK new_nick", com4_1.RunAndReturnRespInTest());
+	IsEqual(":nick NICK new-nick", com4_1.RunAndReturnRespInTest());
 
 	token_list.clear();
-	token_list.push_back(":new_nick");
+	token_list.push_back(":nick");
 	token_list.push_back("NICK");
-	token_list.push_back("new_nick_2");
+	token_list.push_back("new-nick2");
 	NickCommand com4_2(token_list, s, dc);
 	std::cout << "case4) :prev_nick NICK valid_nick [Auth Client]\n";
-	IsEqual(":new_nick NICK new_nick_2", com4_1.RunAndReturnRespInTest());
+	IsEqual(":nick NICK new-nick2", com4_2.RunAndReturnRespInTest());
 }
 
 void	TestJoinCommand(Server *s, Client *dc) {
@@ -494,6 +501,7 @@ void	TestResponse(Server *s, Client *c) {
 	TestModeCommand(s, c);
 	TestInviteCommand(s, c);
 	TestUnvalidCommand(s, c);
+	TestNickCommand(s, c);
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }
