@@ -17,9 +17,15 @@
 #include "QuitCommand.hpp"
 #include "TopicCommand.hpp"
 #include "PrivmsgCommand.hpp"
+#include "KickCommand.hpp"
+#include "ModeCommand.hpp"
+#include "InviteCommand.hpp"
+#include "UnvalidCommand.hpp"
 #include "NickCommand.hpp"
 
 Mutex print;
+size_t	fail_count = 0;
+size_t	success_count = 0;
 
 void	MakeToken(std::vector<std::string>* token_list) {
 	
@@ -31,34 +37,34 @@ void	IsEmpty(const std::string& a) {
 	}
 }
 
+
 void	IsEqual(std::string a, const std::string& b) {
 	if (a.compare(b) != 0) {
-		std::cerr << a << " != " << b << "\n";
+		std::cerr << RED << a << " != " << b << "\n" << RESET;
+		fail_count += 1;
 		return ;
 		// assert(false);
 	}
 	std::cout << a << " == " << b << "\n";
+	success_count += 1;
 }
 
 void	TestCapCommand(Server *s, Client *dc) {
 	std::cout << "====== CAPCOMMAND ======\n";
 	std::vector<std::string> token_list;
-	token_list.push_back("CAP");
 
+	token_list.push_back("CAP");
 	CapCommand com(token_list);
 	com.set_server(s);
 	com.set_client(dc);
-	
 	IsEqual("461 CAP :Not enough parameters", com.RunAndReturnRespInTest());
 
 	token_list.push_back("LS");
 	CapCommand comm(token_list);
 	comm.set_server(s);
 	comm.set_client(dc);
-
 	IsEqual("CAP * LS :", comm.RunAndReturnRespInTest());
-	s->DeleteClientInTest(dc->get_sock());
-	s->DeleteChannelInTest("#dummy");
+
 	dc->UnsetAuthFlagInTest();
 }
 
@@ -80,11 +86,8 @@ void	TestPingCommand(Server *s, Client *dc) {
 	PingCommand com2(token_list);
 	com2.set_server(s);
 	com2.set_client(dc);
-	dc->SetAuthFlag(FT_AUTH);
 	IsEqual("PONG localhost", com2.RunAndReturnRespInTest());
 
-	s->DeleteClientInTest(dc->get_sock());
-	s->DeleteChannelInTest("#dummy");
 	dc->UnsetAuthFlagInTest();
 }
 
@@ -191,8 +194,8 @@ void	TestJoinCommand(Server *s, Client *dc) {
 void	TestPartCommand(Server *s, Client* dc) {
 	std::cout << "====== PARTCOMMAND ======\n";
 	std::vector<std::string> token_list;
-	token_list.push_back("PART");
 
+	token_list.push_back("PART");
 	s->AddClientInTest(dc->get_sock(), *dc);
 	PartCommand com(token_list);
 	com.set_server(s);
@@ -207,7 +210,6 @@ void	TestPartCommand(Server *s, Client* dc) {
 	PartCommand com2(token_list);
 	com2.set_server(s);
 	com2.set_client(dc);
-	dc->SetAuthFlag(FT_AUTH);
 	IsEqual("403 #empty :No such channel", com2.RunAndReturnRespInTest());
 
 	s->AddChannelMutex("#dummy");
@@ -227,10 +229,10 @@ void	TestPartCommand(Server *s, Client* dc) {
 	Channel *ch_ptr;
 	ch_ptr = s->get_channel_ptr("#dummy");
 	ch_ptr->Join(dc->get_sock(), '@');
-	IsEqual("PART #dummy", com4.RunAndReturnRespInTest());
+	IsEqual(":wooseoki PART #dummy", com4.RunAndReturnRespInTest());
 
-	s->DeleteChannelMutex("#dummy");
 	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteChannelMutex("#dummy");
 	s->DeleteChannelInTest("#dummy");
 	dc->UnsetAuthFlagInTest();
 }
@@ -238,18 +240,19 @@ void	TestPartCommand(Server *s, Client* dc) {
 void	TestWhoisCommand(Server *s, Client *dc) {
 	std::cout << "====== WHOISCOMMAND ======\n";
 	std::vector<std::string> token_list;
+	
 	token_list.push_back("WHOIS");
-
 	WhoisCommand com(token_list);
 	com.set_server(s);
 	com.set_client(dc);
-	
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	dc->SetAuthFlag(FT_AUTH);
 	IsEqual("431 :No nickname given", com.RunAndReturnRespInTest());
 
 	token_list.push_back("dummy_client");
 	WhoisCommand com2(token_list);
+	com2.set_server(s);
+	com2.set_client(dc);
 	IsEqual("401 dummy_client :No such nick", com2.RunAndReturnRespInTest());
 
 	token_list.clear();
@@ -262,15 +265,14 @@ void	TestWhoisCommand(Server *s, Client *dc) {
 	IsEqual("318 WHOISEND", com3.RunAndReturnRespInTest());
 
 	s->DeleteClientInTest(dc->get_sock());
-	s->DeleteChannelInTest("#dummy");
 	dc->UnsetAuthFlagInTest();
 }
 
 void	TestQuitCommand(Server *s, Client *dc) {
 	std::cout << "====== QUITCOMMAND ======\n";
 	std::vector<std::string> token_list;
-	token_list.push_back("QUIT");
 
+	token_list.push_back("QUIT");
 	s->AddClientInTest(dc->get_sock(), *dc);
 	QuitCommand com(token_list);
 	com.set_server(s);
@@ -285,10 +287,10 @@ void	TestTopicCommand(Server *s, Client *dc) {
 	std::vector<std::string> token_list;
 
 	token_list.push_back("TOPIC");
-	s->AddClientInTest(dc->get_sock(), *dc);
 	TopicCommand com(token_list);
 	com.set_server(s);
 	com.set_client(dc);
+	s->AddClientInTest(dc->get_sock(), *dc);
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	dc->SetAuthFlag(FT_AUTH);
 	IsEqual("461 TOPIC :Not enough parameters", com.RunAndReturnRespInTest());
@@ -333,8 +335,8 @@ void	TestTopicCommand(Server *s, Client *dc) {
 	ch_ptr->set_mode(MODE_TOPIC, false);
 	IsEqual(":wooseoki TOPIC #dummy :dummy_topic", com4.RunAndReturnRespInTest());
 
-	s->DeleteChannelMutex("#dummy");
 	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteChannelMutex("#dummy");
 	s->DeleteChannelInTest("#dummy");
 	dc->UnsetAuthFlagInTest();
 }
@@ -402,6 +404,182 @@ void	TestPrivmsgCommand(Server *s, Client *dc) {
 	dc->UnsetAuthFlagInTest();
 }
 
+void	TestKickCommand(Server *s, Client *dc) {
+	std::cout << "====== KICKCOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	token_list.push_back("KICK");
+	s->AddClientInTest(dc->get_sock(), *dc);
+	KickCommand com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	IsEqual("461 KICK :Not enough parameters", com.RunAndReturnRespInTest());
+
+	token_list.push_back("#dummy");
+	token_list.push_back("saseo");
+	KickCommand com2(token_list);
+	com2.set_server(s);
+	com2.set_client(dc);
+	IsEqual("401 saseo :No such nick", com2.RunAndReturnRespInTest());
+
+	KickCommand com3(token_list);
+	com3.set_server(s);
+	com3.set_client(dc);
+	Client dummy_client;
+	dummy_client.set_sock(8);
+	dummy_client.set_nick("saseo");
+	s->AddClientInTest(dummy_client.get_sock(), dummy_client);
+	IsEqual("403 #dummy :No such channel", com3.RunAndReturnRespInTest());
+
+	s->AddChannelMutex("#dummy");
+	Channel dummy_channel("#dummy");
+	s->AddChannelInTest("#dummy", dummy_channel);
+	IsEqual("442 #dummy :You're not on that channel", com3.RunAndReturnRespInTest());
+
+	Channel *ch_ptr;
+	ch_ptr = s->get_channel_ptr("#dummy");
+	ch_ptr->Join(dc->get_sock(), ' ');
+	IsEqual("441 saseo #dummy :They aren't on the channel", com3.RunAndReturnRespInTest());
+
+	ch_ptr->Join(dummy_client.get_sock(), ' ');
+	IsEqual("482 #dummy :You're not channel operator", com3.RunAndReturnRespInTest());
+
+	ch_ptr->Mode(dc->get_sock(), '@');
+	IsEqual(":wooseoki KICK #dummy saseo", com3.RunAndReturnRespInTest());
+
+	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteClientInTest(dummy_client.get_sock());
+	s->DeleteChannelMutex("#dummy");
+	s->DeleteChannelInTest("#dummy");
+	dc->UnsetAuthFlagInTest();
+}
+
+void	TestModeCommand(Server *s, Client *dc) {
+	std::cout << "====== ModeCOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	token_list.push_back("MODE");
+	s->AddClientInTest(dc->get_sock(), *dc);
+	ModeCommand com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
+	dc->SetAuthFlag(FT_AUTH);
+	IsEqual("461 MODE :Not enough parameters", com.RunAndReturnRespInTest());
+
+	token_list.push_back("dummy_param");
+	ModeCommand com2(token_list);
+	com2.set_server(s);
+	com2.set_client(dc);
+	IsEqual("324 :Not given modestring", com2.RunAndReturnRespInTest());
+
+	token_list.clear();
+	token_list.push_back("MODE");
+	token_list.push_back("#dummy");
+	token_list.push_back("+unvalidmodestr");
+	ModeCommand com3(token_list);
+	com3.set_server(s);
+	com3.set_client(dc);
+	IsEqual("472 +unvalidmodestr :is unknown mode char to me", com3.RunAndReturnRespInTest());
+
+	token_list.clear();
+	token_list.push_back("MODE");
+	token_list.push_back("#dummy");
+	token_list.push_back("+kl-o");
+	token_list.push_back("dummy_param");
+	ModeCommand com4(token_list);
+	com4.set_server(s);
+	com4.set_client(dc);
+	IsEqual("461 :No match param count", com4.RunAndReturnRespInTest());
+
+	token_list.clear();
+	token_list.push_back("MODE");
+	token_list.push_back("#dummy");
+	token_list.push_back("+t");
+	ModeCommand com5(token_list);
+	com5.set_server(s);
+	com5.set_client(dc);
+	IsEqual("403 #dummy :No such channel", com5.RunAndReturnRespInTest());
+
+	s->AddChannelMutex("#dummy");
+	Channel dummy_channel("#dummy");
+	s->AddChannelInTest("#dummy", dummy_channel);
+	IsEqual("442 #dummy :You're not on that channel", com5.RunAndReturnRespInTest());
+
+	Channel *ch_ptr;
+	ch_ptr = s->get_channel_ptr("#dummy");
+	ch_ptr->Join(dc->get_sock(), ' ');
+	IsEqual("482 #dummy :You're not channel operator", com5.RunAndReturnRespInTest());
+
+	ch_ptr->Mode(dc->get_sock(), '@');
+	IsEqual(":wooseoki MODE #dummy +t", com5.RunAndReturnRespInTest());
+
+	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteChannelMutex("#dummy");
+	s->DeleteChannelInTest("#dummy");
+	dc->UnsetAuthFlagInTest();
+}
+
+void	TestInviteCommand(Server *s, Client *dc) {
+	std::cout << "====== INVITECOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	token_list.push_back("INVITE");
+	s->AddClientInTest(dc->get_sock(), *dc);
+	InviteCommand com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
+	dc->SetAuthFlag(FT_AUTH);
+	IsEqual("461 INVITE :Not enough parameters", com.RunAndReturnRespInTest());
+
+	token_list.push_back("saseo");
+	token_list.push_back("#dummy");
+	InviteCommand com2(token_list);
+	com2.set_server(s);
+	com2.set_client(dc);
+	IsEqual("401 saseo :No such nick", com2.RunAndReturnRespInTest());
+	Client dummy_client;
+	dummy_client.set_sock(8);
+	dummy_client.set_nick("saseo");
+	s->AddClientInTest(dummy_client.get_sock(), dummy_client);
+	IsEqual("403 #dummy :No such channel", com2.RunAndReturnRespInTest());
+
+	s->AddChannelMutex("#dummy");
+	Channel dummy_channel("#dummy");
+	s->AddChannelInTest("#dummy", dummy_channel);
+	IsEqual("442 #dummy :You're not on that channel", com2.RunAndReturnRespInTest());
+
+	Channel *ch_ptr;
+	ch_ptr = s->get_channel_ptr("#dummy");
+	ch_ptr->Join(dc->get_sock(), ' ');
+	IsEqual("482 #dummy :You're not channel operator", com2.RunAndReturnRespInTest());
+	ch_ptr->Mode(dc->get_sock(), '@');
+	ch_ptr->Join(dummy_client.get_sock(), ' ');
+	IsEqual("443 saseo #dummy :is already on cahnnel", com2.RunAndReturnRespInTest());
+	ch_ptr->Kick(dummy_client.get_sock());
+	IsEqual(":wooseoki 341 saseo #dummy", com2.RunAndReturnRespInTest());
+
+
+
+	s->DeleteClientInTest(dc->get_sock());
+	s->DeleteClientInTest(dummy_client.get_sock());
+	s->DeleteChannelMutex("#dummy");
+	s->DeleteChannelInTest("#dummy");
+	dc->UnsetAuthFlagInTest();
+}
+
+void	TestUnvalidCommand(Server *s, Client *dc) {
+	std::cout << "====== UNVALIDCOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	token_list.push_back("blahblah");
+	UnvalidCommand com(token_list);
+	com.set_server(s);
+	com.set_client(dc);
+	IsEqual("421 blahblah :Unknown command", com.RunAndReturnRespInTest());
+}
+
 /*
 void	TestParseRequest(Server *s, Client *c) {
 	int	dummy;
@@ -433,5 +611,14 @@ int main() {
 	TestQuitCommand(&s, &c);
 	TestTopicCommand(&s, &c);
 	TestPrivmsgCommand(&s, &c);
-	TestNickCommand(&s, &c);
+
+	TestKickCommand(&s, &c);
+	TestModeCommand(&s, &c);
+	TestInviteCommand(&s, &c);
+	TestUnvalidCommand(&s, &c);
+  
+  TestNickCommand(&s, &c);
+  
+	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
+	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }
