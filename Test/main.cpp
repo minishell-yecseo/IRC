@@ -1,5 +1,4 @@
 #include "TestRequest.hpp"
-#include "temp.hpp"
 #include "TestResponse.hpp"
 
 Server	*ServerInit(void) {
@@ -28,7 +27,7 @@ int main() {
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
-	//TestResponse(s, c);
+	TestResponse(s, c);
 	TestRequest(s, c);
 
 	delete s;
