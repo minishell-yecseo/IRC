@@ -142,6 +142,8 @@ class Server {
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);
 		void	ConnectClient(void);
+		void	AcceptClient(Client *client);
+		bool	AddClient(Client *client);
 		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
 						uint32_t fflags, intptr_t data, void *udata);
 

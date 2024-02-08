@@ -383,23 +383,28 @@ void	Server::HandleClientEvent(struct kevent event) {
 
 void	Server::ConnectClient(void) {
 	Client	client;
-	if (client.set_sock(accept(sock_, (struct sockaddr*)&client.addr_, &client.addr_size_)) == -1)
+
+	AcceptClient(&client);
+	if (AddClient(&client))
+		AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+}
+
+void	Server::AcceptClient(Client* client) {
+	int	accept_sock = FT_INIT_CLIENT_FD;
+	accept_sock = accept(sock_, (struct sockaddr*)&client->addr_, &client->addr_size_);
+	if (accept_sock == -1)
 		error_handling("accept() error\n");
+	client->set_sock(accept_sock);
+}
 
-	std::string dum = "";
-	if (AddClientMutex(client.get_sock()) == false) {
-		log::cout << dum + BOLDBLUE + "AddClientMutex() " + " fail at Connection\n" + RESET;
-		return;
-	}
-
-	/* handle new client */
-	AddEvent(client.get_sock(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+bool	Server::AddClient(Client *client) {
 	this->clients_mutex_.lock();//lock
-	clients_.insert(std::make_pair(client.get_sock(), client));
-	//clients_[client.get_sock()] = client;
+	clients_.insert(std::make_pair(client->get_sock(), *client));
 	this->clients_mutex_.unlock();//unlock
-	buffers_[client.get_sock()] = "";
-	//log::cout << CYAN << "accent new client: " << client.get_sock() << RESET << "\n";
+	buffers_[client->get_sock()] = "";
+	if (AddClientMutex(client->get_sock()) == false)
+		return false;
+	return true;
 }
 
 bool	Server::AuthPassword(const std::string& password) {
