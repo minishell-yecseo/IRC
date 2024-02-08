@@ -149,6 +149,31 @@ void	TestNickCommand(Server *s, Client *dc) {
 	NickCommand com4_2(token_list, s, dc);
 	std::cout << "case4) :prev_nick NICK valid_nick [Auth Client]\n";
 	IsEqual(":nick NICK new-nick2", com4_2.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
+}
+
+void	TestPassCommand(Server *s, Client *dc) {
+	std::cout << "====== PASSCOMMAND ======\n";
+	std::vector<std::string> token_list;
+
+	token_list.push_back("PASS");
+	PassCommand	com_no_param(token_list, s, dc);
+	dc->UnsetAuthFlagInTest();
+	s->AddClient(dc);
+	IsEqual("400 :parameter number error", com_no_param.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
+
+	dc->SetAuthFlag(FT_AUTH);
+	s->AddClient(dc);
+	IsEqual("400 PASS : already registered", com_no_param.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
+
+	dc->UnsetAuthFlagInTest();
+	s->AddClient(dc);
+	token_list.push_back("wrong-password");
+	PassCommand	com_wrong(token_list, s, dc);
+	IsEqual("464 :Password incorrect", com_wrong.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 }
 
 void	TestJoinCommand(Server *s, Client *dc) {
@@ -502,6 +527,7 @@ void	TestResponse(Server *s, Client *c) {
 	TestInviteCommand(s, c);
 	TestUnvalidCommand(s, c);
 	TestNickCommand(s, c);
+	TestPassCommand(s, c);
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }
