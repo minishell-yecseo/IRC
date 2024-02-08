@@ -24,6 +24,7 @@
 #include "ModeCommand.hpp"
 #include "InviteCommand.hpp"
 #include "UnvalidCommand.hpp"
+#include "NickCommand.hpp"
 
 void	TestResponse(Server *s, Client *c);
 #endif

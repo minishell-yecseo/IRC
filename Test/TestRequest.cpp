@@ -1,41 +1,13 @@
-#include <cassert>
-#include <cstring>
-
-#include "Request.hpp"
-#include "Server.hpp"
-#include "Client.hpp"
-#include "log.hpp"
-#include "Mutex.hpp"
-#include "Utils.hpp"
-#include "ThreadPool.hpp"
-#include "Command.hpp"
-#include "Channel.hpp"
-#include "PingCommand.hpp"
-#include "PartCommand.hpp"
-#include "CapCommand.hpp"
-#include "WhoisCommand.hpp"
-#include "QuitCommand.hpp"
-#include "TopicCommand.hpp"
-#include "PrivmsgCommand.hpp"
-#include "KickCommand.hpp"
-#include "ModeCommand.hpp"
-#include "InviteCommand.hpp"
-#include "UnvalidCommand.hpp"
-#include "NickCommand.hpp"
+#include "TestRequest.hpp"
 
 size_t	fail_count = 0;
 size_t	success_count = 0;
-
-void	MakeToken(std::vector<std::string>* token_list) {
-	
-}
 
 void	IsEmpty(const std::string& a) {
 	if (a.empty() == false) {
 		std::cerr << a << " :is not empty\n";
 	}
 }
-
 
 void	IsEqual(std::string a, const std::string& b) {
 	if (a.compare(b) != 0) {
@@ -558,8 +530,6 @@ void	TestInviteCommand(Server *s, Client *dc) {
 	IsEqual("443 saseo #dummy :is already on cahnnel", com2.RunAndReturnRespInTest());
 	ch_ptr->Kick(dummy_client.get_sock());
 	IsEqual(":wooseoki 341 saseo #dummy", com2.RunAndReturnRespInTest());
-
-
 
 	s->DeleteClientInTest(dc->get_sock());
 	s->DeleteClientInTest(dummy_client.get_sock());
