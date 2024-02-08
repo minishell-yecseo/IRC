@@ -24,6 +24,7 @@ CMD_SRC = PassCommand.cpp PrivmsgCommand.cpp \
 				UserCommand.cpp JoinCommand.cpp \
 				PingCommand.cpp InviteCommand.cpp \
 				PartCommand.cpp WhoisCommand.cpp \
+				UnvalidCommand.cpp
 
 CMD_DIR = ./source/command/
 CMD_OBJ_DIR = ./object/command/

@@ -9,6 +9,7 @@ typedef struct channel_info {
 	std::string	topic;
 	std::string	key;
 	char		mode;
+	char		join_membership;
 	bool		is_auth;
 	bool		is_member;
 	bool		is_banned;
