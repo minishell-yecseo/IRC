@@ -476,17 +476,23 @@ void	Server::DisconnectClient(const int& sock) {
 }
 
 void	Server::DeleteClient(const int& sock) {
-	Client	client;
-
+	Client	*client_ptr = NULL;
 	std::map<int, Client>::iterator	client_it;
+
 	this->clients_mutex_.lock();//lock
 	client_it = clients_.find(sock);
 	if (client_it != clients_.end())
-		this->clients_.erase(client_it);
-	client = client_it->second;
+		client_ptr = &(client_it->second);
 	this->clients_mutex_.unlock();//unlock
+	if (client_ptr == NULL)
+		return;
+	
+	DeleteClientInChannel(sock, client_ptr);
+	
+	this->clients_mutex_.lock();
+	this->clients_.erase(client_it);
+	this->clients_mutex_.unlock();
 
-	DeleteClientInChannel(sock, &client);
 	DeleteClientMutex(sock);
 }
 
