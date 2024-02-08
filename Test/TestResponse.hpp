@@ -26,6 +26,7 @@
 #include "UnvalidCommand.hpp"
 #include "NickCommand.hpp"
 #include "PassCommand.hpp"
+#include "UserCommand.hpp"
 
 void	TestResponse(Server *s, Client *c);
 #endif

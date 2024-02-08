@@ -174,6 +174,54 @@ void	TestPassCommand(Server *s, Client *dc) {
 	PassCommand	com_wrong(token_list, s, dc);
 	IsEqual("464 :Password incorrect", com_wrong.RunAndReturnRespInTest());
 	s->DeleteClient(dc->get_sock());
+	dc->UnsetAuthFlagInTest();
+}
+
+void	TestUserCommand(Server *s, Client *dc) {
+	std::cout << "====== USERCOMMAND ======\n";
+	std::vector<std::string> token_list;
+	s->AddClient(dc);
+	
+	token_list.push_back("USER");
+	UserCommand	com_no_param(token_list, s, dc);
+	IsEqual("461", com_no_param.RunAndReturnRespInTest());
+
+	token_list.push_back("white space");
+	UserCommand	com_less_param(token_list, s, dc);
+	IsEqual("461", com_less_param.RunAndReturnRespInTest());
+
+	token_list.push_back("hostname");
+	UserCommand	com_less_param2(token_list, s, dc);
+	IsEqual("461", com_less_param2.RunAndReturnRespInTest());
+
+	token_list.push_back("servername");
+	UserCommand	com_less_param3(token_list, s, dc);
+	IsEqual("461", com_less_param3.RunAndReturnRespInTest());
+
+	token_list.push_back("real name");
+	UserCommand	com_white_space(token_list, s, dc);
+	IsEqual("400 :username must not has whitespace", \
+			com_white_space.RunAndReturnRespInTest());
+
+	s->DeleteClient(dc->get_sock());
+	token_list.clear();
+	dc->SetAuthFlag(FT_AUTH);
+	token_list.push_back("USER");
+	token_list.push_back("test");
+	token_list.push_back("test");
+	token_list.push_back("test");
+	token_list.push_back("test test test");
+	s->AddClient(dc);
+
+	UserCommand	com(token_list, s, dc);
+	IsEqual("462", com.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
+
+	dc->UnsetAuthFlagInTest();
+	s->AddClient(dc);
+	UserCommand	com2(token_list, s, dc);
+	IsEqual("", com2.RunAndReturnRespInTest());
+	s->DeleteClient(dc->get_sock());
 }
 
 void	TestJoinCommand(Server *s, Client *dc) {
@@ -528,6 +576,7 @@ void	TestResponse(Server *s, Client *c) {
 	TestUnvalidCommand(s, c);
 	TestNickCommand(s, c);
 	TestPassCommand(s, c);
+	TestUserCommand(s, c);
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }
