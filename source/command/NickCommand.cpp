@@ -58,8 +58,6 @@ void	NickCommand::AnyOfError(void) {
 
 void	NickCommand::Run() {
 	try {
-		if (this->prefix_.empty() == false)
-			this->prefix_ = this->prefix_.substr(1);
 		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
 		this->is_registered_ = IsRegistered(this->client_sock_);
 		if (this->is_registered_ == true) {

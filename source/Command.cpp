@@ -21,7 +21,7 @@ Command::Command(const std::vector<std::string> &token_list, Server *s, Client *
 	size_t	param_index;
 
 	if (token_list[0][0] == ':') {
-		this->prefix_ = token_list[0];
+		this->prefix_ = token_list[0].substr(1);
 		this->command_ = token_list[1];
 		param_index = 2;
 	} else {
