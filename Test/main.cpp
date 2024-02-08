@@ -1,4 +1,5 @@
 #include "TestRequest.hpp"
+#include "temp.hpp"
 
 Server	*ServerInit(void) {
 	char *argv[] = {"TEST", "9090", "1234"};
@@ -17,8 +18,8 @@ Client*	ClientInit(void) {
 	return result;
 }
 
-
 Mutex print;
+
 int main() {
 	Server *s;
 	Client *c;
@@ -26,7 +27,8 @@ int main() {
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
-	TestResponse(s, c);
+	//TestResponse(s, c);
+	TestRequest(s, c);
 
 	delete s;
 	delete c;
