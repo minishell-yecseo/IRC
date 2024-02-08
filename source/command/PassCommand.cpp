@@ -13,7 +13,7 @@ inline bool	CheckClientAuth(Server *server, Client *client, const int& client_so
 
 void	PassCommand::AnyOfError(void) {
 	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
-		this->resp_ = (std::string)":" + ERR_UNKNOWNERROR + " PASS : already registered";
+		this->resp_ = (std::string)ERR_UNKNOWNERROR + " PASS : already registered";
 	else if (this->params_.empty() || this->params_.size() != 1)
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :parameter number error";
 	else if (server_->AuthPassword(this->params_[0]) == false)
