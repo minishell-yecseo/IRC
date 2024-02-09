@@ -55,7 +55,7 @@ std::string Request::RemoveDuplicateSpace(const std::string& str) {
 	bool colon_flag = false;
 	size_t	start = 0;
 
-	while (str[start] == ' ')
+	while (str[start] && str[start] == ' ')
 		++start;
 
 	for (size_t i = start; i < str.size(); ++i) {
