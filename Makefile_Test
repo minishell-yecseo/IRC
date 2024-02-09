@@ -34,7 +34,8 @@ CMD_SRC_PATH = $(addprefix $(CMD_DIR), $(CMD_SRC))
 CMD_OBJ_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_OBJ))
 CMD_DEB_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_DEP))
 
-TEST_SRC = TestRequest.cpp TestResponse.cpp main.cpp
+TEST_SRC = TestRequest.cpp TestResponse.cpp \
+		   TestUtils.cpp main.cpp
 
 TEST_DIR = ./Test/
 TEST_OBJ_DIR = ./object/test/

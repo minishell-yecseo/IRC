@@ -1,25 +1,5 @@
 #include "TestResponse.hpp"
 
-size_t	fail_count = 0;
-size_t	success_count = 0;
-
-void	IsEmpty(const std::string& a) {
-	if (a.empty() == false) {
-		std::cerr << a << " :is not empty\n";
-	}
-}
-
-void	IsEqual(std::string a, const std::string& b) {
-	if (a.compare(b) != 0) {
-		std::cerr << RED << a << " != " << b << "\n" << RESET;
-		fail_count += 1;
-		return ;
-		// assert(false);
-	}
-	std::cout << a << " == " << b << "\n";
-	success_count += 1;
-}
-
 void	TestCapCommand(Server *s, Client *dc) {
 	std::cout << "====== CAPCOMMAND ======\n";
 	std::vector<std::string> token_list;
