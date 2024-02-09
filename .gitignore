@@ -1,6 +1,9 @@
 # ircserv binary
 ircserv
 
+# ircserv test binary
+ircserv_test
+
 # Test file
 test.txt
 
