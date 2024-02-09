@@ -145,7 +145,7 @@ void	TestPassCommand(Server *s, Client *dc) {
 
 	dc->SetAuthFlag(FT_AUTH);
 	s->AddClient(dc);
-	IsEqual("400 PASS : already registered", com_no_param.RunAndReturnRespInTest());
+	IsEqual("451 PASS :already registered", com_no_param.RunAndReturnRespInTest());
 	s->DeleteClient(dc->get_sock());
 
 	dc->UnsetAuthFlagInTest();
@@ -164,19 +164,19 @@ void	TestUserCommand(Server *s, Client *dc) {
 	
 	token_list.push_back("USER");
 	UserCommand	com_no_param(token_list, s, dc);
-	IsEqual("461", com_no_param.RunAndReturnRespInTest());
+	IsEqual("461 USER :Not enough parameters", com_no_param.RunAndReturnRespInTest());
 
 	token_list.push_back("white space");
 	UserCommand	com_less_param(token_list, s, dc);
-	IsEqual("461", com_less_param.RunAndReturnRespInTest());
+	IsEqual("461 USER :Not enough parameters", com_less_param.RunAndReturnRespInTest());
 
 	token_list.push_back("hostname");
 	UserCommand	com_less_param2(token_list, s, dc);
-	IsEqual("461", com_less_param2.RunAndReturnRespInTest());
+	IsEqual("461 USER :Not enough parameters", com_less_param2.RunAndReturnRespInTest());
 
 	token_list.push_back("servername");
 	UserCommand	com_less_param3(token_list, s, dc);
-	IsEqual("461", com_less_param3.RunAndReturnRespInTest());
+	IsEqual("461 USER :Not enough parameters", com_less_param3.RunAndReturnRespInTest());
 
 	token_list.push_back("real name");
 	UserCommand	com_white_space(token_list, s, dc);
@@ -194,7 +194,7 @@ void	TestUserCommand(Server *s, Client *dc) {
 	s->AddClient(dc);
 
 	UserCommand	com(token_list, s, dc);
-	IsEqual("462", com.RunAndReturnRespInTest());
+	IsEqual("462 USER :already registered", com.RunAndReturnRespInTest());
 	s->DeleteClient(dc->get_sock());
 
 	dc->UnsetAuthFlagInTest();

@@ -18,7 +18,7 @@ void	UserCommand::Run(void) {
 
 void	UserCommand::AnyOfError(void) {
 	if (this->params_.size() < 4) {
-		this->resp_ = (std::string)ERR_NEEDMOREPARAMS;
+		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " USER :Not enough parameters";
 		return;
 	}
 	if (IsNonwhite(this->params_[0]) == false) {
@@ -29,7 +29,7 @@ void	UserCommand::AnyOfError(void) {
 	bool isRegistered = this->client_->IsAuth();
 	this->server_->UnlockClientMutex(this->client_sock_);
 	if (isRegistered == true) {
-		this->resp_ = (std::string)ERR_ALREADYREGISTERED;
+		this->resp_ = (std::string)ERR_ALREADYREGISTERED + " USER :already registered";
 		return;
 	}
 	this->is_success_ = true;
