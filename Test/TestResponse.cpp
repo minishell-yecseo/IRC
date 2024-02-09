@@ -541,6 +541,71 @@ void	TestUnvalidCommand(Server *s, Client *dc) {
 	IsEqual("421 blahblah :Unknown command", com.RunAndReturnRespInTest());
 }
 
+void	TestModeFunction(Server *s, Client *dc) {
+	std::vector<std::string> token_list;
+
+	token_list.push_back("MODE");
+	ModeCommand com(token_list, s, dc);
+	
+	std::cout << "====== CHECK MODECOMMAND METHOD ======\n";
+	std::cout << "====== IsValidMode METHOD ======\n";
+	assert(true == com.IsValidMode("+i"));
+	assert(true == com.IsValidMode("-k"));
+	assert(true == com.IsValidMode("+itlok"));
+	assert(true == com.IsValidMode("+ito-ok"));
+	assert(true == com.IsValidMode("+itlok-itlok"));
+	assert(true == com.IsValidMode("++"));
+	assert(false == com.IsValidMode("+abcdefghijklmn"));
+	assert(false == com.IsValidMode("it"));
+	assert(false == com.IsValidMode(""));
+	std::cout << GREEN << "SUCCESS\n" << RESET;
+	
+	std::cout << "====== IsLimitNumber METHOD ======\n";
+	assert(true == com.IsLimitNumber("12345678"));
+	assert(true == com.IsLimitNumber("0123"));
+	assert(true == com.IsLimitNumber("1000"));
+	assert(true == com.IsLimitNumber("0"));
+	assert(false == com.IsLimitNumber("-1"));
+	assert(false == com.IsLimitNumber("01234567890"));
+	assert(false == com.IsLimitNumber("+1001"));
+	std::cout << GREEN << "SUCCESS\n" << RESET;
+
+	std::cout << "====== CheckParamCount METHOD ======\n";
+	assert(1 == com.CheckParamCount("+o"));
+	assert(2 == com.CheckParamCount("+ok"));
+	assert(3 == com.CheckParamCount("+ioklt"));
+	assert(4 == com.CheckParamCount("+okl-o"));
+	std::cout << GREEN << "SUCCESS\n" << RESET;
+}
+
+void	TestNickFunction(Server *s, Client *dc) {
+	std::vector<std::string> token_list;
+
+	token_list.push_back("NICK");
+	NickCommand com(token_list, s, dc);
+	
+	std::cout << "====== CHECK NICKCOMMAND METHOD ======\n";
+	std::cout << "====== IsValidNick METHOD ======\n";
+	assert(false == com.IsValidNick(""));
+	assert(false == com.IsValidNick("1digit_s"));
+	assert(false == com.IsValidNick("1_nick"));
+	assert(false == com.IsValidNick("lengthovernine"));
+	assert(false == com.IsValidNick("#nick"));
+	assert(false == com.IsValidNick(":nick"));
+	assert(false == com.IsValidNick("special_"));
+	assert(false == com.IsValidNick("(special)"));
+	assert(true == com.IsValidNick("nick[1]"));
+	assert(true == com.IsValidNick("nick-123"));
+	assert(true == com.IsValidNick("a1-b`2c^3"));
+	assert(true == com.IsValidNick("a\\{nick}"));
+	std::cout << GREEN << "SUCCESS\n" << RESET;
+}
+
+void	TestCommandFunction(Server *s, Client *c) {
+	TestModeFunction(s, c);
+	TestNickFunction(s, c);
+}
+
 void	TestResponse(Server *s, Client *c) {
 	std::cout << YELLOW << "RESPONSE TEST START\n" << RESET;
 	TestPingCommand(s, c);
@@ -557,6 +622,9 @@ void	TestResponse(Server *s, Client *c) {
 	TestNickCommand(s, c);
 	TestPassCommand(s, c);
 	TestUserCommand(s, c);
+
+	TestCommandFunction(s, c);
+
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }

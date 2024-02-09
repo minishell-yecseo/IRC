@@ -117,6 +117,10 @@ void	TestBaseAlphaToNumber(void) {
 	int	result;
 	std::string	request;
 
+	request = "";
+	result = Request::BaseAlphaToNumber(request);
+	IsIntEqual(result, 0);
+
 	request = "CAP";
 	result = Request::BaseAlphaToNumber(request);
 	IsIntEqual(result, CAP);

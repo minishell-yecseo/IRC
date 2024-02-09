@@ -136,7 +136,7 @@ void	ModeCommand::CheckChannel(const std::string& channel_name) {
 	this->server_->UnlockChannelMutex(chan->first);
 }
 
-bool	ModeCommand::CheckParamCount(const std::string& modestr) {
+size_t	ModeCommand::CheckParamCount(const std::string& modestr) {
 	bool	sign;
 	size_t	count = 0;
 
@@ -154,7 +154,7 @@ bool	ModeCommand::CheckParamCount(const std::string& modestr) {
 				++count;
 		}
 	}
-	return (this->params_.size() - 2 == count);
+	return count;
 }
 
 void	ModeCommand::AnyOfError(void) {
@@ -166,7 +166,7 @@ void	ModeCommand::AnyOfError(void) {
 		this->resp_ = (std::string)RPL_CHANNELMODEIS + " :Not given modestring";
 	else if (IsValidMode(this->params_[1]) == false)
 		this->resp_ = (std::string)ERR_UNKNOWNMODE + " " +  this->params_[1] + " :is unknown mode char to me";
-	else if (CheckParamCount(this->params_[1]) == false)
+	else if (CheckParamCount(this->params_[1]) != this->params_.size() - 2)
 		this->resp_ = (std::string)ERR_NEEDMOREPARAMS + " :No match param count";
 	else if (CheckKeyParam(this->params_[1]) == false)
 		this->resp_ = (std::string)ERR_KEYSET + " :Keyset is unvliad";

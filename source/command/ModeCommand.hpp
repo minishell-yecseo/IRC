@@ -15,9 +15,9 @@ class ModeCommand: public Command {
 		void	SetModeInChannel(Channel *c, const std::string& modestr);
 		void	ModifyChannel(Channel *c, char mode, bool sing, int *param_index);
 		bool	CheckKeyParam(const std::string& str);
-		bool	CheckParamCount(const std::string& modestr);
 		bool	IsLimitNumber(const std::string& param);
 		bool	IsValidMode(const std::string& str);
+		size_t	CheckParamCount(const std::string& modestr);
 
 };
 #endif
