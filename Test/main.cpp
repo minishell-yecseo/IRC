@@ -29,6 +29,7 @@ int main() {
 	c = ClientInit();
 	TestResponse(s, c);
 	TestRequest(s, c);
+	TestCommandFunction(s, c);
 
 	delete s;
 	delete c;

@@ -434,7 +434,7 @@ void	TestKickCommand(Server *s, Client *dc) {
 }
 
 void	TestModeCommand(Server *s, Client *dc) {
-	std::cout << "====== ModeCOMMAND ======\n";
+	std::cout << "====== MODECOMMAND ======\n";
 	std::vector<std::string> token_list;
 
 	token_list.push_back("MODE");
@@ -622,9 +622,6 @@ void	TestResponse(Server *s, Client *c) {
 	TestNickCommand(s, c);
 	TestPassCommand(s, c);
 	TestUserCommand(s, c);
-
-	TestCommandFunction(s, c);
-
 	std::cout << RED << "TEST FAILED: " << fail_count << RESET;
 	std::cout << GREEN << " TEST SUCCESED: " << success_count << "\n" << RESET;
 }

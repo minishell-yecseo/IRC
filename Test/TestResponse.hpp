@@ -33,4 +33,5 @@ extern size_t	fail_count;
 extern size_t	success_count;
 
 void	TestResponse(Server *s, Client *c);
+void	TestCommandFunction(Server *s, Client *c);
 #endif
