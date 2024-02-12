@@ -4,10 +4,8 @@
 #include "Command.hpp"
 
 class PassCommand: public Command {
-	protected:
-		PassCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
-
 	private:
+		PassCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 

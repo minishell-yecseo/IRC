@@ -4,10 +4,8 @@
 #include "Command.hpp"
 
 class UserCommand: public Command {
-	protected:
-		UserCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
-
 	private:
+		UserCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		bool	IsNonwhite(const std::string& str);

@@ -4,10 +4,8 @@
 #include "Command.hpp"
 
 class InviteCommand: public Command {
-	protected:
-		InviteCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
-		
 	private:
+		InviteCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& nick, const std::string& chan);

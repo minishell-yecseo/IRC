@@ -7,13 +7,11 @@
 // ERR_NEEDMOREPARAMS (461)
 
 class PingCommand: public Command {
-	protected:
-		PingCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
-
 	private:
+		PingCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
-		
+
 		friend class	Request;
 };
 #endif
