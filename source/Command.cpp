@@ -36,6 +36,7 @@ Command::Command(const std::vector<std::string> &token_list, Server *s, Client *
 	this->is_success_ = false;
 	this->server_ = s;
 	this->client_ = c;
+	this->client_sock_ = c->get_sock();
 }
 
 void	Command::DisconnectClient(void) {
