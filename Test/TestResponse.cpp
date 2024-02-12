@@ -217,8 +217,6 @@ void	TestPartCommand(Server *s, Client* dc) {
 	token_list.push_back("PART");
 	s->AddClientInTest(dc->get_sock(), *dc);
 	PartCommand com(token_list, s, dc);
-	com.set_server(s);
-	com.set_client(dc);
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	dc->SetAuthFlag(FT_AUTH);
 	IsEqual("461 PART :Not enough parameters", com.RunAndReturnRespInTest());
