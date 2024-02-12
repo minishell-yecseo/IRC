@@ -35,7 +35,7 @@ enum CommandNumbers
 
 class	Request
 {
-	public:
+	private:
 		static std::vector<Command *>	*ParseRequest(Server *server, Client *client, std::string request, int *offset);
 		static std::vector<std::string>	*SplitRequest(const std::string &request, int *offset);
 		static std::vector<Command *>	*SplitMessage(Server *server, Client *client, const std::vector<std::string> &message_list);
@@ -44,6 +44,9 @@ class	Request
 		static int		BaseAlphaToNumber(const std::string &token);
 		static void	SeperateWhiteSpace(const std::string &str, std::vector<std::string> *token_list);
 		static int	SearchCommand(const std::vector<std::string> &token_list);
+
+		friend class	Server;
+		friend class	TestRequest;
 };
 
 #endif

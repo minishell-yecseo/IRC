@@ -4,5 +4,15 @@
 #include "Request.hpp"
 #include "TestUtils.hpp"
 
-void	TestRequest(Server *s, Client *c);
+class   TestRequest {
+    public:
+        TestRequest(Server *s, Client *c);
+
+    private:
+        void    TestBaseAlphaToNumber(void);
+        void    TestSeperateWhiteSpace(void);
+        void    TestRemoveDuplicateSpace(void);
+        void    TestSplitRequest(void);
+};
+
 #endif

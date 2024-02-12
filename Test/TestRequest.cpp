@@ -1,6 +1,13 @@
 #include "TestRequest.hpp"
 
-void	TestSplitRequest(void) {
+TestRequest::TestRequest(Server *s, Client *c) {
+	TestSplitRequest();
+	TestRemoveDuplicateSpace();
+	TestSeperateWhiteSpace();
+	TestBaseAlphaToNumber();
+}
+
+void	TestRequest::TestSplitRequest(void) {
 	int offset;
 	std::string	request;
 	std::vector<std::string> *mock = new std::vector<std::string>();
@@ -59,7 +66,7 @@ void	TestSplitRequest(void) {
 	delete mock;
 }
 
-void	TestRemoveDuplicateSpace(void) {
+void	TestRequest::TestRemoveDuplicateSpace(void) {
 	std::string	message;
 	std::string	result;
 	std::string	mock;
@@ -80,7 +87,7 @@ void	TestRemoveDuplicateSpace(void) {
 	IsStringEqual(mock, result);
 }
 
-void	TestSeperateWhiteSpace(void) {
+void	TestRequest::TestSeperateWhiteSpace(void) {
 	std::cout << "SEPREATEWHITESPACE\n";
 	std::string	request;
 	std::vector<std::string> mock;
@@ -113,7 +120,7 @@ void	TestSeperateWhiteSpace(void) {
 	result.clear();
 }
 
-void	TestBaseAlphaToNumber(void) {
+void	TestRequest::TestBaseAlphaToNumber(void) {
 	int	result;
 	std::string	request;
 
@@ -180,11 +187,4 @@ void	TestBaseAlphaToNumber(void) {
 	request = ":prefix";
 	result = Request::BaseAlphaToNumber(request);
 	IsIntEqual(result, 0);
-}
-
-void	TestRequest(Server *s, Client *c) {
-	TestSplitRequest();
-	TestRemoveDuplicateSpace();
-	TestSeperateWhiteSpace();
-	TestBaseAlphaToNumber();
 }
