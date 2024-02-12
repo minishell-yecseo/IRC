@@ -38,21 +38,23 @@ class Channel {
 		bool	Invite(int sock);
 		void	Mode(int sock, char prefix);//add
 
-		/* getter & setter */
+		/* getter */
 		const std::map<int, char>&	get_members(void);
 		const std::set<int>&		get_ban_list(void);
 		const std::string&			get_name(void);
+		const std::string&			get_topic(void);
 		const std::string&			get_password(void);
+		const std::string&			get_host(void);
+		const char&					get_mode(void);
+		const int&					get_host_sock(void);
+		size_t						get_size();
+
+		/* setter */
 		void	set_mode(const int& flag, const bool& enable);
-		const char&	get_mode(void);
-		size_t	get_size();
 		void	set_topic(const std::string& topic);
-		const std::string&	get_topic(void);
 		void	set_password(const std::string& password);
 		void	set_name(const std::string& name);
 		void	set_limit(const int& l);
-		const std::string&	get_host(void);
-		const int&	get_host_sock(void);
 		void	set_host(const std::string& host);
 		void	set_host_sock(const int& sock);
 		void	unset_limit(void);
