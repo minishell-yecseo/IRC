@@ -40,5 +40,6 @@ class JoinCommand: public Command {
 		std::vector<std::string>	keys_;
 
 		friend class	Request;
+		friend class	TestJoinCommand;
 };
 #endif

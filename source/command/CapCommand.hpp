@@ -14,5 +14,6 @@ class CapCommand: public Command {
 		std::string	client_nick_;
 
 		friend class	Request;
+		friend class	TestCapCommand;
 };
 #endif

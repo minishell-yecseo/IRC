@@ -35,7 +35,7 @@ CMD_OBJ_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_OBJ))
 CMD_DEB_PATH = $(addprefix $(CMD_OBJ_DIR), $(CMD_DEP))
 
 TEST_SRC = TestRequest.cpp TestResponse.cpp \
-		   TestUtils.cpp main.cpp
+		   TestCommand.cpp TestUtils.cpp main.cpp
 
 TEST_DIR = ./Test/
 TEST_OBJ_DIR = ./object/test/
@@ -45,18 +45,39 @@ TEST_SRC_PATH = $(addprefix $(TEST_DIR), $(TEST_SRC))
 TEST_OBJ_PATH = $(addprefix $(TEST_OBJ_DIR), $(TEST_OBJ))
 TEST_DEB_PATH = $(addprefix $(TEST_OBJ_DIR), $(TEST_DEP))
 
+TEST_CMD = TestCapCommand.cpp TestInviteCommand.cpp \
+		   TestJoinCommand.cpp TestKickCommand.cpp \
+		   TestModeCommand.cpp TestNickCommand.cpp \
+		   TestPartCommand.cpp TestPassCommand.cpp \
+		   TestPingCommand.cpp TestPrivmsgCommand.cpp \
+		   TestQuitCommand.cpp TestTopicCommand.cpp \
+		   TestUnvalidCommand.cpp TestUserCommand.cpp \
+		   TestWhoisCommand.cpp \
+
+
+TEST_CMD_DIR = ./Test/command/
+TEST_CMD_OBJ_DIR = ./object/test/command/
+TEST_CMD_OBJ = $(TEST_CMD:.cpp=.o)
+TEST_CMD_DEP = $(TEST_CMD:.cpp=.d)
+TEST_CMD_SRC_PATH = $(addprefix $(TEST_CMD_DIR), $(TEST_CMD))
+TEST_CMD_OBJ_PATH = $(addprefix $(TEST_CMD_OBJ_DIR), $(TEST_CMD_OBJ))
+TEST_CMD_DEB_PATH = $(addprefix $(TEST_CMD_OBJ_DIR), $(TEST_CMD_DEP))
+
+$(TEST_CMD_OBJ_DIR)%.o : $(TEST_CMD_DIR)%.cpp
+	$(CXX) $(CXXFALGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR) -I$(CMD_DIR)
+
 $(TEST_OBJ_DIR)%.o : $(TEST_DIR)%.cpp
-	$(CXX) $(CXXFALGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR)
+	$(CXX) $(CXXFALGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
 
 $(IRC_OBJ_DIR)%.o : $(IRC_DIR)%.cpp
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
 
 $(CMD_OBJ_DIR)%.o : $(CMD_DIR)%.cpp
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
 
-ALL_DEP = $(IRC_DEB_PATH) $(CMD_DEB_PATH) $(TEST_DEB_PATH)
-ALL_OBJ = $(IRC_OBJ_PATH) $(CMD_OBJ_PATH) $(TEST_OBJ_PATH)
+ALL_DEP = $(IRC_DEB_PATH) $(CMD_DEB_PATH) $(TEST_DEB_PATH) $(TEST_CMD_DEB_PATH)
+ALL_OBJ = $(IRC_OBJ_PATH) $(CMD_OBJ_PATH) $(TEST_OBJ_PATH) $(TEST_CMD_OBJ_PATH)
 
-OBJ_DIR = ./object/ ./object/command/ ./object/test/
+OBJ_DIR = ./object/ ./object/command/ ./object/test/ ./object/test/command
 
 -include $(ALL_DEP)

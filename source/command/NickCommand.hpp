@@ -20,6 +20,7 @@ class NickCommand: public Command {
 		bool		is_registered_;
 
 		friend class	Request;
+		friend class	TestNickCommand;
 };
 
 #endif

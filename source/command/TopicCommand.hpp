@@ -12,5 +12,6 @@ class TopicCommand: public Command {
 		void	NoticeTopic(Channel* c, const std::string& nick);
 
 		friend class	Request;
+		friend class	TestTopicCommand;
 };
 #endif

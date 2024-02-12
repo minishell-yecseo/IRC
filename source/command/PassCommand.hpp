@@ -10,5 +10,6 @@ class PassCommand: public Command {
 		void	AnyOfError(void);
 
 		friend class	Request;
+		friend class	TestPassCommand;
 };
 #endif

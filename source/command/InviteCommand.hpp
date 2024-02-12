@@ -17,5 +17,6 @@ class InviteCommand: public Command {
 		int	receiver_;
 
 		friend class	Request;
+		friend class	TestInviteCommand;
 };
 #endif

@@ -12,5 +12,6 @@ class UserCommand: public Command {
 		void	SetUserInfo(void);
 
 		friend class	Request;
+		friend class	TestUserCommand;
 };
 #endif

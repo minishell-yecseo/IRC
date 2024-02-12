@@ -20,5 +20,6 @@ class ModeCommand: public Command {
 		size_t	CheckParamCount(const std::string& modestr);
 
 		friend class	Request;
+		friend class	TestModeCommand;
 };
 #endif

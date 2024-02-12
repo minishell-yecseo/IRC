@@ -13,5 +13,6 @@ class PrivmsgCommand: public Command {
 		void	BroadCast(const std::string& channel_namet);
 
 		friend class	Request;
+		friend class	TestPrivmsgCommand;
 };
 #endif

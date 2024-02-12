@@ -18,5 +18,6 @@ class KickCommand: public Command {
 		int	target_;
 
 		friend class	Request;
+		friend class	TestKickCommand;
 };
 #endif

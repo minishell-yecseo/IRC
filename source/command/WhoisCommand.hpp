@@ -17,5 +17,6 @@ class WhoisCommand: public Command {
 		void	AnyOfError(void);
 
 		friend class	Request;
+		friend class	TestWhoisCommand;
 };
 #endif

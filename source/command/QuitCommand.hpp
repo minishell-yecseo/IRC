@@ -10,5 +10,6 @@ class QuitCommand: public Command {
 		void	AnyOfError(void);
 
 		friend class	Request;
+		friend class	TestQuitCommand;
 };
 #endif

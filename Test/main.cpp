@@ -27,9 +27,8 @@ int main() {
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
-	TestResponse(s, c);
 	TestRequest(s, c);
-	TestCommandFunction(s, c);
+	TestResponse(s, c);
 
 	delete s;
 	delete c;

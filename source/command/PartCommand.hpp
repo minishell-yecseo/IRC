@@ -19,5 +19,6 @@ class PartCommand: public Command {
 		std::string	reason_;
 
 		friend class	Request;
+		friend class	TestPartCommand;
 };
 #endif
