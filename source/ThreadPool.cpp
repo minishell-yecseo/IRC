@@ -1,6 +1,7 @@
 #include "ThreadPool.hpp"
 
 ThreadPool::ThreadPool(int size) {
+	this->count_ = 0;
 	this->thread_count_ = size;
 	pthread_mutex_init(&(this->lock_), NULL);
 	pthread_cond_init(&(this->notify_), NULL);
@@ -64,11 +65,9 @@ void	*ThreadPool::Worker(void *arg) {
 			pool->queue_.pop();
 			pool->count_ -= 1;
 		}
-		
-		if (c == NULL)
-			continue;
-
 		pthread_mutex_unlock(&(pool->lock_));
+		if (c == NULL)
+			continue ;
 		c->Run();
 		delete c;
 		c = NULL;
