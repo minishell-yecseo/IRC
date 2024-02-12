@@ -21,19 +21,17 @@ class Server;
 class Command
 {
 	public:
-		virtual ~Command(void);
 		Command(const std::vector<std::string> &token_list, Server *s, Client *c);
+		virtual ~Command(void);
 		void	DisconnectClient(void);
-		void	SendResponse(const int& sock, const std::string& str);
-		bool	IsRegistered(const int& fd);
-		void	AuthCheckReply(void);
 		const std::string&	RunAndReturnRespInTest(void);
 
 	protected:
-		friend class	ThreadPool;
-
 		virtual void	Run(void) = 0;
 		virtual void	AnyOfError(void) = 0;
+		void	SendResponse(const int& sock, const std::string& str);
+		bool	IsRegistered(const int& fd);
+		void	AuthCheckReply(void);
 
 		Response					resp_;
 		bool						is_success_;
@@ -43,5 +41,8 @@ class Command
 		Server	*server_;
 		Client	*client_;
 		int		client_sock_;
+
+	private:
+		friend class	ThreadPool;
 };
 #endif

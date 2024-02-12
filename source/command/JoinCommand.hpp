@@ -17,21 +17,14 @@ typedef struct channel_info {
 
 class JoinCommand: public Command
 {
-	public:
+	protected:
 		JoinCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
-		void		Run(void);
-		void		AnyOfError(void);
 	
 	private:
-		std::string					sender_nick_;
-		std::string					sender_host_name_;
-		std::string					sender_user_name_;
-		std::vector<std::string>	channels_;
-		std::vector<std::string>	keys_;
-
+		void	Run(void);
+		void	AnyOfError(void);
 		void	ParseParam(void);
 		bool	IsChannelString(const std::string &str);
-
 		void	Join(const int& idx);
 		void	GetChannelInfo(channel_info *info);
 		void	CreateChannel(channel_info *info);
@@ -42,5 +35,13 @@ class JoinCommand: public Command
 		void	SendTopic(const channel_info& info);
 		void	SendMemberList(const channel_info& info);
 		void	AddChannelForClient(const std::string& chname);
+
+		std::string					sender_nick_;
+		std::string					sender_host_name_;
+		std::string					sender_user_name_;
+		std::vector<std::string>	channels_;
+		std::vector<std::string>	keys_;
+
+		friend class	Request;
 };
 #endif

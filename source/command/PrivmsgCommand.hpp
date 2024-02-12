@@ -4,12 +4,16 @@
 #include "Command.hpp"
 
 class PrivmsgCommand: public Command {
-	public:
+	protected:
 		PrivmsgCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
+
+	private:
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckTarget(void);
 		void	UniCast(const std::string& client_namet);
 		void	BroadCast(const std::string& channel_namet);
+
+		friend class	Request;
 };
 #endif

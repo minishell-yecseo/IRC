@@ -7,8 +7,10 @@
 #include "NumericDefine.hpp"
 
 class ModeCommand: public Command {
-	public:
+	protected:
 		ModeCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
+
+	private:
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& chan);
@@ -19,5 +21,6 @@ class ModeCommand: public Command {
 		bool	IsValidMode(const std::string& str);
 		size_t	CheckParamCount(const std::string& modestr);
 
+		friend class	Request;
 };
 #endif
