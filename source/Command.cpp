@@ -33,25 +33,8 @@ Command::Command(const std::vector<std::string> &token_list, Server *s, Client *
 		this->params_.push_back(token_list[index]);
 	}
 	this->is_success_ = false;
-	set_server(s);
-	set_client(c);
-}
-
-void	Command::set_server(Server *server) {
-	this->server_ = server;
-}
-
-void	Command::set_client(Client *client) {
-	this->client_ = client;
-	this->client_sock_ = client->get_sock();
-}
-
-Server*	Command::get_server(void) {
-	return server_;
-}
-
-Client*	Command::get_client(void) {
-	return client_;
+	this->server_ = s;
+	this->client_ = c;
 }
 
 void	Command::DisconnectClient(void) {
@@ -59,7 +42,6 @@ void	Command::DisconnectClient(void) {
 	this->server_->AddDeleteClient(this->client_sock_);
 }
 
- //:server 004 <nick> <servername> <version> <available umodes> <available cmodes> [<cmodes with param>]
 void	Command::AuthCheckReply(void) {
 	Response	auth_message;
 

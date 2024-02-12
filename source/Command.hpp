@@ -22,13 +22,7 @@ class Command
 {
 	public:
 		virtual ~Command(void);
-		virtual void	Run(void) = 0;
-		virtual void	AnyOfError(void) = 0;
 		Command(const std::vector<std::string> &token_list, Server *s, Client *c);
-		void set_server(Server *server);
-		void set_client(Client *client);
-		Server* get_server(void);
-		Client* get_client(void);
 		void	DisconnectClient(void);
 		void	SendResponse(const int& sock, const std::string& str);
 		bool	IsRegistered(const int& fd);
@@ -36,6 +30,11 @@ class Command
 		const std::string&	RunAndReturnRespInTest(void);
 
 	protected:
+		friend class	ThreadPool;
+
+		virtual void	Run(void) = 0;
+		virtual void	AnyOfError(void) = 0;
+
 		Response					resp_;
 		bool						is_success_;
 		std::string					prefix_;
