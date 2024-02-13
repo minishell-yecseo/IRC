@@ -23,15 +23,11 @@ void	JoinCommand::AnyOfError(void) {
 	for (size_t i = 0; i < this->channels_.size(); ++i) {
 		std::string	tmp = this->channels_[i];
 		if (tmp[0] != '#' && tmp[0] != '&') {
-			this->resp_ = ERR_BADCHANMASK;
+			this->resp_ = (std::string)ERR_BADCHANMASK + " " + tmp + " :Bad Channel Mask";
 			return;
 		}
-		if (tmp.size() < 2 || tmp.size() > 200) {
-			this->resp_ = ERR_NOSUCHCHANNEL;
-			return;
-		}
-		if (IsChannelString(tmp) == false) {
-			this->resp_ = ERR_NOSUCHCHANNEL;
+		if (tmp.size() < 2 || tmp.size() > 200 || IsChannelString(tmp) == false) {
+			this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + this->sender_nick_ + " " + tmp + " :No such channel";
 			return;
 		}
 	}
