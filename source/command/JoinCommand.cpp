@@ -86,19 +86,24 @@ void	JoinCommand::Join(const int& idx) {
 	else
 		GetChannelInfo(&info);//PASS
 
-	if (TryJoin(info) == false)
+	this->server_->LockChannelMutex(info.name);//lock channel
+	if (TryJoin(info) == false) {
+		this->server_->UnlockChannelMutex(info.name);
 		return;
-	if (SendNotifyToMember(info) == false)
+	}
+	if (SendNotifyToMember(info) == false) {
+		this->server_->UnlockChannelMutex(info.name);
 		return;
+	}
 	if (info.mode & MODE_TOPIC)
 		SendTopic(info);
 	SendMemberList(info);
 	SendResponse(this->client_sock_, this->resp_.get_str());
 	AddChannelForClient(info.name);
+	this->server_->UnlockChannelMutex(info.name);//unlock channel
 }
 
 void	JoinCommand::SendMemberList(const channel_info& info) {
-	/* basic RPL_NAMREPLY format */
 	this->resp_ << (std::string)RPL_NAMREPLY << " " << this->sender_nick_;
 	if (!(info.mode & MODE_KEY))
 		this->resp_ << " @ ";
@@ -109,48 +114,25 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 	if (this->server_->SearchChannelByName(info.name) == false)
 		return;
 
-	this->server_->LockChannelListMutex();
-	std::map<std::string, Channel>& serv_channels = this->server_->get_channels();
-	std::map<std::string, Channel>::iterator	itr = serv_channels.find(info.name);
-	this->server_->UnlockChannelListMutex();
+	std::map<int, char>::const_iterator itr = (info.ch_ptr)->get_members().begin();
 
-	if (itr == serv_channels.end())
-		return;
-
-	this->server_->LockChannelMutex(info.name);//lock
-	Channel& cur_channel = itr->second;
-	std::map<int, char>::const_iterator citr = cur_channel.get_members().begin();
-
-	while (citr != cur_channel.get_members().end()) {
-		if (citr->second != ' ')
-			this->resp_ << citr->second;
-		this->resp_ << this->server_->SearchClientBySock(citr->first) << " ";
-		citr++;
+	while (itr != (info.ch_ptr)->get_members().end()) {
+		if (itr->second != ' ')
+			this->resp_ << itr->second;
+		this->resp_ << this->server_->SearchClientBySock(itr->first) << " ";
+		itr++;
 	}
-	this->server_->UnlockChannelMutex(info.name);//unlock
 	
-	//"<client> <channel> :End of /NAMES list"
 	this->resp_ << CRLF;
 	this->resp_ << RPL_ENDOFNAMES << " " << this->sender_nick_ << " " << info.name << CRLF;
-	//SendResponse(this->client_sock_, this->resp_.get_format_str());
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
 	bool	join_succ = false;
-	Channel		*ch_ptr = NULL;
-
 	if (JoinErrorCheck(info) == false)
 		return false;
 
-	ch_ptr = this->server_->get_channel_ptr(info.name);
-	if (ch_ptr == NULL) {
-		this->resp_ = ERR_NOSUCHCHANNEL;
-		return false;
-	}
-
-	this->server_->LockChannelMutex(info.name);
-	join_succ = ch_ptr->Join(this->client_sock_, info.join_membership);
-	this->server_->UnlockChannelMutex(info.name);
+	join_succ = (info.ch_ptr)->Join(this->client_sock_, info.join_membership);
 
 	if (join_succ == false) {
 		this->resp_ = (std::string)ERR_CHANNELISFULL + " " + this->sender_nick_ + " " + info.name;
@@ -161,9 +143,7 @@ bool	JoinCommand::TryJoin(const channel_info& info) {
 }
 
 bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
-	Channel		*ch_ptr = NULL;
-	ch_ptr = this->server_->get_channel_ptr(info.name);
-	if (ch_ptr == NULL) {
+	if (info.ch_ptr == NULL) {
 		this->resp_ = ERR_NOSUCHCHANNEL;
 		return false;
 	}
@@ -174,15 +154,10 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	}
 
 	if (info.mode & MODE_INVITE) {
-		/* SEND message :<client> <channel> :Cannot join channel (+i) */
-		/* 1. check invite_list */
 		bool is_invited = false;
-		this->server_->LockChannelMutex(info.name);
-		is_invited = ch_ptr->IsInvited(this->client_sock_);
-		this->server_->UnlockChannelMutex(info.name);
+		is_invited = info.ch_ptr->IsInvited(this->client_sock_);
 		
 		if (is_invited == true) {
-			log::cout << RED << this->client_sock_ << " is invited\n" << RESET;
 			return true;
 		}
 	
@@ -192,16 +167,12 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 	}
 
 	if (info.mode & MODE_KEY && info.is_auth == false) {
-		/* Auth Failed at key only mode channel */
-		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
 		this->resp_ = (std::string)ERR_BADCHANNELKEY + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+k)";
 		return false;
 	}
 
 	if (info.is_banned) {
-		/* Can't Join because the sender(client) has banned */
-		/* SEND message : <client> <channel> :Cannot join channel (+b) */
 		this->resp_ = (std::string)ERR_BANNEDFROMCHAN + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+b)";
 		return false;
@@ -221,8 +192,8 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	info->join_membership = '@';
 	info->is_auth = true;
 	this->server_->AddChannelMutex(info->name);
-	
 	this->server_->AddChannel(new_ch);
+	info->ch_ptr = this->server_->get_channel_ptr(info->name);
 }
 
 void	JoinCommand::SendTopic(const channel_info& info) {
@@ -233,13 +204,7 @@ bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	this->resp_ = (std::string)":" + this->sender_nick_ + "!" + this->sender_user_name_;
 	this->resp_ << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
 
-	Channel *ch_ptr = this->server_->get_channel_ptr(info.name);
-	if (ch_ptr == NULL) {
-		this->resp_ = ERR_NOSUCHCHANNEL;
-		return false;
-	}
-	this->server_->LockChannelMutex(info.name);
-	const std::map<int, char> &members = ch_ptr->get_members();
+	const std::map<int, char> &members = info.ch_ptr->get_members();
 	std::map<int, char>::const_iterator	itr = members.begin();
 	std::map<int, char>::const_iterator	end_itr = members.end();
 	while (itr != end_itr) {
@@ -250,7 +215,6 @@ bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 		SendResponse(itr->first, this->resp_.get_format_str());
 		itr++;
 	}
-	this->server_->UnlockChannelMutex(info.name);
 	this->resp_ << CRLF;
 	return true;
 }
@@ -271,18 +235,13 @@ void	JoinCommand::GetSenderInfo(void) {
 }
 
 void	JoinCommand::GetChannelInfo(channel_info *info) {
-	Channel	*ch_ptr = this->server_->get_channel_ptr(info->name);
-	if (ch_ptr == NULL) {
-		this->resp_ = ERR_NOSUCHCHANNEL;
-		return;
-	}
-	
+	info->ch_ptr = this->server_->get_channel_ptr(info->name);
 	this->server_->LockChannelMutex(info->name);
-	info->is_member = ch_ptr->IsMember(this->client_sock_);
-	info->is_auth = ch_ptr->AuthPassword(info->key);
-	info->is_banned = ch_ptr->IsBanClient(this->client_sock_);
-	info->mode = ch_ptr->get_mode();
-	info->topic = ch_ptr->get_topic();
+	info->is_member = (info->ch_ptr)->IsMember(this->client_sock_);
+	info->is_auth = (info->ch_ptr)->AuthPassword(info->key);
+	info->is_banned = (info->ch_ptr)->IsBanClient(this->client_sock_);
+	info->mode = (info->ch_ptr)->get_mode();
+	info->topic = (info->ch_ptr)->get_topic();
 	this->server_->UnlockChannelMutex(info->name);
 }
 
