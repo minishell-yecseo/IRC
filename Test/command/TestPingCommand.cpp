@@ -15,15 +15,15 @@ void	TestPingCommand::SetUp(void) {
 void	TestPingCommand::RunTest(void) {
 	this->token_list_.push_back("PING");
 	PingCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
+	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
-	IsEqual("461 PING :Not enough parameters", com.RunAndReturnRespInTest());
+	IsEqual("461 PING :Not enough parameters", RunAndReturnRespInTest(&com));
 
 	this->token_list_.clear();
 	this->token_list_.push_back("PING");
 	this->token_list_.push_back("localhost");
 	PingCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("PONG localhost", com2.RunAndReturnRespInTest());
+	IsEqual("PONG localhost", RunAndReturnRespInTest(&com2));
 }
 
 void	TestPingCommand::TearDown(void) {

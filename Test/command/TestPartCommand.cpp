@@ -16,15 +16,15 @@ void	TestPartCommand::RunTest(void) {
 	this->token_list_.push_back("PART");
 	this->dummy_server_->AddClient(this->dummy_client_);
 	PartCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
+	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
-	IsEqual("461 PART :Not enough parameters", com.RunAndReturnRespInTest());
+	IsEqual("461 PART :Not enough parameters", RunAndReturnRespInTest(&com));
 
 	this->token_list_.clear();
 	this->token_list_.push_back("PART");
 	this->token_list_.push_back("#empty");
 	PartCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("403 #empty :No such channel", com2.RunAndReturnRespInTest());
+	IsEqual("403 #empty :No such channel", RunAndReturnRespInTest(&com2));
 
 	Channel dummy_channel("#dummy");
 	this->dummy_server_->AddChannel(dummy_channel);
@@ -32,13 +32,13 @@ void	TestPartCommand::RunTest(void) {
 	this->token_list_.push_back("PART");
 	this->token_list_.push_back("#dummy");
 	PartCommand com3(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("442 #dummy :You're not on that channel", com3.RunAndReturnRespInTest());
+	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com3));
 
 	PartCommand com4(this->token_list_, this->dummy_server_, this->dummy_client_);
 	Channel *ch_ptr;
 	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
 	ch_ptr->Join(this->dummy_client_->get_sock(), '@');
-	IsEqual(":wooseoki PART #dummy", com4.RunAndReturnRespInTest());
+	IsEqual(":wooseoki PART #dummy", RunAndReturnRespInTest(&com4));
 }
 
 void	TestPartCommand::TearDown(void) {

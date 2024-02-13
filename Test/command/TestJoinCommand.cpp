@@ -20,7 +20,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("#TEST");
 	JoinCommand	com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	exp = ":wooseoki!test@test JOIN #TEST\r\n353 wooseoki = #TEST :@wooseoki \r\n366 wooseoki #TEST\r\n";
-	IsEqual(exp, com.RunAndReturnRespInTest());
+	IsEqual(exp, RunAndReturnRespInTest(&com));
 
 	//1-2.0 defalut mode
 	Client	dc2(100);
@@ -28,7 +28,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->dummy_server_->AddClient(&dc2);
 	JoinCommand	com2(this->token_list_, this->dummy_server_, &dc2);
 	std::string	exp2 = ":unknown!user@host JOIN #TEST\r\n353 unknown = #TEST :@wooseoki unknown \r\n366 unknown #TEST\r\n";
-	IsEqual(exp2, com2.RunAndReturnRespInTest());
+	IsEqual(exp2, RunAndReturnRespInTest(&com2));
 
 	this->dummy_server_->DeleteClient(dc2.get_sock());
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -55,8 +55,8 @@ void	TestJoinCommand::RunTest(void) {
 	
 	std::string	fail3 = "473 wooseoki #TEST : Cannot join channel (+i)";
 	std::string	succ3 = ":dc3!user@host JOIN #TEST\r\n353 dc3 = #TEST :dc3 \r\n366 dc3 #TEST\r\n";
-	IsEqual(fail3, com3.RunAndReturnRespInTest());
-	IsEqual(succ3, com3_1.RunAndReturnRespInTest());
+	IsEqual(fail3, RunAndReturnRespInTest(&com3));
+	IsEqual(succ3, RunAndReturnRespInTest(&com3_1));
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 	this->dummy_server_->DeleteClient(dc3.get_sock());
@@ -84,8 +84,8 @@ void	TestJoinCommand::RunTest(void) {
 	JoinCommand com4_succ(this->token_list_, this->dummy_server_, &dc4);
 	std::string	fail4 = "475 wooseoki #TEST-KEY : Cannot join channel (+k)";
 	std::string	succ4 = ":dc4!user@host JOIN #TEST-KEY\r\n353 dc4 = #TEST-KEY :dc4 \r\n366 dc4 #TEST-KEY\r\n";
-	IsEqual(fail4, com4_fail.RunAndReturnRespInTest());
-	IsEqual(succ4, com4_succ.RunAndReturnRespInTest());
+	IsEqual(fail4, RunAndReturnRespInTest(&com4_fail));
+	IsEqual(succ4, RunAndReturnRespInTest(&com4_succ));
 
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(dc4.get_sock());
@@ -105,7 +105,7 @@ void	TestJoinCommand::RunTest(void) {
 	JoinCommand	com5(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	succ5 = ":wooseoki!test@test JOIN &TEST-TOPIC\r\n332 wooseoki &TEST-TOPIC :topic!\r\n";
 	succ5 = succ5 + "353 wooseoki = &TEST-TOPIC :wooseoki \r\n366 wooseoki &TEST-TOPIC\r\n";
-	IsEqual(succ5, com5.RunAndReturnRespInTest());
+	IsEqual(succ5, RunAndReturnRespInTest(&com5));
 
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -118,7 +118,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("#TEST");
 	JoinCommand	com6(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail6 = "400 wooseoki JOIN : Not registered in Server";
-	IsEqual(fail6, com6.RunAndReturnRespInTest());
+	IsEqual(fail6, RunAndReturnRespInTest(&com6));
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 
@@ -133,7 +133,7 @@ void	TestJoinCommand::RunTest(void) {
 	token_list_.push_back("&TEST-LIMIT");
 	JoinCommand	com7(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail7 = "471 wooseoki &TEST-LIMIT :Cannot join channel (+l)";
-	IsEqual(fail7, com7.RunAndReturnRespInTest());
+	IsEqual(fail7, RunAndReturnRespInTest(&com7));
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 	this->dummy_server_->CeaseChannel(ch7.get_name());
@@ -149,7 +149,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("&TEST-MEMBER");
 	JoinCommand	com8(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail8 = "400 :wooseoki is already in &TEST-MEMBER";
-	IsEqual(fail8, com8.RunAndReturnRespInTest());
+	IsEqual(fail8, RunAndReturnRespInTest(&com8));
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -162,7 +162,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("BAD");
 	JoinCommand	com9(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail9 = "476 BAD :Bad Channel Mask";
-	IsEqual(fail9, com9.RunAndReturnRespInTest());
+	IsEqual(fail9, RunAndReturnRespInTest(&com9));
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -174,7 +174,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("#");
 	JoinCommand	com10(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail10 = "403 wooseoki # :No such channel";
-	IsEqual(fail10, com10.RunAndReturnRespInTest());
+	IsEqual(fail10, RunAndReturnRespInTest(&com10));
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -187,7 +187,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("key with whitespace");
 	JoinCommand	com11(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail11 = "400 : key with whitespace";
-	IsEqual(fail11, com11.RunAndReturnRespInTest());
+	IsEqual(fail11, RunAndReturnRespInTest(&com11));
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
