@@ -11,8 +11,12 @@ Client::Client(int sock) {
 void	Client::Init(int sock) {
 	this->sock_ = sock;
 	memset(&this->addr_, 0, sizeof(this->addr_));
-	this->nick_ = "unknown-nick";
+	this->nick_ = "unknown";
 	this->auth_flag_ = 0;
+	this->user_name_ = "user";
+	this->host_name_ = "host";
+	this->server_name_ = "server";
+	this->real_name_ = "real name";
 }
 
 bool	Client::IsAuth(void) const {
