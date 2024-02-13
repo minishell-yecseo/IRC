@@ -198,7 +198,7 @@ void	JoinCommand::SendTopic(const channel_info& info) {
 
 bool	JoinCommand::SendNotifyToMember(const channel_info& info) {
 	this->resp_ = (std::string)":" + this->sender_nick_ + "!" + this->sender_user_name_;
-	this->resp_ << "@" << this->sender_host_name_ << " JOIN" <<  " " << info.name;
+	this->resp_ << "@" << this->sender_host_name_ << " JOIN " << info.name;
 
 	const std::map<int, char> &members = info.ch_ptr->get_members();
 	std::map<int, char>::const_iterator	itr = members.begin();
