@@ -97,6 +97,7 @@ void	JoinCommand::Join(const int& idx) {
 	SendResponse(this->client_sock_, this->resp_.get_str());
 	AddChannelForClient(info.name);
 	this->server_->UnlockChannelMutex(info.name);//unlock channel
+	this->is_success_ = true;
 }
 
 void	JoinCommand::SendMemberList(const channel_info& info) {
@@ -120,17 +121,15 @@ void	JoinCommand::SendMemberList(const channel_info& info) {
 }
 
 bool	JoinCommand::TryJoin(const channel_info& info) {
-	bool	join_succ = false;
 	if (JoinErrorCheck(info) == false)
 		return false;
 
-	join_succ = (info.ch_ptr)->Join(this->client_sock_, info.join_membership);
-
-	if (join_succ == false) {
+	if (info.ch_ptr->Join(this->client_sock_, info.join_membership) == false) {
 		this->resp_ = (std::string)ERR_CHANNELISFULL + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " :Cannot join channel (+l)";
 		return false;
 	}
+	this->is_success_ = true;
 	return true;
 }
 
@@ -169,8 +168,6 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		this->resp_ << " : Cannot join channel (+b)";
 		return false;
 	}
-
-	this->is_success_ = true;
 	return true;
 }
 
@@ -183,7 +180,6 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	new_ch.set_host_sock(this->client_sock_);
 	info->join_membership = '@';
 	info->is_auth = true;
-	this->server_->AddChannelMutex(info->name);
 	this->server_->AddChannel(new_ch);
 	info->ch_ptr = this->server_->get_channel_ptr(info->name);
 }
