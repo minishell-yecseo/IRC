@@ -75,7 +75,6 @@ void	Command::AuthCheckReply(void) {
 	}
 }
 
-const std::string&	Command::RunAndReturnRespInTest(void) {
-	this->Run();
+const std::string&	Command::get_response(void) {
 	return this->resp_.get_str();
 }

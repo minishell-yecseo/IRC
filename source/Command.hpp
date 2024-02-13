@@ -21,7 +21,8 @@ class Server;
 class Command
 {
 	public:
-		const std::string&	RunAndReturnRespInTest(void);
+		virtual void		Run(void) = 0;
+		const std::string&	get_response(void);
 
 	protected:
 		Command(const std::vector<std::string> &token_list, Server *s, Client *c);
@@ -42,8 +43,6 @@ class Command
 		std::vector<std::string>	params_;
 
 	private:
-		virtual void	Run(void) = 0;
-
 		friend class	ThreadPool;
 };
 #endif
