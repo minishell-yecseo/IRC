@@ -15,11 +15,11 @@ void	TestCapCommand::SetUp(void) {
 void	TestCapCommand::RunTest(void) {
 	this->token_list_.push_back("CAP");
 	CapCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("461 CAP :Not enough parameters", com.RunAndReturnRespInTest());
+	IsEqual("461 CAP :Not enough parameters", RunAndReturnRespInTest(&com));
 
 	this->token_list_.push_back("LS");
 	CapCommand comm(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("CAP * LS :", comm.RunAndReturnRespInTest());
+	IsEqual("CAP * LS :", RunAndReturnRespInTest(&comm));
 }
 
 void	TestCapCommand::TearDown(void) {

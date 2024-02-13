@@ -52,20 +52,20 @@ void	TestModeCommand::RunTest(void) {
 	this->token_list_.push_back("MODE");
 	this->dummy_server_->AddClient(this->dummy_client_);
 	ModeCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
+	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
-	IsEqual("461 MODE :Not enough parameters", com.RunAndReturnRespInTest());
+	IsEqual("461 MODE :Not enough parameters", RunAndReturnRespInTest(&com));
 
 	this->token_list_.push_back("dummy_param");
 	ModeCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("324 :Not given modestring", com2.RunAndReturnRespInTest());
+	IsEqual("324 :Not given modestring", RunAndReturnRespInTest(&com2));
 
 	this->token_list_.clear();
 	this->token_list_.push_back("MODE");
 	this->token_list_.push_back("#dummy");
 	this->token_list_.push_back("+unvalidmodestr");
 	ModeCommand com3(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("472 +unvalidmodestr :is unknown mode char to me", com3.RunAndReturnRespInTest());
+	IsEqual("472 +unvalidmodestr :is unknown mode char to me", RunAndReturnRespInTest(&com3));
 
 	this->token_list_.clear();
 	this->token_list_.push_back("MODE");
@@ -73,26 +73,26 @@ void	TestModeCommand::RunTest(void) {
 	this->token_list_.push_back("+kl-o");
 	this->token_list_.push_back("dummy_param");
 	ModeCommand com4(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("461 :No match param count", com4.RunAndReturnRespInTest());
+	IsEqual("461 :No match param count", RunAndReturnRespInTest(&com4));
 
 	this->token_list_.clear();
 	this->token_list_.push_back("MODE");
 	this->token_list_.push_back("#dummy");
 	this->token_list_.push_back("+t");
 	ModeCommand com5(this->token_list_, this->dummy_server_, this->dummy_client_);
-	IsEqual("403 #dummy :No such channel", com5.RunAndReturnRespInTest());
+	IsEqual("403 #dummy :No such channel", RunAndReturnRespInTest(&com5));
 
 	Channel dummy_channel("#dummy");
 	this->dummy_server_->AddChannel(dummy_channel);
-	IsEqual("442 #dummy :You're not on that channel", com5.RunAndReturnRespInTest());
+	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com5));
 
 	Channel *ch_ptr;
 	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
 	ch_ptr->Join(this->dummy_client_->get_sock(), ' ');
-	IsEqual("482 #dummy :You're not channel operator", com5.RunAndReturnRespInTest());
+	IsEqual("482 #dummy :You're not channel operator", RunAndReturnRespInTest(&com5));
 
 	ch_ptr->Mode(this->dummy_client_->get_sock(), '@');
-	IsEqual(":wooseoki MODE #dummy +t", com5.RunAndReturnRespInTest());
+	IsEqual(":wooseoki MODE #dummy +t", RunAndReturnRespInTest(&com5));
 }
 
 void	TestModeCommand::TearDown(void) {
