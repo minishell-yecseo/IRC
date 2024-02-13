@@ -113,5 +113,6 @@ void	TestNickCommand::RunTest(void) {
 }
 
 void	TestNickCommand::TearDown(void) {
-
+	this->dummy_client_->Init(TEST_CLIENT_SOCK);
+	this->dummy_client_->set_nick(TEST_CLIENT_NICK);
 }

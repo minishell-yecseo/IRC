@@ -15,7 +15,7 @@ void	TestPrivmsgCommand::SetUp(void) {
 
 void	TestPrivmsgCommand::RunTest(void) {
 	this->token_list_.push_back("PRIVMSG");
-	this->dummy_server_->AddClientInTest(this->dummy_client_->get_sock(), *this->dummy_client_);
+	this->dummy_server_->AddClient(this->dummy_client_);
 	PrivmsgCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
@@ -27,9 +27,8 @@ void	TestPrivmsgCommand::RunTest(void) {
 	PrivmsgCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("403 :No such channel", com2.RunAndReturnRespInTest());
 
-	this->dummy_server_->AddChannelMutex("#dummy");
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannelInTest("#dummy", dummy_channel);
+	this->dummy_server_->AddChannel(dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("PRIVMSG");
 	this->token_list_.push_back("#dummy");
@@ -50,14 +49,13 @@ void	TestPrivmsgCommand::RunTest(void) {
 	this->token_list_.push_back("saseo");
 	this->token_list_.push_back("dummy_msg");
 	PrivmsgCommand com5(this->token_list_, this->dummy_server_, this->dummy_client_);
-	this->dummy_server_->AddClientInTest(new_dummy_client_.get_sock(), new_dummy_client_);
+	this->dummy_server_->AddClient(&new_dummy_client_);
 	IsEqual(":wooseoki PRIVMSG saseo :dummy_msg", com5.RunAndReturnRespInTest());
 }
 
 void	TestPrivmsgCommand::TearDown(void) {
-	this->dummy_server_->DeleteClientInTest(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteClientInTest(new_dummy_client_.get_sock());
-	this->dummy_server_->DeleteChannelMutex("#dummy");
-	this->dummy_server_->DeleteChannelInTest("#dummy");
+	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
+	this->dummy_server_->DeleteClient(new_dummy_client_.get_sock());
+	this->dummy_server_->CeaseChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

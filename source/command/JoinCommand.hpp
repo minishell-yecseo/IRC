@@ -5,6 +5,7 @@
 #include "Response.hpp"
 
 typedef struct channel_info {
+	Channel		*ch_ptr;
 	std::string name;
 	std::string	topic;
 	std::string	key;

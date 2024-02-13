@@ -3,13 +3,13 @@
 
 Channel::Channel(void) {
 	this->limit_ = CLIENT_LIMIT;
-	this->mode_ = 0;
+	this->mode_ = MODE_LIMIT;
 }
 
 Channel::Channel(const std::string& name) {
 	this->limit_ = CLIENT_LIMIT;
 	this->name_ = name;
-	this->mode_ = 0;
+	this->mode_ = MODE_LIMIT;
 }
 
 Channel	Channel::operator=(const Channel& ch) {

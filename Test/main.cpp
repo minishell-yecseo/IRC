@@ -2,7 +2,7 @@
 #include "TestResponse.hpp"
 
 Server	*ServerInit(void) {
-	char *argv[] = {"TEST", "9090", "1234"};
+	char *argv[] = {TEST_SERVER_NAME, TEST_SERVER_PORT, TEST_SERVER_PASSWORD};
 	Server *result;
 
 	result = new Server(3, argv);
@@ -13,8 +13,8 @@ Client*	ClientInit(void) {
 	Client *result;
 
 	result = new Client;
-	result->set_sock(9);
-	result->set_nick("wooseoki");
+	result->set_sock(TEST_CLIENT_SOCK);
+	result->set_nick(TEST_CLIENT_NICK);
 	return result;
 }
 

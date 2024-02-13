@@ -245,18 +245,18 @@ bool	Server::DeleteClientMutex(const int& sock) {
 
 //Mutex done
 bool	Server::DeleteChannelMutex(const std::string& name) {
-	Mutex *del_ptr;
+	Mutex *del_ptr = NULL;
 
 	this->list_mutex_.lock();//lock
 	std::map<std::string, Mutex*>::iterator	mutex_it = channel_mutex_list_.find(name);
 	if (mutex_it != channel_mutex_list_.end()) {
-		this->list_mutex_.unlock();
-		return false;
+		del_ptr = mutex_it->second;
+		channel_mutex_list_.erase(mutex_it);
+		delete del_ptr;
 	}
-	del_ptr = mutex_it->second;
-	channel_mutex_list_.erase(mutex_it);
 	this->list_mutex_.unlock();//unlock
-	delete del_ptr;
+	if (del_ptr == NULL)
+		return false;
 	return true;
 }
 
@@ -438,6 +438,9 @@ void	Server::AddChannel(Channel ch) {
 	LockChannelListMutex();
 	this->channels_.insert(make_pair(ch.get_name(), ch));
 	UnlockChannelListMutex();
+
+	if (AddChannelMutex(ch.get_name()) == false)
+		DeleteChannel(ch.get_name());
 }
 
 void	Server::DeleteInvalidClient(void) {
@@ -459,7 +462,6 @@ void	Server::CeaseChannel(const std::string& channel_name) {
 void	Server::DeleteChannel(const std::string& channel_name) {
 	/*Channel should be deleted when the last participant PART from that channel */
 	std::map<std::string, Channel>::iterator	ch_itr;
-	std::map<std::string, Mutex*>::iterator		mutex_itr;
 
 	this->channels_mutex_.lock();
 	ch_itr = this->channels_.find(channel_name);
@@ -636,20 +638,4 @@ void	Server::print_channels(void) {
 	this->channels_mutex_.unlock();
 	logging << RED << "_____________________________\n" << RESET;
 	log::cout << logging.get_str();
-}
-
-void	Server::AddClientInTest(const int& sock, Client c) {
-	this->clients_[sock] = c;
-}
-
-void	Server::DeleteClientInTest(const int& sock) {
-	this->clients_.erase(sock);
-}
-
-void	Server::AddChannelInTest(const std::string& channel_name, Channel c){
-	this->channels_.insert(std::make_pair(channel_name, c));
-}
-
-void	Server::DeleteChannelInTest(const std::string& channel_name) {
-	this->channels_.erase(channel_name);
 }
