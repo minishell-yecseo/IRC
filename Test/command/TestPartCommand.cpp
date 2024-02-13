@@ -14,7 +14,7 @@ void	TestPartCommand::SetUp(void) {
 
 void	TestPartCommand::RunTest(void) {
 	this->token_list_.push_back("PART");
-	this->dummy_server_->AddClientInTest(this->dummy_client_->get_sock(), *this->dummy_client_);
+	this->dummy_server_->AddClient(this->dummy_client_);
 	PartCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
@@ -26,9 +26,8 @@ void	TestPartCommand::RunTest(void) {
 	PartCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("403 #empty :No such channel", com2.RunAndReturnRespInTest());
 
-	this->dummy_server_->AddChannelMutex("#dummy");
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannelInTest("#dummy", dummy_channel);
+	this->dummy_server_->AddChannel(dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("PART");
 	this->token_list_.push_back("#dummy");
@@ -43,8 +42,7 @@ void	TestPartCommand::RunTest(void) {
 }
 
 void	TestPartCommand::TearDown(void) {
-	this->dummy_server_->DeleteClientInTest(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannelMutex("#dummy");
-	this->dummy_server_->DeleteChannelInTest("#dummy");
+	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
+	this->dummy_server_->CeaseChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

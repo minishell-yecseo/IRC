@@ -136,7 +136,7 @@ void	TestJoinCommand::RunTest(void) {
 	IsEqual(fail7, com7.RunAndReturnRespInTest());
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel(ch7.get_name());
+	this->dummy_server_->CeaseChannel(ch7.get_name());
 	this->dummy_client_->UnsetAuthFlagInTest();
 
 	// join failure caused by already joined client's request

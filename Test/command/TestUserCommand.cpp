@@ -54,8 +54,8 @@ void	TestUserCommand::RunTest(void) {
 	this->dummy_server_->AddClient(this->dummy_client_);
 	UserCommand	com2(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("", com2.RunAndReturnRespInTest());
+	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 }
 
 void	TestUserCommand::TearDown(void) {
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 }

@@ -15,7 +15,7 @@ void	TestTopicCommand::SetUp(void) {
 void	TestTopicCommand::RunTest(void) {
 	this->token_list_.push_back("TOPIC");
 	TopicCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	this->dummy_server_->AddClientInTest(this->dummy_client_->get_sock(), *(this->dummy_client_));
+	this->dummy_server_->AddClient(this->dummy_client_);
 	IsEqual("451 :You have not registered", com.RunAndReturnRespInTest());
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
 	IsEqual("461 TOPIC :Not enough parameters", com.RunAndReturnRespInTest());
@@ -33,9 +33,8 @@ void	TestTopicCommand::RunTest(void) {
 	TopicCommand com5(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("403 :No such channel", com5.RunAndReturnRespInTest());
 
-	this->dummy_server_->AddChannelMutex("#dummy");
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannelInTest("#dummy", dummy_channel);
+	this->dummy_server_->AddChannel(dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("TOPIC");
 	this->token_list_.push_back("#dummy");
@@ -54,8 +53,7 @@ void	TestTopicCommand::RunTest(void) {
 }
 
 void	TestTopicCommand::TearDown(void) {
-	this->dummy_server_->DeleteClientInTest(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannelMutex("#dummy");
-	this->dummy_server_->DeleteChannelInTest("#dummy");
+	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
+	this->dummy_server_->CeaseChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }
