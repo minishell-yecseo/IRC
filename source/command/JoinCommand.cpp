@@ -105,11 +105,7 @@ void	JoinCommand::Join(const int& idx) {
 
 void	JoinCommand::SendMemberList(const channel_info& info) {
 	this->resp_ << (std::string)RPL_NAMREPLY << " " << this->sender_nick_;
-	if (!(info.mode & MODE_KEY))
-		this->resp_ << " @ ";
-	else
-		this->resp_ << " = ";
-	this->resp_ << info.name << " :";
+	this->resp_ << " = " << info.name << " :";
 
 	if (this->server_->SearchChannelByName(info.name) == false)
 		return;
