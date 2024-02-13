@@ -170,7 +170,10 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 
 	if (info.is_member) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :" + this->sender_nick_ + " is already in " + info.name;
-	} else if (info.mode & MODE_INVITE) {
+		return false;
+	}
+
+	if (info.mode & MODE_INVITE) {
 		/* SEND message :<client> <channel> :Cannot join channel (+i) */
 		/* 1. check invite_list */
 		bool is_invited = false;
@@ -178,24 +181,32 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		is_invited = ch_ptr->IsInvited(this->client_sock_);
 		this->server_->UnlockChannelMutex(info.name);
 		
-		if (is_invited == true)
+		if (is_invited == true) {
+			log::cout << RED << this->client_sock_ << " is invited\n" << RESET;
 			return true;
+		}
 	
 		this->resp_ = (std::string)ERR_INVITEONLYCHAN + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+i)";
-	} else if (info.mode & MODE_KEY && info.is_auth == false) {
+		return false;
+	}
+
+	if (info.mode & MODE_KEY && info.is_auth == false) {
 		/* Auth Failed at key only mode channel */
 		/* SEND message : "<client> <channel> :Cannot join channel (+k)" */
 		this->resp_ = (std::string)ERR_BADCHANNELKEY + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+k)";
 		return false;
-	} else if (info.is_banned) {
+	}
+
+	if (info.is_banned) {
 		/* Can't Join because the sender(client) has banned */
 		/* SEND message : <client> <channel> :Cannot join channel (+b) */
 		this->resp_ = (std::string)ERR_BANNEDFROMCHAN + " " + this->sender_nick_ + " " + info.name;
 		this->resp_ << " : Cannot join channel (+b)";
 		return false;
 	}
+
 	this->is_success_ = true;
 	return true;
 }
