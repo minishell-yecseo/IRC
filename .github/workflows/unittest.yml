@@ -1,0 +1,17 @@
+name: unittest CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: make test binary file
+      run: make test -j
+    - name: run test
+      run: ./ircserv_test
