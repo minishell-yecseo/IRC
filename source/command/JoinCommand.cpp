@@ -31,8 +31,7 @@ bool	JoinCommand::IsValidChannelInfo(const int& idx) {
 					tmp_channel_name + " :Bad Channel Mask";
 		return false;
 	}
-	if (tmp_channel_name.size() < 2 || tmp_channel_name.size() > 200 \
-		|| IsChannelString(tmp_channel_name) == false) {
+	if (IsChannelString(tmp_channel_name) == false) {
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + this->sender_nick_ + \
 					" " + tmp_channel_name + " :No such channel";
 		return false;
@@ -154,13 +153,11 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		bool is_invited = false;
 		is_invited = info.ch_ptr->IsInvited(this->client_sock_);
 		
-		if (is_invited == true) {
-			return true;
+		if (is_invited == false) {
+			this->resp_ = (std::string)ERR_INVITEONLYCHAN + " " + this->sender_nick_ + " " + info.name;
+			this->resp_ << " : Cannot join channel (+i)";
+			return false;
 		}
-	
-		this->resp_ = (std::string)ERR_INVITEONLYCHAN + " " + this->sender_nick_ + " " + info.name;
-		this->resp_ << " : Cannot join channel (+i)";
-		return false;
 	}
 
 	if (info.mode & MODE_KEY && info.is_auth == false) {
@@ -268,6 +265,8 @@ void	JoinCommand::ParseParam(void) {
 }
 
 bool	JoinCommand::IsChannelString(const std::string &str) {
+	if (str.size() < 2 || str.size() > 200)
+		return false;
 	for (size_t i = 0; i < str.size(); ++i) {
 		if (str[i] == 0 || str[i] == 7 || str[i] == 20 || str[i] == 12 || str[i] == 15 || str[i] == ',')
 			return false;
