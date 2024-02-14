@@ -178,15 +178,11 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 }
 
 void	JoinCommand::CreateChannel(channel_info *info) {
-	Channel	new_ch(info->name);
-	if (info->mode & MODE_KEY)
-		new_ch.set_mode(MODE_KEY, true);
-	new_ch.set_key(info->key);
-	new_ch.set_host(this->sender_nick_);
-	new_ch.set_host_sock(this->client_sock_);
 	info->join_membership = '@';
 	info->is_auth = true;
-	this->server_->AddChannel(new_ch);
+	info->host = this->sender_nick_;
+	info->host_sock = this->client_sock_;
+	this->server_->CreateChannel(*info);
 	info->ch_ptr = this->server_->get_channel_ptr(info->name);
 }
 

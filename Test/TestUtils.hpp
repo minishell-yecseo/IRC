@@ -24,6 +24,10 @@
 # define TEST_CLIENT_SOCK (9)
 #endif
 
+#ifndef DUMMY_CLIENT_SOCK
+# define DUMMY_CLIENT_SOCK (300)
+#endif
+
 #include "Colors.hpp"
 
 void	IsEqual(const std::string& a, const std::string& b);

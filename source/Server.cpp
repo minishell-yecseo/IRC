@@ -446,20 +446,33 @@ void	Server::AddDeleteClient(const int& sock) {
 	this->del_clients_mutex_.unlock();
 }
 
-void	Server::AddChannel(const Channel& ch) {
-	Channel	*new_channel = new Channel(ch);
-	if (new_channel == NULL)
-		return;
-
-	//need to implement
+bool	Server::AddChannel(Channel *channel) {
 	LockChannelListMutex();
-	this->channels_.insert(make_pair(ch.get_name(), new_channel));
+	std::map<std::string, Channel*>::iterator itr = this->channels_.find(channel->get_name());
+	if (itr == this->channels_.end())
+		this->channels_.insert(make_pair(channel->get_name(), channel));
 	UnlockChannelListMutex();
 
-	if (AddChannelMutex(ch.get_name()) == false) {
-		DeleteChannel(ch.get_name());
-		delete new_channel;
+	if (AddChannelMutex(channel->get_name()) == false) {
+		DeleteChannel(channel->get_name());
+		return false;
 	}
+	return true;
+}
+
+void	Server::CreateChannel(const channel_info& info) {
+	Channel *channel_ptr = new Channel(info.name);
+	if (channel_ptr == NULL)
+		return;
+
+	if (info.mode & MODE_KEY)
+		channel_ptr->set_mode(MODE_KEY, true);
+	channel_ptr->set_key(info.key);
+	channel_ptr->set_host(info.host);
+	channel_ptr->set_host_sock(info.host_sock);
+	
+	if (AddChannel(channel_ptr) == false)
+		delete channel_ptr;
 }
 
 void	Server::DeleteInvalidClient(void) {
@@ -473,13 +486,14 @@ void	Server::DeleteInvalidClient(void) {
 	this->del_clients_mutex_.unlock();
 }
 
+//free
 void	Server::CeaseChannel(const std::string& channel_name) {
-	DeleteChannel(channel_name);
-	DeleteChannelMutex(channel_name);
+	Channel *channel_ptr = DeleteChannel(channel_name);
+	if (channel_ptr != NULL)
+		delete channel_ptr;
 }
 
-void	Server::DeleteChannel(const std::string& channel_name) {
-	/*Channel should be deleted when the last participant PART from that channel */
+Channel*	Server::DeleteChannel(const std::string& channel_name) {
 	std::map<std::string, Channel*>::iterator	ch_itr;
 	Channel	*channel_ptr = NULL;
 
@@ -492,14 +506,20 @@ void	Server::DeleteChannel(const std::string& channel_name) {
 		UnlockChannelMutex(channel_name);
 	}
 	this->channels_mutex_.unlock();
-	delete channel_ptr;
+
+	if (channel_ptr != NULL)
+		DeleteChannelMutex(channel_name);
+
+	return channel_ptr;
 }
 
 void	Server::DisconnectClient(const int& sock) {
 	DeleteClientEvent(sock);
 	Client *client_ptr = DeleteClient(sock);
-	if (client_ptr != NULL)
+	if (client_ptr != NULL) {
+		DeleteClientInChannel(sock, client_ptr);
 		delete client_ptr;
+	}
 }
 
 Client*	Server::DeleteClient(const int& sock) {
@@ -513,8 +533,6 @@ Client*	Server::DeleteClient(const int& sock) {
 	this->clients_mutex_.unlock();//unlock
 	if (client_ptr == NULL)
 		return NULL;
-	
-	DeleteClientInChannel(sock, client_ptr);
 	
 	this->clients_mutex_.lock();
 	this->clients_.erase(client_it);

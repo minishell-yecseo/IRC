@@ -27,7 +27,7 @@ void	TestPartCommand::RunTest(void) {
 	IsEqual("403 #empty :No such channel", RunAndReturnRespInTest(&com2));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(dummy_channel);
+	this->dummy_server_->AddChannel(&dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("PART");
 	this->token_list_.push_back("#dummy");
@@ -35,14 +35,13 @@ void	TestPartCommand::RunTest(void) {
 	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com3));
 
 	PartCommand com4(this->token_list_, this->dummy_server_, this->dummy_client_);
-	Channel *ch_ptr;
-	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
-	ch_ptr->Join(this->dummy_client_->get_sock(), '@');
+	dummy_channel.Join(this->dummy_client_->get_sock(), '@');
+	dummy_channel.Join(DUMMY_CLIENT_SOCK, ' ');
 	IsEqual(":wooseoki PART #dummy", RunAndReturnRespInTest(&com4));
 }
 
 void	TestPartCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel("#dummy");
+	this->dummy_server_->DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

@@ -70,12 +70,13 @@ class Server {
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
-		void	AddChannel(const Channel& ch);//allocation Channel
+		void	CreateChannel(const channel_info& info);//allocate Channel
+		bool	AddChannel(Channel *channel);
 		bool	AddClient(Client *client);
 
-		void	CeaseChannel(const std::string& channel_name);
-		void	DeleteChannel(const std::string& channel_name);//free Channel
-		Client*	DeleteClient(const int& sock);
+		void		CeaseChannel(const std::string& channel_name);//free Channel
+		Channel*	DeleteChannel(const std::string& channel_name);
+		Client*		DeleteClient(const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
