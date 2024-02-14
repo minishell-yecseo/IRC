@@ -15,8 +15,8 @@ void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
 }
 
 void	TopicCommand::CheckChannel(const std::string& channel_name, const std::string& topic) {
-	std::map<std::string, Channel> *channel_list;
-	std::map<std::string, Channel>::iterator chan;
+	std::map<std::string, Channel*> *channel_list;
+	std::map<std::string, Channel*>::iterator chan;
 
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
@@ -29,21 +29,21 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
+	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
-	else if (((chan->second).get_mode() & MODE_TOPIC)) {
-		if ((chan->second).IsOperator(this->client_sock_) == false)
+	else if (((chan->second)->get_mode() & MODE_TOPIC)) {
+		if ((chan->second)->IsOperator(this->client_sock_) == false)
 			this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 		else {
-			chan->second.set_mode(MODE_TOPIC, true);
-			chan->second.set_topic(topic);
-			NoticeTopic(&(chan->second), topic);
+			chan->second->set_mode(MODE_TOPIC, true);
+			chan->second->set_topic(topic);
+			NoticeTopic(chan->second, topic);
 		}
 	}
 	else {
-		chan->second.set_mode(MODE_TOPIC, true);
-		chan->second.set_topic(topic);
-		NoticeTopic(&(chan->second), topic);
+		chan->second->set_mode(MODE_TOPIC, true);
+		chan->second->set_topic(topic);
+		NoticeTopic(chan->second, topic);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }

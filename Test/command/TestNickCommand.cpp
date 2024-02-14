@@ -103,12 +103,12 @@ void	TestNickCommand::RunTest(void) {
 	IsEqual(":nick NICK new-nick", RunAndReturnRespInTest(&com4_1));
 
 	this->token_list_.clear();
-	this->token_list_.push_back(":nick");
+	this->token_list_.push_back(":new-nick");
 	this->token_list_.push_back("NICK");
 	this->token_list_.push_back("new-nick2");
 	NickCommand com4_2(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::cout << "case4) :prev_nick NICK valid_nick [Auth Client]\n";
-	IsEqual(":nick NICK new-nick2", RunAndReturnRespInTest(&com4_2));
+	IsEqual(":new-nick NICK new-nick2", RunAndReturnRespInTest(&com4_2));
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 }
 

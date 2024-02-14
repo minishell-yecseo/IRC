@@ -16,6 +16,12 @@
 #define FT_AUTH_USER		(1)
 #define	FT_AUTH_ALL			(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER)
 
+typedef struct _ClientNetInfo {
+	int 				sock;
+	struct sockaddr_in	addr;
+	socklen_t			addr_size;
+} ClientNetInfo;
+
 class Server;
 
 class Client {
@@ -56,8 +62,8 @@ class Client {
 	private:
 		char	auth_flag_;
 		int		sock_;
-		struct sockaddr_in	addr_;
-		socklen_t	addr_size_;		std::string	nick_;
+		ClientNetInfo		address_;
+		std::string	nick_;
 		std::vector<std::string>	channels_;
 
 		std::string	user_name_;

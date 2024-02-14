@@ -18,36 +18,35 @@ void	JoinCommand::AnyOfError(void) {
 					  this->sender_nick_ + " JOIN : Not registered in Server";
 		return;
 	}
+	this->is_success_ = true;
+}
 
-	// Check channel names
-	for (size_t i = 0; i < this->channels_.size(); ++i) {
-		std::string	tmp = this->channels_[i];
-		if (tmp[0] != '#' && tmp[0] != '&') {
-			this->resp_ = (std::string)ERR_BADCHANMASK + " " + tmp + " :Bad Channel Mask";
-			return;
-		}
-		if (tmp.size() < 2 || tmp.size() > 200 || IsChannelString(tmp) == false) {
-			this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + this->sender_nick_ + " " + tmp + " :No such channel";
-			return;
-		}
+bool	JoinCommand::IsValidChannelInfo(const int& idx) {
+	std::string	tmp_channel_name = this->channels_[idx];
+	if (tmp_channel_name[0] != '#' && tmp_channel_name[0] != '&') {
+		this->resp_ = (std::string)ERR_BADCHANMASK + " " + \
+					tmp_channel_name + " :Bad Channel Mask";
+		return false;
+	}
+	if (tmp_channel_name.size() < 2 || tmp_channel_name.size() > 200 \
+		|| IsChannelString(tmp_channel_name) == false) {
+		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + this->sender_nick_ + \
+					" " + tmp_channel_name + " :No such channel";
+		return false;
 	}
 
-	//Check keys
-	for (size_t i = 0; i < this->keys_.size(); ++i) {
-		std::string	tmp = this->keys_[i];
-		if (tmp.size() == 1 && tmp[0] == 'x') {
-			this->keys_[i] = "";
-			continue;
-		}
-		for (size_t c = 0; c < tmp.size(); ++c) {
+	std::string	tmp_key = this->keys_[idx];
+	if (tmp_key.size() == 1 && tmp_key[0] == 'x') {
+		this->keys_[idx] = "";
+	} else {
+		for (size_t c = 0; c < tmp_key.size(); ++c) {
 			if (isspace(c)) {
 				this->resp_ = (std::string)ERR_UNKNOWNERROR + " : key with whitespace";
-				return;
+				return false;
 			}
 		}
 	}
-
-	this->is_success_ = true;
+	return true;
 }
 
 void	JoinCommand::Run(void) {
@@ -70,6 +69,9 @@ void	JoinCommand::Run(void) {
 }
 
 void	JoinCommand::Join(const int& idx) {
+	if (IsValidChannelInfo(idx) == false)
+		return;
+
 	channel_info	info;
 	memset(&info, 0, sizeof(info));
 	info.name = this->channels_[idx];
@@ -175,7 +177,7 @@ void	JoinCommand::CreateChannel(channel_info *info) {
 	Channel	new_ch(info->name);
 	if (info->mode & MODE_KEY)
 		new_ch.set_mode(MODE_KEY, true);
-	new_ch.set_password(info->key);
+	new_ch.set_key(info->key);
 	new_ch.set_host(this->sender_nick_);
 	new_ch.set_host_sock(this->client_sock_);
 	info->join_membership = '@';

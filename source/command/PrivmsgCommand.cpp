@@ -4,8 +4,8 @@ PrivmsgCommand::PrivmsgCommand(const std::vector<std::string> &token_list, Serve
 }
 
 void PrivmsgCommand::BroadCast(const std::string& channel_name) {
-	std::map<std::string, Channel> *channel_list;
-	std::map<std::string, Channel>::iterator chan;
+	std::map<std::string, Channel*> *channel_list;
+	std::map<std::string, Channel*>::iterator chan;
 
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
@@ -18,12 +18,12 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name) {
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
+	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel";
-	else if ((chan->second).get_size() < 2)
+	else if ((chan->second)->get_size() < 2)
 		this->resp_ = (std::string)ERR_NORECIPIENT + " :No recepient given";
 	else {
-		const std::map<int, char>	&members = (chan->second).get_members();
+		const std::map<int, char>	&members = (chan->second)->get_members();
 		this->is_success_ = true;
 		for (std::map<int, char>::const_iterator it = members.begin(); it != members.end(); ++it) {
 			if (it->first == this->client_sock_)

@@ -10,7 +10,7 @@ Client::Client(int sock) {
 
 void	Client::Init(int sock) {
 	this->sock_ = sock;
-	memset(&this->addr_, 0, sizeof(this->addr_));
+	memset(&(this->address_), 0, sizeof(ClientNetInfo));
 	this->nick_ = "unknown";
 	this->auth_flag_ = 0;
 	this->user_name_ = "user";
@@ -60,8 +60,7 @@ Client Client::operator = (const Client& client) {
 	this->host_name_ = client.host_name_;
 	this->server_name_ = client.server_name_;
 	this->real_name_ = client.real_name_;
-	this->addr_ = client.addr_;
-	this->addr_size_ = client.addr_size_;
+	this->address_ = client.address_;
 	this->password_ = client.password_;
 	return *this;
 }
