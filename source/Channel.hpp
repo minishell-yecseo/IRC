@@ -43,7 +43,7 @@ class Channel {
 		const std::set<int>&		get_ban_list(void);
 		const std::string&			get_name(void);
 		const std::string&			get_topic(void);
-		const std::string&			get_password(void);
+		const std::string&			get_key(void);
 		const std::string&			get_host(void);
 		const char&					get_mode(void);
 		const int&					get_host_sock(void);
@@ -52,7 +52,7 @@ class Channel {
 		/* setter */
 		void	set_mode(const int& flag, const bool& enable);
 		void	set_topic(const std::string& topic);
-		void	set_password(const std::string& password);
+		void	set_key(const std::string& key);
 		void	set_name(const std::string& name);
 		void	set_limit(const int& l);
 		void	set_host(const std::string& host);
@@ -62,7 +62,7 @@ class Channel {
 
 	private:
 		std::string	name_;
-		std::string	password_;
+		std::string	key_;
 		std::string	topic_;
 		std::string	host_;
 		int		host_sock_;

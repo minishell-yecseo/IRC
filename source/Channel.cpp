@@ -14,7 +14,7 @@ Channel::Channel(const std::string& name) {
 
 Channel	Channel::operator=(const Channel& ch) {
 	this->name_ = ch.name_;
-	this->password_ = ch.password_;
+	this->key_ = ch.key_;
 	this->topic_ = ch.topic_;
 	this->host_ = ch.host_;
 	this->host_sock_ = ch.host_sock_;
@@ -30,12 +30,12 @@ void	Channel::set_topic(const std::string& topic) {
 	this->topic_ = topic;
 }
 
-const std::string&	Channel::get_password(void) {
-	return this->password_;
+const std::string&	Channel::get_key(void) {
+	return this->key_;
 }
 
-void	Channel::set_password(const std::string& password) {
-	this->password_ = password;
+void	Channel::set_key(const std::string& key) {
+	this->key_ = key;
 }
 
 void	Channel::set_name(const std::string& name) {
@@ -101,7 +101,7 @@ void	Channel::Mode(int sock, char prefix) {
 }
 
 bool	Channel::AuthPassword(const std::string& password) {
-	if (password.compare(password_) == 0)
+	if (password.compare(key_) == 0)
 		return true;
 	return false;
 }

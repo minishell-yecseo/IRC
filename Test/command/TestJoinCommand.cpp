@@ -69,7 +69,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	Channel	ch4("#TEST-KEY");
 	ch4.set_mode(MODE_KEY, true);
-	ch4.set_password("succ_key");
+	ch4.set_key("succ_key");
 
 	this->dummy_server_->AddClient(&dc4);
 	this->dummy_server_->AddClient(this->dummy_client_);

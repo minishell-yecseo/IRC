@@ -60,7 +60,7 @@ void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_ind
 				break ;
 			case 'k':
 				c->set_mode(MODE_KEY, true);
-				c->set_password(this->params_[(*param_index)++]);
+				c->set_key(this->params_[(*param_index)++]);
 				break ;
 			case 'l': {
 				if (IsLimitNumber(this->params_[*param_index]) == true) {

@@ -622,7 +622,7 @@ void	Server::print_channels(void) {
 		}
 		logging << "\n";
 		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second.get_topic() << "\n";
-		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_password() << "\n";
+		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second.get_key() << "\n";
 		logging << BOLDWHITE << "\tSIZE: " << RESET;
 		const std::map<int, char>&	mem = iter->second.get_members();
 		size_t	s = mem.size();
