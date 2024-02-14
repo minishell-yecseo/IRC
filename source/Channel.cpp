@@ -70,6 +70,8 @@ bool	Channel::Join(int sock, char prefix) {
 		return false;
 
 	if (this->members_.size() < (size_t) this->limit_) {
+		if (this->members_.find(sock) != this->members_.end())
+			return false;
 		members_.insert(std::make_pair(sock, prefix));
 		if (this->invite_list_.find(sock) != this->invite_list_.end())
 			this->invite_list_.erase(sock);
