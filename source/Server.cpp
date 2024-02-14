@@ -448,7 +448,9 @@ void	Server::AddDeleteClient(const int& sock) {
 
 bool	Server::AddChannel(Channel *channel) {
 	LockChannelListMutex();
-	this->channels_.insert(make_pair(channel->get_name(), channel));
+	std::map<std::string, Channel*>::iterator itr = this->channels_.find(channel->get_name());
+	if (itr == this->channels_.end())
+		this->channels_.insert(make_pair(channel->get_name(), channel));
 	UnlockChannelListMutex();
 
 	if (AddChannelMutex(channel->get_name()) == false) {
@@ -484,16 +486,14 @@ void	Server::DeleteInvalidClient(void) {
 	this->del_clients_mutex_.unlock();
 }
 
+//free
 void	Server::CeaseChannel(const std::string& channel_name) {
 	Channel *channel_ptr = DeleteChannel(channel_name);
-	if (channel_ptr) {
+	if (channel_ptr != NULL)
 		delete channel_ptr;
-		DeleteChannelMutex(channel_name);
-	}
 }
 
 Channel*	Server::DeleteChannel(const std::string& channel_name) {
-	/*Channel should be deleted when the last participant PART from that channel */
 	std::map<std::string, Channel*>::iterator	ch_itr;
 	Channel	*channel_ptr = NULL;
 
