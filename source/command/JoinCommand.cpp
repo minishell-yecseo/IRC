@@ -3,15 +3,6 @@
 JoinCommand::JoinCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
-/*
-ERR_UNKNOWNERROR (400)
-ERR_NOSUCHCHANNEL (403)
-ERR_BADCHANMASK (476)
-ERR_NEEDMOREPARAMS (461)
-ERR_BADCHANNELKEY (475)
-ERR_INVITEONLYCHAN (473)
-*/
-
 void	JoinCommand::AnyOfError(void) {
 	if (IsRegistered(this->client_sock_) == false) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + \
