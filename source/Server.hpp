@@ -61,7 +61,7 @@ class Server {
 		const std::string& get_create_time(void);
 		const int&	get_port(void);
 		const struct sockaddr_in&	get_addr(void);
-		std::map<std::string, Channel>& get_channels(void);
+		std::map<std::string, Channel*>& get_channels(void);
 		Channel*	get_channel_ptr(const std::string& name);
 		std::string	set_create_time(void);
 
@@ -70,12 +70,12 @@ class Server {
 		int		SearchClientByNick(const std::string& nick);
 		bool	SearchChannelByName(const std::string& name);
 		void	AddDeleteClient(const int& sock);
-		void	AddChannel(Channel ch);
+		void	AddChannel(const Channel& ch);//allocation Channel
 		bool	AddClient(Client *client);
 
 		void	CeaseChannel(const std::string& channel_name);
-		void	DeleteChannel(const std::string& channel_name);
-		void	DeleteClient(const int& sock);
+		void	DeleteChannel(const std::string& channel_name);//free Channel
+		Client*	DeleteClient(const int& sock);
 
 	/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
@@ -113,10 +113,10 @@ class Server {
 		std::vector<struct kevent>	chlist_;
 
 		std::map<int, std::string>		buffers_;
-		std::map<int, Client>			clients_;//일단, socket fd 를 key로 지정
+		std::map<int, Client*>			clients_;//일단, socket fd 를 key로 지정
 		Mutex							clients_mutex_;
 		
-		std::map<std::string, Channel>	channels_;
+		std::map<std::string, Channel*>	channels_;
 		Mutex							channels_mutex_;
 		
 		std::set<int>					del_clients_;
@@ -137,12 +137,13 @@ class Server {
 		void	HandleEventError(struct kevent event);
 		void	HandleClientEvent(struct kevent event);
 		void	DeleteInvalidClient(void);
-		void	DisconnectClient(const int& sock);
+		void	DisconnectClient(const int& sock);//free Client
 		void	DeleteClientInChannel(const int& sock, Client *client);
 		void	DeleteClientEvent(const int& sock);
-		void	ConnectClient(void);
-		void	AcceptClient(Client *client);
-		void	AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
+
+		void			ConnectClient(void);//allocation Client
+		ClientNetInfo	AcceptClient(void);
+		void			AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
 						uint32_t fflags, intptr_t data, void *udata);
 
 	/* debugging functions */
@@ -152,6 +153,16 @@ class Server {
 
 	/* wooseoki functions */
 		void	print_event(struct kevent *event, int i);
+	
+	template<typename k, typename v>
+	void	delete_map(std::map<k, v> cont) {
+		typedef typename std::map<k, v>::iterator	iterator;
+		iterator	itr = cont.begin();
+		while (itr != cont.end()) {
+			delete itr->second;
+			itr++;
+		}
+	}
 };
 
 #endif
