@@ -18,16 +18,13 @@ class Server;
 #include "Response.hpp"
 #include "log.hpp"
 
-class Command
-{
-	public:
-		virtual void		Run(void) = 0;
-		const std::string&	get_response(void);
-
+class Command {
 	protected:
 		Command(const std::vector<std::string> &token_list, Server *s, Client *c);
 		virtual ~Command(void);
 		virtual void	AnyOfError(void) = 0;
+		virtual void		Run(void) = 0;
+		const std::string&	get_response(void);
 		void	AuthCheckReply(void);
 		void	DisconnectClient(void);
 		bool	IsRegistered(const int& fd);
@@ -44,5 +41,6 @@ class Command
 
 	private:
 		friend class	ThreadPool;
+		friend class	TestCommand;
 };
 #endif
