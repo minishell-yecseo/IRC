@@ -506,14 +506,20 @@ Channel*	Server::DeleteChannel(const std::string& channel_name) {
 		UnlockChannelMutex(channel_name);
 	}
 	this->channels_mutex_.unlock();
+
+	if (channel_ptr != NULL)
+		DeleteChannelMutex(channel_name);
+
 	return channel_ptr;
 }
 
 void	Server::DisconnectClient(const int& sock) {
 	DeleteClientEvent(sock);
 	Client *client_ptr = DeleteClient(sock);
-	if (client_ptr != NULL)
+	if (client_ptr != NULL) {
+		DeleteClientInChannel(sock, client_ptr);
 		delete client_ptr;
+	}
 }
 
 Client*	Server::DeleteClient(const int& sock) {
@@ -527,8 +533,6 @@ Client*	Server::DeleteClient(const int& sock) {
 	this->clients_mutex_.unlock();//unlock
 	if (client_ptr == NULL)
 		return NULL;
-	
-	DeleteClientInChannel(sock, client_ptr);
 	
 	this->clients_mutex_.lock();
 	this->clients_.erase(client_it);
