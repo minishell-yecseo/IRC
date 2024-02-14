@@ -14,8 +14,8 @@ bool	InviteCommand::SetInfo(void) {
 }
 
 void	InviteCommand::CheckChannel(const std::string& nick, const std::string& channel_name) {
-	std::map<std::string, Channel> *channel_list;
-	std::map<std::string, Channel>::iterator chan;
+	std::map<std::string, Channel*> *channel_list;
+	std::map<std::string, Channel*>::iterator chan;
 
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
@@ -28,15 +28,15 @@ void	InviteCommand::CheckChannel(const std::string& nick, const std::string& cha
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
+	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
-	else if ((chan->second).IsOperator(this->client_sock_) == false)
+	else if ((chan->second)->IsOperator(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
-	else if ((chan->second).IsMember(this->receiver_) == true)
+	else if ((chan->second)->IsMember(this->receiver_) == true)
 		this->resp_ = (std::string)ERR_USERONCHANNEL + " " + nick + " " + channel_name + " :is already on cahnnel";
 	else {
 		this->is_success_ = true;
-		(chan->second).Invite(this->receiver_);
+		(chan->second)->Invite(this->receiver_);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }

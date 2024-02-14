@@ -111,8 +111,8 @@ void	ModeCommand::SetModeInChannel(Channel *c, const std::string& modestr) {
 }
 
 void	ModeCommand::CheckChannel(const std::string& channel_name) {
-	std::map<std::string, Channel> *channel_list;
-	std::map<std::string, Channel>::iterator chan;
+	std::map<std::string, Channel*> *channel_list;
+	std::map<std::string, Channel*>::iterator chan;
 
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
@@ -125,13 +125,13 @@ void	ModeCommand::CheckChannel(const std::string& channel_name) {
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
+	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
-	else if ((chan->second).IsOperator(this->client_sock_) == false)
+	else if ((chan->second)->IsOperator(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else {
 		this->is_success_ = true;
-		SetModeInChannel(&(chan->second), this->params_[1]);
+		SetModeInChannel(chan->second, this->params_[1]);
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }

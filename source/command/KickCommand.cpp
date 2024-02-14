@@ -20,8 +20,8 @@ void	KickCommand::NoticeKick(const std::map<int, char>& chan_member_list) {
 }
 
 void	KickCommand::CheckChannel(const std::string& channel_name, const std::string& nick) {
-	std::map<std::string, Channel> *channel_list;
-	std::map<std::string, Channel>::iterator chan;
+	std::map<std::string, Channel*> *channel_list;
+	std::map<std::string, Channel*>::iterator chan;
 
 	this->server_->LockChannelListMutex();
 	channel_list = &(this->server_->get_channels());
@@ -34,17 +34,17 @@ void	KickCommand::CheckChannel(const std::string& channel_name, const std::strin
 	this->server_->UnlockChannelListMutex();
 
 	this->server_->LockChannelMutex(chan->first);
-	if ((chan->second).IsMember(this->client_sock_) == false)
+	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
-	else if((chan->second).IsMember(this->target_) == false)
+	else if((chan->second)->IsMember(this->target_) == false)
 		this->resp_ = (std::string)ERR_USERNOTINCHANNEL + " " + nick + " " + channel_name + " :They aren't on the channel";
-	else if ((chan->second).IsOperator(this->client_sock_) == false)
+	else if ((chan->second)->IsOperator(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
 	else {
 		this->is_success_ = true;
 		this->resp_ = (std::string)":" + this->sender_ + " KICK " + this->channel_name_ + " " + this->target_nick_;
-		(chan->second).Kick(this->target_);
-		NoticeKick((chan->second).get_members());
+		(chan->second)->Kick(this->target_);
+		NoticeKick((chan->second)->get_members());
 	}
 	this->server_->UnlockChannelMutex(chan->first);
 }
