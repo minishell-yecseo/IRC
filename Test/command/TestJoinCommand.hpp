@@ -11,6 +11,7 @@ class TestJoinCommand: public TestCommand {
 	private:
 		void	SetUp(void);
 		void	RunTest(void);
+		void	RunFunctionTest(void);
 		void	TearDown(void);
 };
 #endif

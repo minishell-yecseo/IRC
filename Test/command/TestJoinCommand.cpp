@@ -5,11 +5,160 @@ TestJoinCommand::TestJoinCommand(Server *s, Client *c): TestCommand(s, c) {
 
 	this->SetUp();
 	this->RunTest();
+	this->RunFunctionTest();
 	this->TearDown();
 }
 
 void	TestJoinCommand::SetUp(void) {
 
+}
+
+void	TestJoinCommand::RunFunctionTest(void) {
+	//	void	ParseParam(void);OOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	//	bool	IsValidChannelInfo(const int& idx);OOOOOOOOOOO
+	//	bool	IsChannelString(const std::string &str);OOOOOO
+	//	bool	JoinErrorCheck(const channel_info& info);OOOOO
+	{
+		std::cout << "====== ParsParam METHOD ======\n";
+		this->token_list_.clear();
+		this->token_list_.push_back("JOIN");
+		JoinCommand	com(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com.ParseParam();
+		assert(com.channels_.size() == 0);
+		assert(com.keys_.size() == 0);
+
+		this->token_list_.push_back("#A,#B,&C,DD");
+		JoinCommand	com1(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com1.ParseParam();
+		assert(com1.channels_.size() == 4);
+		assert(com1.channels_[0].compare("#A") == 0);
+		assert(com1.channels_[1].compare("#B") == 0);
+		assert(com1.channels_[2].compare("&C") == 0);
+		assert(com1.channels_[3].compare("DD") == 0);
+		assert(com1.keys_.size() == 0);
+
+		this->token_list_.push_back("akey,x,ckey");
+		JoinCommand	com2(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com2.ParseParam();
+		assert(com2.channels_.size() == 4);
+		assert(com2.channels_[0].compare("#A") == 0);
+		assert(com2.channels_[1].compare("#B") == 0);
+		assert(com2.channels_[2].compare("&C") == 0);
+		assert(com2.channels_[3].compare("DD") == 0);
+		assert(com2.keys_.size() == 3);
+		assert(com2.keys_[0].compare("akey") == 0);
+		assert(com2.keys_[1].compare("x") == 0);
+		assert(com2.keys_[2].compare("ckey") == 0);
+
+		std::cout << GREEN << "SUCCESS\n" << RESET;
+	}
+	
+	{
+		std::cout << "====== IsValidChannelInfo METHOD ======\n";
+		this->token_list_.clear();
+		this->token_list_.push_back("JOIN");
+		JoinCommand	com(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com.ParseParam();
+		assert(false == com.IsValidChannelInfo(0));
+
+		this->token_list_.push_back("#TEST");
+		JoinCommand	com2(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com2.ParseParam();
+		assert(false == com2.IsValidChannelInfo(1));
+		assert(true == com2.IsValidChannelInfo(0));
+
+		this->token_list_.push_back("valid_key");
+		JoinCommand	com3_valid(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com3_valid.ParseParam();
+		this->token_list_[2] = "unvalid key";
+		JoinCommand	com3_unvalid(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com3_unvalid.ParseParam();
+		assert(true == com3_valid.IsValidChannelInfo(0));
+		assert(false == com3_unvalid.IsValidChannelInfo(0));
+
+		this->token_list_.clear();
+		this->token_list_.push_back("JOIN");
+		this->token_list_.push_back("A");
+		JoinCommand	com4_bad_mask(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com4_bad_mask.ParseParam();
+		assert(false == com4_bad_mask.IsValidChannelInfo(0));
+
+		//201 character include channel type mask(#)
+		this->token_list_[1] = "\
+#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		JoinCommand	com5_over_200(this->token_list_, this->dummy_server_, this->dummy_client_);
+		com5_over_200.ParseParam();
+		assert(false == com5_over_200.IsValidChannelInfo(0));
+		std::cout << GREEN << "SUCCESS\n" << RESET;
+		this->token_list_.clear();
+	}
+
+	{
+		std::cout << "====== IsChannelString METHOD ======\n";
+		std::string	valid_str = "#CC";
+		std::string error_strs[8];
+	
+		error_strs[0] = "";
+		error_strs[1] = "\
+#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		for (int i = 2; i < sizeof(error_strs) / sizeof(std::string); ++i) {
+			error_strs[i].resize(2);
+			error_strs[i][0] = 'T';
+		}
+		error_strs[2][1] = 0;
+		error_strs[2][1] = 7;
+		error_strs[2][1] = 20;
+		error_strs[2][1] = 12;
+		error_strs[2][1] = 15;
+		error_strs[2][1] = ',';
+
+		this->token_list_.push_back("JOIN");
+		JoinCommand	dummy_com(this->token_list_, this->dummy_server_, this->dummy_client_);
+		for (int i = 0; i < sizeof(error_strs) / sizeof(std::string); ++i) {
+			assert(false == dummy_com.IsChannelString(error_strs[i]));
+		}
+		assert(true == dummy_com.IsChannelString(valid_str));
+		std::cout << GREEN << "SUCCESS\n" << RESET;
+	}
+
+	{
+		std::cout << "====== JoinErrorCheck METHOD ======\n";
+		this->token_list_.clear();
+		this->token_list_.push_back("JOIN");
+		JoinCommand	com(this->token_list_, this->dummy_server_, this->dummy_client_);
+		Channel dummy_channel("#dummy");
+		channel_info info;
+		memset(&info, 0, sizeof(info));
+		assert(false == com.JoinErrorCheck(info));
+		info.ch_ptr = &dummy_channel;
+		assert(true == com.JoinErrorCheck(info));
+		info.is_member = true;
+		assert(false == com.JoinErrorCheck(info));
+		info.is_member = false;
+		info.mode = MODE_INVITE;
+		assert(false == com.JoinErrorCheck(info));
+		dummy_channel.Invite(this->dummy_client_->get_sock());
+		assert(true == com.JoinErrorCheck(info));
+		info.mode = MODE_KEY;
+		assert(false == com.JoinErrorCheck(info));
+		info.is_auth = true;
+		assert(true == com.JoinErrorCheck(info));
+		info.is_banned = true;
+		assert(false == com.JoinErrorCheck(info));
+		info.is_banned = false;
+		info.mode = MODE_INVITE | MODE_KEY | MODE_TOPIC;
+		info.is_auth = true;
+		assert(true == com.JoinErrorCheck(info));
+		info.is_auth = false;
+		assert(false == com.JoinErrorCheck(info));
+		std::cout << GREEN << "SUCCESS\n" << RESET;
+	}
 }
 
 void	TestJoinCommand::RunTest(void) {
