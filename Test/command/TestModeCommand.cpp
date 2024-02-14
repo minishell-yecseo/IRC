@@ -83,7 +83,7 @@ void	TestModeCommand::RunTest(void) {
 	IsEqual("403 #dummy :No such channel", RunAndReturnRespInTest(&com5));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(dummy_channel);
+	this->dummy_server_->AddChannel(&dummy_channel);
 	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com5));
 
 	Channel *ch_ptr;
@@ -97,6 +97,6 @@ void	TestModeCommand::RunTest(void) {
 
 void	TestModeCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel("#dummy");
+	this->dummy_server_->DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

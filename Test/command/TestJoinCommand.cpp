@@ -32,7 +32,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	this->dummy_server_->DeleteClient(dc2.get_sock());
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel("#TEST");
+	this->dummy_server_->DeleteChannel("#TEST");
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->token_list_.clear();
 
@@ -46,7 +46,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
 	this->dummy_server_->AddClient(this->dummy_client_);
 	this->dummy_server_->AddClient(&dc3);
-	this->dummy_server_->AddChannel(ch3);
+	this->dummy_server_->AddChannel(&ch3);
 	
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#TEST");
@@ -60,7 +60,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 	this->dummy_server_->DeleteClient(dc3.get_sock());
-	this->dummy_server_->CeaseChannel(ch3.get_name());
+	this->dummy_server_->DeleteChannel(ch3.get_name());
 
 	//1-2.2 +k
 	Client	dc4(102);
@@ -73,7 +73,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	this->dummy_server_->AddClient(&dc4);
 	this->dummy_server_->AddClient(this->dummy_client_);
-	this->dummy_server_->AddChannel(ch4);
+	this->dummy_server_->AddChannel(&ch4);
 
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#TEST-KEY");
@@ -90,7 +90,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(dc4.get_sock());
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel(ch4.get_name());
+	this->dummy_server_->DeleteChannel(ch4.get_name());
 
 	//1-2.3 +t
 	Channel	ch5("&TEST-TOPIC");
@@ -98,7 +98,7 @@ void	TestJoinCommand::RunTest(void) {
 	ch5.set_topic("topic!");
 
 	this->dummy_server_->AddClient(this->dummy_client_);
-	this->dummy_server_->AddChannel(ch5);
+	this->dummy_server_->AddChannel(&ch5);
 
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back(ch5.get_name());
@@ -109,7 +109,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel(ch5.get_name());
+	this->dummy_server_->DeleteChannel(ch5.get_name());
 
 	// not registered client's join request
 	this->dummy_client_->UnsetAuthFlagInTest();
@@ -128,7 +128,7 @@ void	TestJoinCommand::RunTest(void) {
 	ch7.Join(-1, ' ');
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
 	this->dummy_server_->AddClient(this->dummy_client_);
-	this->dummy_server_->AddChannel(ch7);
+	this->dummy_server_->AddChannel(&ch7);
 	token_list_.push_back("JOIN");
 	token_list_.push_back("&TEST-LIMIT");
 	JoinCommand	com7(this->token_list_, this->dummy_server_, this->dummy_client_);
@@ -136,7 +136,7 @@ void	TestJoinCommand::RunTest(void) {
 	IsEqual(fail7, RunAndReturnRespInTest(&com7));
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel(ch7.get_name());
+	this->dummy_server_->DeleteChannel(ch7.get_name());
 	this->dummy_client_->UnsetAuthFlagInTest();
 
 	// join failure caused by already joined client's request
@@ -144,7 +144,7 @@ void	TestJoinCommand::RunTest(void) {
 	ch8.Join(this->dummy_client_->get_sock(), '@');
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
 	this->dummy_server_->AddClient(this->dummy_client_);
-	this->dummy_server_->AddChannel(ch8);
+	this->dummy_server_->AddChannel(&ch8);
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("&TEST-MEMBER");
 	JoinCommand	com8(this->token_list_, this->dummy_server_, this->dummy_client_);
@@ -153,7 +153,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel(ch8.get_name());
+	this->dummy_server_->DeleteChannel(ch8.get_name());
 
 	// join failure caused by bad channel mask
 	this->dummy_client_->SetAuthFlag(FT_AUTH);

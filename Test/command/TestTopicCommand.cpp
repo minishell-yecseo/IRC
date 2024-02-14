@@ -34,7 +34,8 @@ void	TestTopicCommand::RunTest(void) {
 	IsEqual("403 :No such channel", RunAndReturnRespInTest(&com5));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(dummy_channel);
+	dummy_channel.Join(DUMMY_CLIENT_SOCK, ' ');
+	this->dummy_server_->AddChannel(&dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("TOPIC");
 	this->token_list_.push_back("#dummy");
@@ -43,17 +44,15 @@ void	TestTopicCommand::RunTest(void) {
 	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com3));
 
 	TopicCommand com4(this->token_list_, this->dummy_server_, this->dummy_client_);
-	Channel *ch_ptr;
-	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
-	ch_ptr->Join(this->dummy_client_->get_sock(), ' ');
-	ch_ptr->set_mode(MODE_TOPIC, true);
+	dummy_channel.Join(this->dummy_client_->get_sock(), ' ');
+	dummy_channel.set_mode(MODE_TOPIC, true);
 	IsEqual("482 #dummy :You're not channel operator", RunAndReturnRespInTest(&com4));
-	ch_ptr->set_mode(MODE_TOPIC, false);
+	dummy_channel.set_mode(MODE_TOPIC, false);
 	IsEqual(":wooseoki TOPIC #dummy :dummy_topic", RunAndReturnRespInTest(&com4));
 }
 
 void	TestTopicCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->CeaseChannel("#dummy");
+	this->dummy_server_->DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

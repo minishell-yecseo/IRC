@@ -28,7 +28,7 @@ void	TestPrivmsgCommand::RunTest(void) {
 	IsEqual("403 :No such channel", RunAndReturnRespInTest(&com2));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(dummy_channel);
+	this->dummy_server_->AddChannel(&dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("PRIVMSG");
 	this->token_list_.push_back("#dummy");
@@ -56,6 +56,6 @@ void	TestPrivmsgCommand::RunTest(void) {
 void	TestPrivmsgCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
 	this->dummy_server_->DeleteClient(new_dummy_client_.get_sock());
-	this->dummy_server_->CeaseChannel("#dummy");
+	this->dummy_server_->DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }
