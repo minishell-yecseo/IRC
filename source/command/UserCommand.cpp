@@ -37,7 +37,6 @@ void	UserCommand::AnyOfError(void) {
 
 bool	UserCommand::IsNonwhite(const std::string& str) {
 	for (size_t i = 0; i < str.size(); ++i) {
-		// NUL WhiteSpace NewLine CarrigeReturn
 		if (isspace(str[i]) != 0 || str[i] == 0)
 			return false;
 	}

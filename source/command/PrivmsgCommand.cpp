@@ -66,8 +66,6 @@ void	PrivmsgCommand::AnyOfError(void) {
 		CheckTarget();
 }
 
-//:dan!~h@localhost PRIVMSG #coolpeople :Hi everyone!
-
 void	PrivmsgCommand::Run(void) {
 	try {
 		AnyOfError();
