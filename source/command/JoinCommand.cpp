@@ -22,6 +22,9 @@ void	JoinCommand::AnyOfError(void) {
 }
 
 bool	JoinCommand::IsValidChannelInfo(const int& idx) {
+	if ((size_t)idx >= this->channels_.size())
+		return false;
+
 	std::string	tmp_channel_name = this->channels_[idx];
 	if (tmp_channel_name[0] != '#' && tmp_channel_name[0] != '&') {
 		this->resp_ = (std::string)ERR_BADCHANMASK + " " + \
@@ -34,15 +37,16 @@ bool	JoinCommand::IsValidChannelInfo(const int& idx) {
 					" " + tmp_channel_name + " :No such channel";
 		return false;
 	}
-
-	std::string	tmp_key = this->keys_[idx];
-	if (tmp_key.size() == 1 && tmp_key[0] == 'x') {
-		this->keys_[idx] = "";
-	} else {
-		for (size_t c = 0; c < tmp_key.size(); ++c) {
-			if (isspace(c)) {
-				this->resp_ = (std::string)ERR_UNKNOWNERROR + " : key with whitespace";
-				return false;
+	if ((size_t)idx < this->keys_.size()) {
+		std::string	tmp_key = this->keys_[idx];
+		if (tmp_key.size() == 1 && tmp_key[0] == 'x') {
+			this->keys_[idx] = "";
+		} else {
+			for (size_t c = 0; c < tmp_key.size(); ++c) {
+				if (isspace(c)) {
+					this->resp_ = (std::string)ERR_UNKNOWNERROR + " : key with whitespace";
+					return false;
+				}
 			}
 		}
 	}
