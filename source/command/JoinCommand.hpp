@@ -21,6 +21,7 @@ class JoinCommand: public Command {
 		JoinCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
+		bool	IsValidChannelInfo(const int& idx);
 		void	ParseParam(void);
 		bool	IsChannelString(const std::string &str);
 		void	Join(const int& idx);
