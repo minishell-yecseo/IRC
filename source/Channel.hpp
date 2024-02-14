@@ -72,6 +72,20 @@ class Channel {
 		std::map<int, char>	members_;
 		std::set<int>		ban_list_;
 		std::set<int>		invite_list_;
-	};
+};
+
+typedef struct channel_info {
+	Channel		*ch_ptr;
+	std::string name;
+	std::string	topic;
+	std::string	key;
+	std::string	host;
+	int			host_sock;
+	char		mode;
+	char		join_membership;
+	bool		is_auth;
+	bool		is_member;
+	bool		is_banned;
+} channel_info;
 
 #endif

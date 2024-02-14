@@ -4,18 +4,6 @@
 #include "Command.hpp"
 #include "Response.hpp"
 
-typedef struct channel_info {
-	Channel		*ch_ptr;
-	std::string name;
-	std::string	topic;
-	std::string	key;
-	char		mode;
-	char		join_membership;
-	bool		is_auth;
-	bool		is_member;
-	bool		is_banned;
-} channel_info;
-
 class JoinCommand: public Command {
 	private:
 		JoinCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
