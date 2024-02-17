@@ -40,8 +40,10 @@ void	PrivmsgCommand::UniCast(const std::string& client_name) {
 	sock = this->server_->SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) 
 		this->resp_ = (std::string)ERR_NOSUCHNICK + " :No such nick";
-	else
+	else {
 		SendResponse(sock, this->resp_.get_format_str());
+		this->is_success_ = true;
+	}
 }
 
 void	PrivmsgCommand::CheckTarget(void) {
