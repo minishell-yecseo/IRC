@@ -6,6 +6,41 @@ Server::~Server() {
 	delete_map<std::string, Channel*>(this->channels_);
 }
 
+bool	Server::IsValidPort(char *argv) {
+	size_t	index = 0;
+	size_t	port_number;
+	
+	while (argv[index]) {
+		if (argv[index] >= '0' && argv[index] <= '9')
+			++index;
+		else
+			return false;
+	}
+	if (index > 9)
+		return false;
+
+	port_number = atoi(argv);
+	if (port_number < 1024 || port_number > 65535)
+		return false;
+	return true;
+}
+
+void	Server::AreValidArgs(int argc, char **argv) {
+	std::string error_message;
+	std::string program_name = argv[0];
+
+	if (argc != 3) {
+		error_message = "Usage: " + program_name + " <port> <password>\n";
+		error_handling(error_message);
+	}
+
+	if (IsValidPort(argv[1]) == false) {
+		std::string	port_number = argv[1];
+		error_message = "Error: Port number " + port_number + " is invalid\n";
+		error_handling(error_message);
+	}
+}
+
 Server::Server(int argc, char **argv) {
 	if (argc != 3) {
 		std::string error_message;
@@ -13,6 +48,7 @@ Server::Server(int argc, char **argv) {
 		error_message = "Usage: " + program_name + " <port> <password>\n";
 		error_handling(error_message);
 	}
+	AreValidArgs(argc, argv);
 	ServerSocketInit(argv);
 	MutexInit();
 	KqueueInit();

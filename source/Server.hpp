@@ -137,6 +137,8 @@ class Server {
 		void	HandleTimeout(void);
 		void	HandleEventError(struct kevent event);
 		void	HandleClientEvent(struct kevent event);
+		void	AreValidArgs(int argc, char**argv);
+		bool	IsValidPort(char *argv);
 		void	DeleteInvalidClient(void);
 		void	DisconnectClient(const int& sock);//free Client
 		void	DeleteClientInChannel(const int& sock, Client *client);
