@@ -57,7 +57,6 @@ Server::Server(int argc, char **argv) {
 }
 
 bool	Server::Run(void) {
-	// main loop of ircserv with kqueue
 	int nev;
 	while (true) {
 		try {
@@ -65,16 +64,12 @@ bool	Server::Run(void) {
 			chlist_.clear();
 			if (nev == -1)
 				error_handling("kevent() error\n");
-			else if (nev == 0)
-				HandleTimeout();
 			else if (nev > 0)
 				HandleEvents(nev);
 			DeleteInvalidClient();
 		} catch (std::exception& e) {
 			log::cout << BOLDRED << e.what() << "\n";
 		}
-		//print_clients();
-		//print_channels();
 	}
 	return true;
 }
