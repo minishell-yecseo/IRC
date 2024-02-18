@@ -151,14 +151,6 @@ const std::string&	Server::get_create_time(void) {
 	return this->createtime_;
 }
 
-const int& Server::get_port(void) {
-	return this->port_;
-}
-
-const struct sockaddr_in&	Server::get_addr(void) {
-	return this->addr_;
-}
-
 std::map<std::string, Channel*>& Server::get_channels(void) {
 	return this->channels_;
 }
@@ -416,14 +408,14 @@ void	Server::HandleClientEvent(struct kevent event) {
 }
 
 void	Server::ConnectClient(void) {
-	Client			*new_client = new Client();
+	Client			*new_client = NULL;
 	ClientNetInfo	info;
 
 	if (new_client == NULL)
 		return;
 
 	info = AcceptClient();
-	new_client->set_sock(info.sock);
+	new_client = new Client(info.sock);
 
 	if (info.sock == FT_INIT_CLIENT_FD || AddClient(new_client) == false) {
 		delete new_client;
