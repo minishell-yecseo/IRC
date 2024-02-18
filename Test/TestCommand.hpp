@@ -8,7 +8,7 @@
 class TestCommand {
 	public:
 		TestCommand(Server *s, Client *c);
-		const std::string&	RunAndReturnRespInTest(Command *command);
+		const std::string& RunAndReturnRespInTest(Command *command);
 		virtual void	SetUp(void) = 0;
 		virtual void	RunTest(void) = 0;
 		virtual void	TearDown(void) = 0;

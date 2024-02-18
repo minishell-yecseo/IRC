@@ -25,6 +25,8 @@ class Client;
 
 class Channel {
 	public:
+		Channel(const std::string& name);
+
 		bool	IsMember(int sock) const;
 		bool	IsOperator(int sock) const;
 		bool	IsBanClient(int sock) const;
@@ -69,7 +71,6 @@ class Channel {
 		std::set<int>		ban_list_;
 		std::set<int>		invite_list_;
 
-		Channel(const std::string& name);
 		bool	IsValidPrefix(char);
 		
 		friend class	Server;

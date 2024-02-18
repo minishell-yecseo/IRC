@@ -12,8 +12,7 @@ Server	*ServerInit(void) {
 Client*	ClientInit(void) {
 	Client *result;
 
-	result = new Client;
-	result->set_sock(TEST_CLIENT_SOCK);
+	result = new Client(TEST_CLIENT_SOCK);
 	result->set_nick(TEST_CLIENT_NICK);
 	return result;
 }

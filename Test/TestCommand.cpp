@@ -10,9 +10,6 @@ TestCommand::TestCommand(Server *s, Client *c) {
 
 const std::string&	TestCommand::RunAndReturnRespInTest(Command *command)
 {
-    if (command != NULL) {
-        command->Run();
-        return (command->get_response());
-    } else
-        return "";
+	command->Run();
+	return (command->get_response());
 }
