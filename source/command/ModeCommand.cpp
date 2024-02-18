@@ -150,7 +150,7 @@ size_t	ModeCommand::CheckParamCount(const std::string& modestr) {
 				++count;
 		}
 		else if (sign == false) {
-			if (modestr[i] == 'o')
+			if (modestr[i] == 'o' || modestr[i] == 'k')
 				++count;
 		}
 	}
