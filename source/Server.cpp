@@ -411,12 +411,9 @@ void	Server::ConnectClient(void) {
 	Client			*new_client = NULL;
 	ClientNetInfo	info;
 
-	if (new_client == NULL)
-		return;
-
 	info = AcceptClient();
 	new_client = new Client(info.sock);
-
+	
 	if (info.sock == FT_INIT_CLIENT_FD || AddClient(new_client) == false) {
 		delete new_client;
 		return;
