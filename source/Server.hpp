@@ -55,15 +55,8 @@ class Server {
 		bool	Run(void);
 		ThreadPool	*pool_;
 
-		struct sigaction	act;
-		const std::string& get_name(void);
-		const std::string& get_version(void);
-		const std::string& get_create_time(void);
-		const int&	get_port(void);
-		const struct sockaddr_in&	get_addr(void);
 		std::map<std::string, Channel*>& get_channels(void);
 		Channel*	get_channel_ptr(const std::string& name);
-		std::string	set_create_time(void);
 
 		/* for command process */
 		std::string		SearchClientBySock(const int& sock);
@@ -97,38 +90,13 @@ class Server {
 	/* Authentication */
 		bool	AuthPassword(const std::string& password);
 
-	/* private member variables */
-	protected:
-		std::string	name_;
-		
-		int	sock_;
-		int	port_;
-		struct sockaddr_in	addr_;
-		std::string	password_;
-		struct timespec	timeout_;
-		std::string	version_;
-		std::string	createtime_;
-	
-		int	kq_;
-		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
-		std::vector<struct kevent>	chlist_;
-
-		std::map<int, std::string>		buffers_;
-		std::map<int, Client*>			clients_;//일단, socket fd 를 key로 지정
-		Mutex							clients_mutex_;
-		
-		std::map<std::string, Channel*>	channels_;
-		Mutex							channels_mutex_;
-		
-		std::set<int>					del_clients_;
-		Mutex							del_clients_mutex_;
-
-		Mutex							list_mutex_;
-		std::map<int, Mutex*>			client_mutex_list_;
-		std::map<std::string, Mutex*>	channel_mutex_list_;
-
 	/* private member functions*/
 	private:
+		const std::string&	get_name(void);
+		const std::string&	get_version(void);
+		const std::string&	get_create_time(void);
+		std::string			set_create_time(void);
+
 		void	MutexInit(void);
 		void	ServerSocketInit(char **argv);
 		void	KqueueInit(void);
@@ -166,6 +134,38 @@ class Server {
 			itr++;
 		}
 	}
+
+	/* private member variables */
+	private:
+		int	kq_;
+		int	sock_;
+		int	port_;
+		std::string	name_;
+		std::string	version_;
+		std::string	password_;
+		std::string	createtime_;
+		struct timespec		timeout_;
+		struct sockaddr_in	addr_;
+		struct sigaction	act;
+		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
+
+		std::map<int, std::string>		buffers_;
+
+		std::map<int, Client*>			clients_;//일단, socket fd 를 key로 지정
+		Mutex							clients_mutex_;
+		
+		std::vector<struct kevent>	chlist_;
+		std::map<std::string, Channel*>	channels_;
+		Mutex							channels_mutex_;
+		
+		std::set<int>					del_clients_;
+		Mutex							del_clients_mutex_;
+
+		Mutex							list_mutex_;
+		std::map<int, Mutex*>			client_mutex_list_;
+		std::map<std::string, Mutex*>	channel_mutex_list_;
+
+		friend class	Command;
 };
 
 #endif
