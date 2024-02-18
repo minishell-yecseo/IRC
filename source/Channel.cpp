@@ -1,29 +1,10 @@
 #include "Channel.hpp"
 #include "log.hpp"
 
-Channel::Channel(void) {
-	this->limit_ = CLIENT_LIMIT;
-	this->mode_ = MODE_LIMIT;
-}
-
 Channel::Channel(const std::string& name) {
 	this->limit_ = CLIENT_LIMIT;
 	this->name_ = name;
 	this->mode_ = MODE_LIMIT;
-}
-
-Channel	Channel::operator=(const Channel& ch) {
-	this->name_ = ch.name_;
-	this->key_ = ch.key_;
-	this->topic_ = ch.topic_;
-	this->host_ = ch.host_;
-	this->host_sock_ = ch.host_sock_;
-	this->mode_ = ch.mode_;
-	this->limit_ = ch.limit_;
-	this->members_ = ch.members_;
-	this->ban_list_ = ch.ban_list_;
-	this->invite_list_ = ch.invite_list_;
-	return *this;
 }
 
 void	Channel::set_topic(const std::string& topic) {

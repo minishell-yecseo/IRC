@@ -25,9 +25,6 @@ class Client;
 
 class Channel {
 	public:
-		Channel(void);
-		Channel(const std::string& name);
-		Channel	operator=(const Channel& ch);
 		bool	IsMember(int sock) const;
 		bool	IsOperator(int sock) const;
 		bool	IsBanClient(int sock) const;
@@ -58,7 +55,6 @@ class Channel {
 		void	set_host(const std::string& host);
 		void	set_host_sock(const int& sock);
 		void	unset_limit(void);
-		bool	IsValidPrefix(char);
 
 	private:
 		std::string	name_;
@@ -72,6 +68,11 @@ class Channel {
 		std::map<int, char>	members_;
 		std::set<int>		ban_list_;
 		std::set<int>		invite_list_;
+
+		Channel(const std::string& name);
+		bool	IsValidPrefix(char);
+		
+		friend class	Server;
 };
 
 typedef struct channel_info {
