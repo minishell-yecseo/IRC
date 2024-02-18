@@ -56,7 +56,7 @@ Server::Server(int argc, char **argv) {
 	p_server_info();
 }
 
-bool	Server::Run(void) {
+void	Server::Run(void) {
 	int nev;
 	while (true) {
 		try {
@@ -71,7 +71,6 @@ bool	Server::Run(void) {
 			log::cout << BOLDRED << e.what() << "\n";
 		}
 	}
-	return true;
 }
 
 void	Server::MutexInit(void) {
@@ -591,114 +590,8 @@ void	Server::DeleteClientEvent(const int& sock){
 	UnlockClientMutex(sock);
 }
 
-void	Server::HandleTimeout(void) {
-	/* handle timeout */
-	log::cout << "time out!\n";
-}
-
 void	Server::p_server_info(void) {
 	log::cout << "IRC server:" << GREEN << this->name_ << RESET << " started at ";
 	log::cout << GREEN << inet_ntoa(this->addr_.sin_addr) << RESET;
 	log::cout << " :: " << GREEN << this->port_ << RESET << "\n";
-}
-
-/* wooseoki functions */
-void	Server::print_event(struct kevent *event, int i) {
-	
-	log::cout << "=============================\n";
-	log::cout << "index : " << i << "\n";
-	log::cout << "ident : " << event->ident << "\n";
-	p_event_filter(event);
-	p_event_flags(event);
-	log::cout << "=============================\n";
-}
-
-void	Server::p_event_filter(struct kevent *event) {
-	log::cout << "filter : " << GREEN;
-	if (event->filter == EVFILT_READ) log::cout << "EVFILT_READ";
-	else if (event->filter == EVFILT_WRITE) log::cout << "EVFILT_WRITE";
-	else if (event->filter == EVFILT_AIO) log::cout << "EVFILT_AIO";
-	else if (event->filter == EVFILT_VNODE) log::cout << "EVFILT_VNODE";
-	else if (event->filter == EVFILT_PROC) log::cout << "EVFILT_PROC";
-	else if (event->filter == EVFILT_SIGNAL) log::cout << "EVFILT_SIGNAL";
-	else if (event->filter == EVFILT_EXCEPT) log::cout << "EVFILT_EXCEPT";
-	else log::cout << "unknown EVFILT";
-	log::cout << "\n" << RESET;
-}
-
-void	Server::p_event_flags(struct kevent *event) {
-	log::cout << "flags : " << GREEN;
-	if (event->flags & EV_ADD) log::cout << "EV_ADD | ";
-	if (event->flags & EV_DELETE) log::cout << "EV_DELETE | ";
-	if (event->flags & EV_ENABLE) log::cout << "EV_ENABLE | ";
-	if (event->flags & EV_DISABLE) log::cout << "EV_DISABLE | ";
-	if (event->flags & EV_ONESHOT) log::cout << "EV_ONESHOT | ";
-	if (event->flags & EV_CLEAR) log::cout << "EV_CLEAR | ";
-	if (event->flags & EV_RECEIPT) log::cout << "EV_RECEIPT | ";
-	if (event->flags & EV_OOBAND) log::cout << "EV_OOBAND | ";
-	if (event->flags & EV_ERROR) log::cout << "EV_ERROR | ";
-	if (event->flags & EV_EOF) log::cout << "EV_EOF | ";
-	log::cout << RESET << "\n";
-}
-
-void	Server::print_clients(void) {
-	log::cout << BOLDWHITE << "_________CLIENT INFO_________\n" << RESET;
-	this->clients_mutex_.lock();
-	std::map<int, Client*>::iterator itr = clients_.begin();
-	while (itr != clients_.end()) {
-		Response	print;
-		LockClientMutex(itr->first);//lock
-		print << BOLDWHITE << "(" << itr->first << ") nick: " << itr->second->get_nick() << RESET;
-		if (itr->second->IsAuth() == true) print << GREEN << " is Authenticated\n";
-		else print << RED << " is not Authenticated\n";
-		print << RESET;
-		log::cout << print.get_str();
-		UnlockClientMutex(itr->first);//lock
-		itr++;
-	}
-	this->clients_mutex_.unlock();
-}
-
-void	Server::print_channels(void) {
-	Response	logging;
-
-	logging << BOLDWHITE << "_________CHANNEL INFO________\n";
-	this->channels_mutex_.lock();
-	std::map<std::string, Channel*>::iterator	iter = channels_.begin();
-	while (iter != channels_.end()) {
-		LockChannelMutex(iter->first);//lock
-		logging << "NAME: " << MAGENTA << iter->first << RESET << "\n";
-		logging << BOLDWHITE << "\tMODE: " << RESET;
-		char mode = iter->second->get_mode();
-		{
-			if (mode & MODE_LIMIT) logging << "+l ";
-			else logging << "-l ";
-
-			if (mode & MODE_INVITE) logging << "+i ";
-			else logging << "-i ";
-
-			if (mode & MODE_TOPIC) logging << "+t ";
-			else logging << "-t ";
-
-			if (mode & MODE_KEY) logging << "+k ";
-			else logging << "-k ";
-		}
-		logging << "\n";
-		if (mode & MODE_TOPIC) logging << BOLDWHITE << "\tTOPIC: " << RESET << iter->second->get_topic() << "\n";
-		if (mode & MODE_KEY) logging << BOLDWHITE << "\tKEY: " << RESET <<iter->second->get_key() << "\n";
-		logging << BOLDWHITE << "\tSIZE: " << RESET;
-		const std::map<int, char>&	mem = iter->second->get_members();
-		size_t	s = mem.size();
-		logging << RESET << (int)s << "\n" << RESET;
-		std::map<int, char>::const_iterator itr = mem.begin();
-		for (size_t i = 0; i < s; ++i) {
-			logging << BOLDMAGENTA << "\tMEM." << (int)i << ": " << RESET <<  itr->first << "\n";
-			itr++;
-		}
-		UnlockChannelMutex(iter->first);//unlock
-		iter++;
-	}
-	this->channels_mutex_.unlock();
-	logging << RED << "_____________________________\n" << RESET;
-	log::cout << logging.get_str();
 }

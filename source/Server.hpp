@@ -47,12 +47,9 @@ class Server;
 
 class Server {
 	public:
-		void	print_channels(void);
-		void	print_clients(void);
-	
 		~Server();
 		Server(int argc, char **argv);
-		bool	Run(void);
+		void		Run(void);
 		ThreadPool	*pool_;
 
 		std::map<std::string, Channel*>& get_channels(void);
@@ -102,7 +99,6 @@ class Server {
 		void	KqueueInit(void);
 		void	SignalInit(void);
 		void	HandleEvents(int nev);
-		void	HandleTimeout(void);
 		void	HandleEventError(struct kevent event);
 		void	HandleClientEvent(struct kevent event);
 		void	AreValidArgs(int argc, char**argv);
@@ -116,15 +112,8 @@ class Server {
 		ClientNetInfo	AcceptClient(void);
 		void			AddEvent(uintptr_t ident, int16_t filter, uint16_t flags, \
 						uint32_t fflags, intptr_t data, void *udata);
+		void			p_server_info(void);
 
-	/* debugging functions */
-		void	p_event_filter(struct kevent *event);
-		void	p_event_flags(struct kevent*event);
-		void	p_server_info(void);
-
-	/* wooseoki functions */
-		void	print_event(struct kevent *event, int i);
-	
 	template<typename k, typename v>
 	void	delete_map(std::map<k, v> cont) {
 		typedef typename std::map<k, v>::iterator	iterator;
