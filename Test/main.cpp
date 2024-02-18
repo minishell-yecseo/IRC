@@ -2,10 +2,16 @@
 #include "TestResponse.hpp"
 
 Server	*ServerInit(void) {
-	char *argv[] = {TEST_SERVER_NAME, TEST_SERVER_PORT, TEST_SERVER_PASSWORD};
 	Server *result;
+	char	*name = strdup(TEST_SERVER_NAME);
+	char	*port = strdup(TEST_SERVER_PORT);
+	char	*pass = strdup(TEST_SERVER_PASSWORD);
+	char 	*argv[3] = {name, port, pass};
 
 	result = new Server(3, argv);
+	free(name);
+	free(port);
+	free(pass);
 	return result;
 }
 
@@ -19,10 +25,11 @@ Client*	ClientInit(void) {
 
 Mutex print;
 
+
 int main() {
 	Server *s;
 	Client *c;
-
+	
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
