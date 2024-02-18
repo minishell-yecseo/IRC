@@ -181,9 +181,9 @@ void	TestJoinCommand::RunTest(void) {
 
 	this->dummy_server_->DeleteClient(dc2.get_sock());
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel("#TEST");
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->token_list_.clear();
+	this->dummy_server_->CeaseChannel("#TEST");
 
 	//1-2.1 +i
 	Client	dc3(101);
@@ -264,7 +264,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->dummy_server_->AddClient(this->dummy_client_);
 	this->token_list_.push_back("JOIN");
-	this->token_list_.push_back("#TEST");
+	this->token_list_.push_back("#TEST2");
 	JoinCommand	com6(this->token_list_, this->dummy_server_, this->dummy_client_);
 	std::string	fail6 = "400 wooseoki JOIN : Not registered in Server";
 	IsEqual(fail6, RunAndReturnRespInTest(&com6));
