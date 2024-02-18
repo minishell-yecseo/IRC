@@ -2,14 +2,13 @@
 
 TestPingCommand::TestPingCommand(Server *s, Client *c): TestCommand(s, c) {
 	std::cout << "====== PINGCOMMAND ======\n";
-
 	this->SetUp();
 	this->RunTest();
 	this->TearDown();
 }
 
 void	TestPingCommand::SetUp(void) {
-	;
+	this->new_dummy_client_ = new Client(DUMMY_CLIENT_SOCK);
 }
 
 void	TestPingCommand::RunTest(void) {
@@ -28,4 +27,5 @@ void	TestPingCommand::RunTest(void) {
 
 void	TestPingCommand::TearDown(void) {
 	this->dummy_client_->UnsetAuthFlagInTest();
+	delete this->new_dummy_client_;
 }

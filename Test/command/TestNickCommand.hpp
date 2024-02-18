@@ -13,5 +13,6 @@ class TestNickCommand: public TestCommand {
 		void	RunTest(void);
 		void	RunFunctionTest(void);
 		void	TearDown(void);
+		Client	*new_dummy_client_;
 };
 #endif

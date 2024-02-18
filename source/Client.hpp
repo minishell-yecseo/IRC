@@ -27,6 +27,8 @@ typedef struct _ClientNetInfo {
 class Client {
 	public:
 		Client(int sock);
+		void	Init(int sock = FT_INIT_CLIENT_FD);
+
 		bool	IsAuth(void) const;
 		void	SetAuthFlag(const int& flag);
 		void	add_channel(const std::string& channel_name);
@@ -62,8 +64,6 @@ class Client {
 		std::string	password_;
 		std::vector<std::string>	channels_;
 		ClientNetInfo		address_;
-		
-		void	Init(int sock = FT_INIT_CLIENT_FD);
 
 		//operators
 		Client operator = (const Client& client);

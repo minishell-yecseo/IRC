@@ -13,6 +13,6 @@ class TestPingCommand: public TestCommand {
 		void	RunTest(void);
 		void	TearDown(void);
 
-		Client	new_dummy_client_;
+		Client	*new_dummy_client_;
 };
 #endif

@@ -10,7 +10,7 @@ TestNickCommand::TestNickCommand(Server *s, Client *c): TestCommand(s, c) {
 }
 
 void	TestNickCommand::SetUp(void) {
-
+	this->new_dummy_client_ = new Client(DUMMY_CLIENT_SOCK);
 }
 
 void	TestNickCommand::RunFunctionTest(void) {
@@ -48,11 +48,9 @@ void	TestNickCommand::RunTest(void) {
 	this->dummy_client_->UnsetAuthFlagInTest();
 	this->token_list_.clear();
 
-	Client	already_in_client;
 	std::string	dup_name = "dup";
-	already_in_client.set_nick(dup_name);
-	already_in_client.set_sock(100);
-	this->dummy_server_->AddClient(&already_in_client);
+	this->new_dummy_client_->set_nick(dup_name);
+	this->dummy_server_->AddClient(this->new_dummy_client_);
 	this->token_list_.push_back("NICK");
 	this->token_list_.push_back(dup_name);
 	NickCommand	com2(this->token_list_, this->dummy_server_, this->dummy_client_);
@@ -65,7 +63,7 @@ void	TestNickCommand::RunTest(void) {
 	this->dummy_server_->AddClient(this->dummy_client_);
 	IsEqual("433 dup :Nickname is already in use", RunAndReturnRespInTest(&com2));
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteClient(already_in_client.get_sock());
+	this->dummy_server_->DeleteClient(this->new_dummy_client_->get_sock());
 	this->dummy_client_->UnsetAuthFlagInTest();
 
 	this->token_list_.clear();
@@ -115,4 +113,5 @@ void	TestNickCommand::RunTest(void) {
 void	TestNickCommand::TearDown(void) {
 	this->dummy_client_->Init(TEST_CLIENT_SOCK);
 	this->dummy_client_->set_nick(TEST_CLIENT_NICK);
+	delete this->new_dummy_client_;
 }

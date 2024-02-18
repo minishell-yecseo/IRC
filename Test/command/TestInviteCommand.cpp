@@ -2,15 +2,14 @@
 
 TestInviteCommand::TestInviteCommand(Server *s, Client *c): TestCommand(s, c) {
 	std::cout << "====== INVITECOMMAND ======\n";
-
 	this->SetUp();
 	this->RunTest();
 	this->TearDown();
 }
 
 void	TestInviteCommand::SetUp(void) {
-	this->new_dummy_client_.set_sock(8);
-	this->new_dummy_client_.set_nick("saseo");
+	this->new_dummy_client_ = new Client(TEST_CLIENT_SOCK + 1);
+	this->new_dummy_client_->set_nick("saseo");
 }
 
 void	TestInviteCommand::RunTest(void) {
@@ -26,7 +25,7 @@ void	TestInviteCommand::RunTest(void) {
 	InviteCommand com2(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("401 saseo :No such nick", RunAndReturnRespInTest(&com2));
 
-	this->dummy_server_->AddClient(&this->new_dummy_client_);
+	this->dummy_server_->AddClient(this->new_dummy_client_);
 	IsEqual("403 #dummy :No such channel", RunAndReturnRespInTest(&com2));
 
 	Channel dummy_channel("#dummy");
@@ -39,16 +38,17 @@ void	TestInviteCommand::RunTest(void) {
 		ch_ptr->Join(this->dummy_client_->get_sock(), ' ');
 		IsEqual("482 #dummy :You're not channel operator", RunAndReturnRespInTest(&com2));
 		ch_ptr->Mode(this->dummy_client_->get_sock(), '@');
-		ch_ptr->Join(this->new_dummy_client_.get_sock(), ' ');
+		ch_ptr->Join(this->new_dummy_client_->get_sock(), ' ');
 		IsEqual("443 saseo #dummy :is already on cahnnel", RunAndReturnRespInTest(&com2));
-		ch_ptr->Kick(this->new_dummy_client_.get_sock());
+		ch_ptr->Kick(this->new_dummy_client_->get_sock());
 		IsEqual(":wooseoki 341 saseo #dummy", RunAndReturnRespInTest(&com2));
 	}
 }
 
 void	TestInviteCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteClient(new_dummy_client_.get_sock());
+	this->dummy_server_->DeleteClient(this->new_dummy_client_->get_sock());
 	this->dummy_server_->DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
+	delete this->new_dummy_client_;
 }

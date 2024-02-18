@@ -9,7 +9,7 @@ TestQuitCommand::TestQuitCommand(Server *s, Client *c): TestCommand(s, c) {
 }
 
 void	TestQuitCommand::SetUp(void) {
-
+	this->new_dummy_client_ = new Client(DUMMY_CLIENT_SOCK);
 }
 
 void	TestQuitCommand::RunTest(void) {
@@ -21,4 +21,5 @@ void	TestQuitCommand::RunTest(void) {
 
 void	TestQuitCommand::TearDown(void) {
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
+	delete this->new_dummy_client_;
 }
