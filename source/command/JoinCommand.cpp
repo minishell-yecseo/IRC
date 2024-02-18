@@ -6,7 +6,7 @@ JoinCommand::JoinCommand(const std::vector<std::string> &token_list, Server *s, 
 void	JoinCommand::AnyOfError(void) {
 	if (IsRegistered(this->client_sock_) == false) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " " + \
-					  this->sender_nick_ + " JOIN : Not registered in Server";
+					  this->sender_nick_ + " JOIN :Not registered in Server";
 		return;
 	}
 	this->is_success_ = true;
@@ -34,7 +34,7 @@ bool	JoinCommand::IsValidChannelInfo(const int& idx) {
 		} else {
 			for (size_t c = 0; c < tmp_key.size(); ++c) {
 				if (isspace(c)) {
-					this->resp_ = (std::string)ERR_UNKNOWNERROR + " : key with whitespace";
+					this->resp_ = (std::string)ERR_UNKNOWNERROR + " :key with whitespace";
 					return false;
 				}
 			}
@@ -146,20 +146,20 @@ bool	JoinCommand::JoinErrorCheck(const channel_info& info) {
 		
 		if (is_invited == false) {
 			this->resp_ = (std::string)ERR_INVITEONLYCHAN + " " + this->sender_nick_ + " " + info.name;
-			this->resp_ << " : Cannot join channel (+i)";
+			this->resp_ << " :Cannot join channel (+i)";
 			return false;
 		}
 	}
 
 	if (info.mode & MODE_KEY && info.is_auth == false) {
 		this->resp_ = (std::string)ERR_BADCHANNELKEY + " " + this->sender_nick_ + " " + info.name;
-		this->resp_ << " : Cannot join channel (+k)";
+		this->resp_ << " :Cannot join channel (+k)";
 		return false;
 	}
 
 	if (info.is_banned) {
 		this->resp_ = (std::string)ERR_BANNEDFROMCHAN + " " + this->sender_nick_ + " " + info.name;
-		this->resp_ << " : Cannot join channel (+b)";
+		this->resp_ << " :Cannot join channel (+b)";
 		return false;
 	}
 	return true;
