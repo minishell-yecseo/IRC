@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 
+class Server;
+
 #define FT_INIT_CLIENT_FD -1
 #define FT_AUTH				(1 << 3)
 #define FT_AUTH_PASS		(1 << 2)
@@ -22,14 +24,9 @@ typedef struct _ClientNetInfo {
 	socklen_t			addr_size;
 } ClientNetInfo;
 
-class Server;
-
 class Client {
-	friend class Server;
 	public:
-		Client(void);
 		Client(int sock);
-		void	Init(int sock = FT_INIT_CLIENT_FD);
 		bool	IsAuth(void) const;
 		void	SetAuthFlag(const int& flag);
 		void	add_channel(const std::string& channel_name);
@@ -51,26 +48,29 @@ class Client {
 		void 	set_server_name(const std::string& server_name);
 		void 	set_real_name(const std::string& real_name);
 
+		//test
+		void	UnsetAuthFlagInTest(void);
+
+	private:
+		int		sock_;
+		char	auth_flag_;
+		std::string	nick_;
+		std::string	user_name_;
+		std::string	host_name_;
+		std::string	server_name_;
+		std::string	real_name_;
+		std::string	password_;
+		std::vector<std::string>	channels_;
+		ClientNetInfo		address_;
+		
+		void	Init(int sock = FT_INIT_CLIENT_FD);
+
 		//operators
 		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;
 
-		//test
-		void	UnsetAuthFlagInTest(void);
-	private:
-		char	auth_flag_;
-		int		sock_;
-		ClientNetInfo		address_;
-		std::string	nick_;
-		std::vector<std::string>	channels_;
-
-		std::string	user_name_;
-		std::string	host_name_;
-		std::string	server_name_;
-		std::string	real_name_;
-		std::string	password_;
+		friend class Server;
 };
-
 #endif

@@ -1,9 +1,5 @@
 #include "Client.hpp"
 
-Client::Client(void) {
-	Init();
-}
-
 Client::Client(int sock) {
 	Init(sock);
 }
