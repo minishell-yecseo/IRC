@@ -21,6 +21,7 @@ class ThreadPool
 	private:
 		ThreadPool(int size);
 		~ThreadPool();
+		void		UnblockSignal(void);
 		void		Enqueue(void *arg);
 		static void	*Worker(void *arg);
 
@@ -33,6 +34,5 @@ class ThreadPool
 		int						count_;
 
 		friend class	Server;
-
 };
 #endif

@@ -40,16 +40,20 @@ void	ThreadPool::Enqueue(void *arg) {
 	pthread_mutex_unlock(&(this->lock_));
 }
 
-void	*ThreadPool::Worker(void *arg) {
-	// signal
+void	ThreadPool::UnblockSignal(void) {
 	struct sigaction	act;
+
 	act.sa_handler = HandleSIGPIPE;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 	sigaction(SIGPIPE, &act, 0);
+}
+
+void	*ThreadPool::Worker(void *arg) {
 	ThreadPool	*pool = (ThreadPool *)arg;
 	Command	*c = NULL;
 
+	pool->UnblockSignal();
 	for (;;) {
 		pthread_mutex_lock(&(pool->lock_));
 
