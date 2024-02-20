@@ -3,16 +3,18 @@
 PassCommand::PassCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
-inline bool	CheckClientAuth(Server *server, Client *client, const int& client_sock) {
+bool	PassCommand::CheckClientAuth(void) {
 	bool	status;
-	server->LockClientMutex(client_sock);
-	status = client->IsAuth(); 
-	server->UnlockClientMutex(client_sock);
+
+	this->server_->LockClientMutex(this->client_sock_);
+	status = this->client_->IsAuth(); 
+	this->server_->UnlockClientMutex(this->client_sock_);
+
 	return status;
 }
 
 void	PassCommand::AnyOfError(void) {
-	if (CheckClientAuth(this->server_, this->client_, this->client_sock_))
+	if (CheckClientAuth())
 		this->resp_ = (std::string)ERR_NOTREGISTERED + " PASS :already registered";
 	else if (this->params_.empty() || this->params_.size() != 1)
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :parameter number error";
