@@ -202,7 +202,7 @@ void	TestJoinCommand::RunTest(void) {
 	JoinCommand	com3(this->token_list_, this->dummy_server_, this->dummy_client_);
 	JoinCommand	com3_1(this->token_list_, this->dummy_server_, &dc3);
 	
-	std::string	fail3 = "473 wooseoki #TEST : Cannot join channel (+i)";
+	std::string	fail3 = "473 wooseoki #TEST :Cannot join channel (+i)";
 	std::string	succ3 = ":dc3!user@host JOIN #TEST\r\n353 dc3 = #TEST :dc3 \r\n366 dc3 #TEST\r\n";
 	IsEqual(fail3, RunAndReturnRespInTest(&com3));
 	IsEqual(succ3, RunAndReturnRespInTest(&com3_1));
@@ -231,7 +231,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.pop_back();
 	this->token_list_.push_back("succ_key");
 	JoinCommand com4_succ(this->token_list_, this->dummy_server_, &dc4);
-	std::string	fail4 = "475 wooseoki #TEST-KEY : Cannot join channel (+k)";
+	std::string	fail4 = "475 wooseoki #TEST-KEY :Cannot join channel (+k)";
 	std::string	succ4 = ":dc4!user@host JOIN #TEST-KEY\r\n353 dc4 = #TEST-KEY :dc4 \r\n366 dc4 #TEST-KEY\r\n";
 	IsEqual(fail4, RunAndReturnRespInTest(&com4_fail));
 	IsEqual(succ4, RunAndReturnRespInTest(&com4_succ));
@@ -266,7 +266,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#TEST2");
 	JoinCommand	com6(this->token_list_, this->dummy_server_, this->dummy_client_);
-	std::string	fail6 = "400 wooseoki JOIN : Not registered in Server";
+	std::string	fail6 = "400 wooseoki JOIN :Not registered in Server";
 	IsEqual(fail6, RunAndReturnRespInTest(&com6));
 	this->token_list_.clear();
 	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
@@ -335,7 +335,7 @@ void	TestJoinCommand::RunTest(void) {
 	this->token_list_.push_back("#TEST");
 	this->token_list_.push_back("key with whitespace");
 	JoinCommand	com11(this->token_list_, this->dummy_server_, this->dummy_client_);
-	std::string	fail11 = "400 : key with whitespace";
+	std::string	fail11 = "400 :key with whitespace";
 	IsEqual(fail11, RunAndReturnRespInTest(&com11));
 	this->token_list_.clear();
 	this->dummy_client_->UnsetAuthFlagInTest();

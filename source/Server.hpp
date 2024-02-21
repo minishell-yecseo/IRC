@@ -50,10 +50,9 @@ class Server {
 		~Server();
 		Server(int argc, char **argv);
 		void		Run(void);
-		ThreadPool	*pool_;
 
 		std::map<std::string, Channel*>& get_channels(void);
-		Channel*	get_channel_ptr(const std::string& name);
+		Channel	*get_channel_ptr(const std::string& name);
 
 		/* for command process */
 		std::string		SearchClientBySock(const int& sock);
@@ -65,10 +64,10 @@ class Server {
 		bool	AddClient(Client *client);
 
 		void		CeaseChannel(const std::string& channel_name);//free Channel
-		Channel*	DeleteChannel(const std::string& channel_name);
-		Client*		DeleteClient(const int& sock);
+		Channel	*DeleteChannel(const std::string& channel_name);
+		Client	*DeleteClient(const int& sock);
 
-	/* mutex list functions */
+		/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
 		bool	AddChannelMutex(const std::string& name);
 		bool	DeleteClientMutex(const int& sock);
@@ -84,7 +83,7 @@ class Server {
 		bool	LockChannelListMutex(void);
 		void	UnlockChannelListMutex(void);
 
-	/* Authentication */
+		/* Authentication */
 		bool	AuthPassword(const std::string& password);
 
 	/* private member functions*/
@@ -137,7 +136,9 @@ class Server {
 		struct sockaddr_in	addr_;
 		struct sigaction	act;
 		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
-
+		
+		ThreadPool	*pool_;
+		
 		std::map<int, std::string>		buffers_;
 
 		std::map<int, Client*>			clients_;//일단, socket fd 를 key로 지정
