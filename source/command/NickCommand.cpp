@@ -29,7 +29,7 @@ bool	NickCommand::IsValidNick(const std::string& str) {
 bool	NickCommand::IsUniqueNick(const std::string& nick) {
 	int	search_nick_sock;
 
-	search_nick_sock = this->server_->SearchClientByNick(nick);
+	search_nick_sock = SearchClientByNick(nick);
 	if (search_nick_sock == FT_INIT_CLIENT_FD)
 		return true;
 	return false;
@@ -58,7 +58,7 @@ void	NickCommand::AnyOfError(void) {
 
 void	NickCommand::Run() {
 	try {
-		sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
+		sender_nick_ = SearchClientBySock(this->client_sock_);
 		this->is_registered_ = IsRegistered(this->client_sock_);
 		if (this->is_registered_ == true) {
 			AuthClientError();
@@ -78,11 +78,11 @@ void	NickCommand::Run() {
 	
 		/* success case : nick can be changed */
 		bool	auth_check = false;
-		this->server_->LockClientMutex(this->client_sock_);
+		LockClientMutex(this->client_sock_);
 		client_->set_nick(params_[0]);
 		client_->SetAuthFlag(FT_AUTH_NICK);
 		auth_check = this->client_->IsAuth();
-		this->server_->UnlockClientMutex(this->client_sock_);
+		UnlockClientMutex(this->client_sock_);
 	
 		/* send message with SUCCESS cases */
 		if (this->is_registered_ == true) {

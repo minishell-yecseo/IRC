@@ -4,7 +4,7 @@ PartCommand::PartCommand(const std::vector<std::string> &token_list, Server *s, 
 }
 
 void	PartCommand::SetInfo(void) {
-	this->client_nick_ = this->server_->SearchClientBySock(this->client_sock_);
+	this->client_nick_ = SearchClientBySock(this->client_sock_);
 	if (this->params_.size() == 2)
 		this->reason_ = this->params_[1];
 }
@@ -20,19 +20,19 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 	std::map<std::string, Channel*>::iterator chan;
 	int	channel_left_num = 1;
 
-	this->server_->LockChannelListMutex();
-	channel_list = &(this->server_->get_channels());
+	LockChannelListMutex();
+	channel_list = &(get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+		UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel";
 		return ;
 	}
-	this->server_->UnlockChannelListMutex();
+	UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
+	LockChannelMutex(chan->first);
 	if ((chan->second)->IsMember(this->client_sock_) == false) {
-		this->server_->UnlockChannelMutex(chan->first);
+		UnlockChannelMutex(chan->first);
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	}
 	else {
@@ -43,10 +43,10 @@ void	PartCommand::CheckChannel(const std::string& channel_name) {
 		if (channel_left_num > 0)
 			NoticePart((chan->second)->get_members());
 	}
-	this->server_->UnlockChannelMutex(chan->first);
+	UnlockChannelMutex(chan->first);
 
 	if (channel_left_num == 0)
-		this->server_->CeaseChannel(channel_name);
+		CeaseChannel(channel_name);
 }
 
 void	PartCommand::ParseParam(void) {

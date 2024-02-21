@@ -20,7 +20,7 @@ class Server;
 
 typedef struct _ClientNetInfo {
 	int 				sock;
-	struct sockaddr_in	addr;
+	struct sockaddr_in	addr;`
 	socklen_t			addr_size;
 } ClientNetInfo;
 
@@ -28,6 +28,24 @@ class Client {
 	public:
 		Client(int sock);
 		void	Init(int sock = FT_INIT_CLIENT_FD);
+
+	private:
+		int		sock_;
+		char	auth_flag_;
+		std::string	nick_;
+		std::string	user_name_;
+		std::string	host_name_;
+		std::string	server_name_;
+		std::string	real_name_;
+		std::string	password_;
+		std::vector<std::string>	channels_;
+		ClientNetInfo		address_;
+
+		//operators
+		Client operator = (const Client& client);
+		bool operator < (const Client& client) const;
+		bool operator > (const Client& client) const;
+		bool operator == (const Client& client) const;
 
 		bool	IsAuth(void) const;
 		void	SetAuthFlag(const int& flag);
@@ -53,24 +71,7 @@ class Client {
 		//test
 		void	UnsetAuthFlagInTest(void);
 
-	private:
-		int		sock_;
-		char	auth_flag_;
-		std::string	nick_;
-		std::string	user_name_;
-		std::string	host_name_;
-		std::string	server_name_;
-		std::string	real_name_;
-		std::string	password_;
-		std::vector<std::string>	channels_;
-		ClientNetInfo		address_;
-
-		//operators
-		Client operator = (const Client& client);
-		bool operator < (const Client& client) const;
-		bool operator > (const Client& client) const;
-		bool operator == (const Client& client) const;
-
-		friend class Server;
+		friend class	Command;
+		friend class	Server;
 };
 #endif

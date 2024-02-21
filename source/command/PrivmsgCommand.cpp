@@ -7,17 +7,17 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name) {
 	std::map<std::string, Channel*> *channel_list;
 	std::map<std::string, Channel*>::iterator chan;
 
-	this->server_->LockChannelListMutex();
-	channel_list = &(this->server_->get_channels());
+	LockChannelListMutex();
+	channel_list = &(get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+		UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel";
 		return ;
 	}
-	this->server_->UnlockChannelListMutex();
+	UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
+	LockChannelMutex(chan->first);
 	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_CANNOTSENDTOCHAN + " " + channel_name + " :Can not send to chanel";
 	else if ((chan->second)->get_size() < 2)
@@ -31,13 +31,13 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name) {
 			SendResponse(it->first, this->resp_.get_format_str());
 		}
 	}
-	this->server_->UnlockChannelMutex(chan->first);
+	UnlockChannelMutex(chan->first);
 }
 
 void	PrivmsgCommand::UniCast(const std::string& client_name) {
 	int	sock;
 
-	sock = this->server_->SearchClientByNick(client_name);
+	sock = SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) 
 		this->resp_ = (std::string)ERR_NOSUCHNICK + " :No such nick";
 	else {
@@ -48,7 +48,7 @@ void	PrivmsgCommand::UniCast(const std::string& client_name) {
 
 void	PrivmsgCommand::CheckTarget(void) {
 	std::string	&target = this->params_[0];
-	std::string	sender = this->server_->SearchClientBySock(this->client_sock_);
+	std::string	sender = SearchClientBySock(this->client_sock_);
 	this->resp_ = ":" + sender + " PRIVMSG " + target + " :" + this->params_[this->params_.size() - 1];
 
 	if (sender.empty())

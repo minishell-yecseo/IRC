@@ -6,9 +6,9 @@ PassCommand::PassCommand(const std::vector<std::string> &token_list, Server *s, 
 bool	PassCommand::CheckClientAuth(void) {
 	bool	status;
 
-	this->server_->LockClientMutex(this->client_sock_);
+	LockClientMutex(this->client_sock_);
 	status = this->client_->IsAuth(); 
-	this->server_->UnlockClientMutex(this->client_sock_);
+	UnlockClientMutex(this->client_sock_);
 
 	return status;
 }
@@ -33,9 +33,9 @@ void	PassCommand::Run(void) {
 			return;
 		}
 	
-		this->server_->LockClientMutex(this->client_sock_);
+		LockClientMutex(this->client_sock_);
 		client_->SetAuthFlag(FT_AUTH_PASS);
-		this->server_->UnlockClientMutex(this->client_sock_);
+		UnlockClientMutex(this->client_sock_);
 		AuthCheckReply();
 	} catch (std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";

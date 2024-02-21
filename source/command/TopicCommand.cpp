@@ -4,7 +4,7 @@ TopicCommand::TopicCommand(const std::vector<std::string> &token_list, Server *s
 }
 
 void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
-	std::string	nick = this->server_->SearchClientBySock(this->client_sock_);
+	std::string	nick = SearchClientBySock(this->client_sock_);
 	const std::map<int, char>	&member_list = c->get_members();
 
 	this->is_success_ = true;
@@ -18,17 +18,17 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	std::map<std::string, Channel*> *channel_list;
 	std::map<std::string, Channel*>::iterator chan;
 
-	this->server_->LockChannelListMutex();
-	channel_list = &(this->server_->get_channels());
+	LockChannelListMutex();
+	channel_list = &(get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+		UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " :No such channel";
 		return ;
 	}
-	this->server_->UnlockChannelListMutex();
+	UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
+	LockChannelMutex(chan->first);
 	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	else if (((chan->second)->get_mode() & MODE_TOPIC)) {
@@ -45,7 +45,7 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 		chan->second->set_topic(topic);
 		NoticeTopic(chan->second, topic);
 	}
-	this->server_->UnlockChannelMutex(chan->first);
+	UnlockChannelMutex(chan->first);
 }
 
 void	TopicCommand::AnyOfError(void) {
