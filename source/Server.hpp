@@ -51,9 +51,6 @@ class Server {
 		Server(int argc, char **argv);
 		void		Run(void);
 
-		/* Authentication */
-		bool	AuthPassword(const std::string& password);
-
 	/* private member functions*/
 	private:
 		const std::string&	get_name(void);
@@ -98,6 +95,9 @@ class Server {
 		void	CreateChannel(const channel_info& info);//allocate Channel
 		bool	AddChannel(Channel *channel);
 		bool	AddClient(Client *client);
+		
+		/* Authentication */
+		bool	AuthPassword(const std::string& password);
 
 		void	CeaseChannel(const std::string& channel_name);//free Channel
 		Channel	*DeleteChannel(const std::string& channel_name);

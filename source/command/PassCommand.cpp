@@ -18,7 +18,7 @@ void	PassCommand::AnyOfError(void) {
 		this->resp_ = (std::string)ERR_NOTREGISTERED + " PASS :already registered";
 	else if (this->params_.empty() || this->params_.size() != 1)
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :parameter number error";
-	else if (server_->AuthPassword(this->params_[0]) == false)
+	else if (AuthPassword(this->params_[0]) == false)
 		this->resp_ = (std::string)ERR_PASSWDMISMATCH + " :Password incorrect";
 	else
 		this->is_success_ = true;
