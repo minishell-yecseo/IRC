@@ -11,6 +11,7 @@ class TestQuitCommand: public TestCommand {
 	private:
 		void	SetUp(void);
 		void	RunTest(void);
+		void	RunFunctionTest(void);
 		void	TearDown(void);
 
 		Client	*new_dummy_client_;
