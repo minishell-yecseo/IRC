@@ -14,7 +14,7 @@ void	TestPrivmsgCommand::SetUp(void) {
 
 void	TestPrivmsgCommand::RunTest(void) {
 	this->token_list_.push_back("PRIVMSG");
-	this->dummy_server_->AddClient(this->dummy_client_);
+	AddClient(this->dummy_client_);
 	PrivmsgCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
@@ -27,7 +27,7 @@ void	TestPrivmsgCommand::RunTest(void) {
 	IsEqual("403 :No such channel", RunAndReturnRespInTest(&com2));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(&dummy_channel);
+	AddChannel(&dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("PRIVMSG");
 	this->token_list_.push_back("#dummy");
@@ -37,7 +37,7 @@ void	TestPrivmsgCommand::RunTest(void) {
 
 	PrivmsgCommand com4(this->token_list_, this->dummy_server_, this->dummy_client_);
 	Channel *ch_ptr;
-	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
+	ch_ptr = get_channel_ptr("#dummy");
 	ch_ptr->Join(this->dummy_client_->get_sock(), ' ');
 	IsEqual("411 :No recepient given", RunAndReturnRespInTest(&com4));
 	ch_ptr->Join(this->new_dummy_client_->get_sock(), ' ');
@@ -48,14 +48,14 @@ void	TestPrivmsgCommand::RunTest(void) {
 	this->token_list_.push_back("saseo");
 	this->token_list_.push_back("dummy_msg");
 	PrivmsgCommand com5(this->token_list_, this->dummy_server_, this->dummy_client_);
-	this->dummy_server_->AddClient(this->new_dummy_client_);
+	AddClient(this->new_dummy_client_);
 	IsEqual(":wooseoki PRIVMSG saseo :dummy_msg", RunAndReturnRespInTest(&com5));
 }
 
 void	TestPrivmsgCommand::TearDown(void) {
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteClient(this->new_dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel("#dummy");
+	DeleteClient(this->dummy_client_->get_sock());
+	DeleteClient(this->new_dummy_client_->get_sock());
+	DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 	delete this->new_dummy_client_;
 }

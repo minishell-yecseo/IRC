@@ -15,7 +15,7 @@ void	TestTopicCommand::SetUp(void) {
 void	TestTopicCommand::RunTest(void) {
 	this->token_list_.push_back("TOPIC");
 	TopicCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
-	this->dummy_server_->AddClient(this->dummy_client_);
+	AddClient(this->dummy_client_);
 	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
 	IsEqual("461 TOPIC :Not enough parameters", RunAndReturnRespInTest(&com));
@@ -35,7 +35,7 @@ void	TestTopicCommand::RunTest(void) {
 
 	Channel dummy_channel("#dummy");
 	dummy_channel.Join(DUMMY_CLIENT_SOCK, ' ');
-	this->dummy_server_->AddChannel(&dummy_channel);
+	AddChannel(&dummy_channel);
 	this->token_list_.clear();
 	this->token_list_.push_back("TOPIC");
 	this->token_list_.push_back("#dummy");
@@ -52,7 +52,7 @@ void	TestTopicCommand::RunTest(void) {
 }
 
 void	TestTopicCommand::TearDown(void) {
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel("#dummy");
+	DeleteClient(this->dummy_client_->get_sock());
+	DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }

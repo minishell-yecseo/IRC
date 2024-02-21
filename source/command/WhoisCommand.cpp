@@ -8,7 +8,7 @@ void	WhoisCommand::AnyOfError(void) {
 		this->resp_ = (std::string)ERR_NOTREGISTERED + " :You have not registered";
 	else if (this->params_.empty())
 		this->resp_ = (std::string)ERR_NONICKNAMEGIVEN + " :No nickname given";
-	else if (this->server_->SearchClientByNick(this->params_[0]) == FT_INIT_CLIENT_FD)
+	else if (SearchClientByNick(this->params_[0]) == FT_INIT_CLIENT_FD)
 		this->resp_ = (std::string)ERR_NOSUCHNICK + " " + this->params_[0] +" :No such nick";
 	else
 		this->is_success_ = true;

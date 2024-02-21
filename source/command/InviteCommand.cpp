@@ -6,8 +6,8 @@ InviteCommand::InviteCommand(const std::vector<std::string> &token_list, Server 
 bool	InviteCommand::SetInfo(void) {
 	this->receive_nick_ = this->params_[0];
 	this->channel_name_ = this->params_[1];
-	this->client_nick_ = this->server_->SearchClientBySock(this->client_sock_);
-	this->receiver_ = this->server_->SearchClientByNick(this->params_[0]);
+	this->client_nick_ = SearchClientBySock(this->client_sock_);
+	this->receiver_ = SearchClientByNick(this->params_[0]);
 	if (this->receiver_ == FT_INIT_CLIENT_FD)
 		return false;
 	return true;
@@ -17,17 +17,17 @@ void	InviteCommand::CheckChannel(const std::string& nick, const std::string& cha
 	std::map<std::string, Channel*> *channel_list;
 	std::map<std::string, Channel*>::iterator chan;
 
-	this->server_->LockChannelListMutex();
-	channel_list = &(this->server_->get_channels());
+	LockChannelListMutex();
+	channel_list = &(get_channels());
 	chan = channel_list->find(channel_name);
 	if (chan == channel_list->end()) {
-		this->server_->UnlockChannelListMutex();
+		UnlockChannelListMutex();
 		this->resp_ = (std::string)ERR_NOSUCHCHANNEL + " " + channel_name + " :No such channel";
 		return ;
 	}
-	this->server_->UnlockChannelListMutex();
+	UnlockChannelListMutex();
 
-	this->server_->LockChannelMutex(chan->first);
+	LockChannelMutex(chan->first);
 	if ((chan->second)->IsMember(this->client_sock_) == false)
 		this->resp_ = (std::string)ERR_NOTONCHANNEL + " " + channel_name + " :You're not on that channel";
 	else if ((chan->second)->IsOperator(this->client_sock_) == false)
@@ -38,7 +38,7 @@ void	InviteCommand::CheckChannel(const std::string& nick, const std::string& cha
 		this->is_success_ = true;
 		(chan->second)->Invite(this->receiver_);
 	}
-	this->server_->UnlockChannelMutex(chan->first);
+	UnlockChannelMutex(chan->first);
 }
 
 void	InviteCommand::AnyOfError(void) {

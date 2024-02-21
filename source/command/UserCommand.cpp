@@ -25,9 +25,9 @@ void	UserCommand::AnyOfError(void) {
 		this->resp_ = (std::string)ERR_UNKNOWNERROR + " :username must not has whitespace";
 		return;
 	}
-	this->server_->LockClientMutex(this->client_sock_);
+	LockClientMutex(this->client_sock_);
 	bool isRegistered = this->client_->IsAuth();
-	this->server_->UnlockClientMutex(this->client_sock_);
+	UnlockClientMutex(this->client_sock_);
 	if (isRegistered == true) {
 		this->resp_ = (std::string)ERR_ALREADYREGISTERED + " USER :already registered";
 		return;
@@ -44,13 +44,13 @@ bool	UserCommand::IsNonwhite(const std::string& str) {
 }
 
 void	UserCommand::SetUserInfo(void) {
-	this->server_->LockClientMutex(this->client_sock_);
+	LockClientMutex(this->client_sock_);
 	this->client_->set_user_name(this->params_[0]);
 	this->client_->set_host_name(this->params_[1]);
 	this->client_->set_server_name(this->params_[2]);
 	this->client_->set_real_name(this->params_[3]);
 	client_->SetAuthFlag(FT_AUTH_USER);
-	this->server_->UnlockClientMutex(this->client_sock_);
+	UnlockClientMutex(this->client_sock_);
 	AuthCheckReply();
 }
 

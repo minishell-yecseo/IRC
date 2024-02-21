@@ -50,7 +50,7 @@ void	TestModeCommand::RunFunctionTest(void) {
 
 void	TestModeCommand::RunTest(void) {
 	this->token_list_.push_back("MODE");
-	this->dummy_server_->AddClient(this->dummy_client_);
+	AddClient(this->dummy_client_);
 	ModeCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
 	this->dummy_client_->SetAuthFlag(FT_AUTH);
@@ -83,11 +83,11 @@ void	TestModeCommand::RunTest(void) {
 	IsEqual("403 #dummy :No such channel", RunAndReturnRespInTest(&com5));
 
 	Channel dummy_channel("#dummy");
-	this->dummy_server_->AddChannel(&dummy_channel);
+	AddChannel(&dummy_channel);
 	IsEqual("442 #dummy :You're not on that channel", RunAndReturnRespInTest(&com5));
 
 	Channel *ch_ptr;
-	ch_ptr = this->dummy_server_->get_channel_ptr("#dummy");
+	ch_ptr = get_channel_ptr("#dummy");
 	ch_ptr->Join(this->dummy_client_->get_sock(), ' ');
 	IsEqual("482 #dummy :You're not channel operator", RunAndReturnRespInTest(&com5));
 
@@ -96,7 +96,7 @@ void	TestModeCommand::RunTest(void) {
 }
 
 void	TestModeCommand::TearDown(void) {
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel("#dummy");
+	DeleteClient(this->dummy_client_->get_sock());
+	DeleteChannel("#dummy");
 	this->dummy_client_->UnsetAuthFlagInTest();
 }
