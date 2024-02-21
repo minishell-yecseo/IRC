@@ -10,9 +10,9 @@ void	QuitCommand::AnyOfError(void) {
 void	QuitCommand::Run(void) {
 	try {
 		this->sender_nick_ = this->server_->SearchClientBySock(this->client_sock_);
+		NoticeQuit();
 		this->resp_ = (std::string)":" + this->sender_nick_ + " QUIT :Quit: Bye for now!";
 		SendResponse(this->client_sock_, this->resp_.get_format_str());
-		NoticeQuit();
 		Command::DisconnectClient();
 	} catch(std::exception& e) {
 		log::cout << BOLDRED << e.what() << RESET << "\n";
