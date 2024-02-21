@@ -103,6 +103,10 @@ void	Command::UnlockChannelMutex(const std::string& name) {
 	this->server_->UnlockChannelMutex(name);
 }
 
+bool	Command::AuthPassword(const std::string& password) {
+	return this->server_->AuthPassword(password);
+}
+
 bool	Command::LockChannelListMutex(void) {
 	return this->server_->LockChannelListMutex();
 }

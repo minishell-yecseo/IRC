@@ -39,6 +39,7 @@ class Command {
 		std::string					command_;
 		std::vector<std::string>	params_;
 
+		bool	AuthPassword(const std::string& password);
 		bool	LockClientMutex(const int& sock);
 		void	UnlockClientMutex(const int& sock);
 		bool	AddChannelMutex(const std::string& name);
