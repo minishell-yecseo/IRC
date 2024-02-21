@@ -19,7 +19,7 @@ void	TestJoinCommand::RunFunctionTest(void) {
 	//	bool	IsChannelString(const std::string &str);OOOOOO
 	//	bool	JoinErrorCheck(const channel_info& info);OOOOO
 	{
-		std::cout << "====== ParsParam METHOD ======\n";
+		std::cout << "====== ParseParam METHOD ======\n";
 		this->token_list_.clear();
 		this->token_list_.push_back("JOIN");
 		JoinCommand	com(this->token_list_, this->dummy_server_, this->dummy_client_);
