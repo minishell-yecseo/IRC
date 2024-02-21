@@ -8,6 +8,9 @@ class QuitCommand: public Command {
 		QuitCommand(const std::vector<std::string> &token_list, Server *s, Client *c);
 		void	Run(void);
 		void	AnyOfError(void);
+		void	NoticeQuit(void);
+		
+		std::string	sender_nick_;
 
 		friend class	Request;
 		friend class	TestQuitCommand;
