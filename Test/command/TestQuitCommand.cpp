@@ -16,12 +16,12 @@ void	TestQuitCommand::SetUp(void) {
 void	TestQuitCommand::RunFunctionTest(void) {
 	std::cout << "====== NoticeQuit METHOD ======\n";
 
-	this->dummy_server_->AddClient(this->dummy_client_);
-	this->dummy_server_->AddClient(this->new_dummy_client_);
+	AddClient(this->dummy_client_);
+	AddClient(this->new_dummy_client_);
 	Channel	dummy_channel("#TEST");
 	dummy_channel.Join(this->dummy_client_->get_sock(), ' ');
 	dummy_channel.Join(this->new_dummy_client_->get_sock(), ' ');
-	this->dummy_server_->AddChannel(&dummy_channel);
+	AddChannel(&dummy_channel);
 
 	this->token_list_.push_back("reason for quit");
 	QuitCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
@@ -35,9 +35,9 @@ void	TestQuitCommand::RunFunctionTest(void) {
 	com2.NoticeQuit();
 	assert(expect2.compare(com2.resp_.get_str()) == 0);
 
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
-	this->dummy_server_->DeleteClient(this->new_dummy_client_->get_sock());
-	this->dummy_server_->DeleteChannel(dummy_channel.get_name());
+	DeleteClient(this->dummy_client_->get_sock());
+	DeleteClient(this->new_dummy_client_->get_sock());
+	DeleteChannel(dummy_channel.get_name());
 
 	std::cout << GREEN << "SUCCESS\n" << RESET;
 }
@@ -47,7 +47,7 @@ void	TestQuitCommand::RunTest(void) {
 	AddClient(this->dummy_client_);
 	QuitCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual(":wooseoki QUIT :Quit: Bye for now!", RunAndReturnRespInTest(&com));
-	this->dummy_server_->DeleteClient(this->dummy_client_->get_sock());
+	DeleteClient(this->dummy_client_->get_sock());
 }
 
 void	TestQuitCommand::TearDown(void) {
