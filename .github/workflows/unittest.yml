@@ -17,6 +17,4 @@ jobs:
       run: ./ircserv_test
     - name: Check Status
       if: failure()
-      run: |
-        echo "::error file={name},line={line},endLine={endLine},title={title}::{message}"
-        exit 1
+      run: exit 1
