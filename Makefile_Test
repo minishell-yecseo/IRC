@@ -64,10 +64,10 @@ TEST_CMD_OBJ_PATH = $(addprefix $(TEST_CMD_OBJ_DIR), $(TEST_CMD_OBJ))
 TEST_CMD_DEB_PATH = $(addprefix $(TEST_CMD_OBJ_DIR), $(TEST_CMD_DEP))
 
 $(TEST_CMD_OBJ_DIR)%.o : $(TEST_CMD_DIR)%.cpp
-	$(CXX) $(CXXFALGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR) -I$(CMD_DIR)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR) -I$(CMD_DIR)
 
 $(TEST_OBJ_DIR)%.o : $(TEST_DIR)%.cpp
-	$(CXX) $(CXXFALGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
 
 $(IRC_OBJ_DIR)%.o : $(IRC_DIR)%.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(IRC_DIR) -I$(CMD_DIR) -I$(TEST_DIR) -I$(TEST_CMD_DIR)
