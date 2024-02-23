@@ -33,7 +33,7 @@ int main() {
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
-	TestRequest(s, c);
+	TestRequest();
 	TestResponse(s, c);
 
 	delete s;

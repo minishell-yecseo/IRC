@@ -107,7 +107,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-		for (int i = 2; i < sizeof(error_strs) / sizeof(std::string); ++i) {
+		for (size_t i = 2; i < sizeof(error_strs) / sizeof(std::string); ++i) {
 			error_strs[i].resize(2);
 			error_strs[i][0] = 'T';
 		}
@@ -120,7 +120,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 		this->token_list_.push_back("JOIN");
 		JoinCommand	dummy_com(this->token_list_, this->dummy_server_, this->dummy_client_);
-		for (int i = 0; i < sizeof(error_strs) / sizeof(std::string); ++i) {
+		for (size_t i = 0; i < sizeof(error_strs) / sizeof(std::string); ++i) {
 			assert(false == dummy_com.IsChannelString(error_strs[i]));
 		}
 		assert(true == dummy_com.IsChannelString(valid_str));

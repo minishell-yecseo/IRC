@@ -6,7 +6,7 @@
 
 class   TestRequest {
     public:
-        TestRequest(Server *s, Client *c);
+        TestRequest(void);
 
     private:
         void    TestBaseAlphaToNumber(void);

@@ -1,6 +1,6 @@
 #include "TestRequest.hpp"
 
-TestRequest::TestRequest(Server *s, Client *c) {
+TestRequest::TestRequest(void) {
 	TestSplitRequest();
 	TestRemoveDuplicateSpace();
 	TestSeperateWhiteSpace();
