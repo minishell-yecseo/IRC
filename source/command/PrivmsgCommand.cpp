@@ -23,8 +23,9 @@ void PrivmsgCommand::BroadCast(const std::string& channel_name) {
 	else if ((chan->second)->get_size() < 2)
 		this->resp_ = (std::string)ERR_NORECIPIENT + " :No recepient given";
 	else {
-		const std::map<int, char>	&members = (chan->second)->get_members();
 		this->is_success_ = true;
+		this->resp_ = ":" + this->client_->get_nick() + " PRIVMSG " + channel_name + " :" + this->params_[this->params_.size() - 1];
+		const std::map<int, char>	&members = (chan->second)->get_members();
 		for (std::map<int, char>::const_iterator it = members.begin(); it != members.end(); ++it) {
 			if (it->first == this->client_sock_)
 				continue;
@@ -39,21 +40,18 @@ void	PrivmsgCommand::UniCast(const std::string& client_name) {
 
 	sock = SearchClientByNick(client_name);
 	if (sock == FT_INIT_CLIENT_FD) 
-		this->resp_ = (std::string)ERR_NOSUCHNICK + " :No such nick";
+		this->resp_ = (std::string)ERR_NOSUCHNICK + " " + client_name + " :No such nick";
 	else {
-		SendResponse(sock, this->resp_.get_format_str());
 		this->is_success_ = true;
+		this->resp_ = ":" + this->client_->get_nick() + " PRIVMSG " + client_name + " :" + this->params_[this->params_.size() - 1];
+		SendResponse(sock, this->resp_.get_format_str());
 	}
 }
 
 void	PrivmsgCommand::CheckTarget(void) {
 	std::string	&target = this->params_[0];
-	std::string	sender = SearchClientBySock(this->client_sock_);
-	this->resp_ = ":" + sender + " PRIVMSG " + target + " :" + this->params_[this->params_.size() - 1];
 
-	if (sender.empty())
-		this->resp_ = (std::string)"Client not found";
-	else if (target[0] == '#' || target[0] == '&')
+	if (target[0] == '#' || target[0] == '&')
 		BroadCast(target);
 	else 
 		UniCast(target);

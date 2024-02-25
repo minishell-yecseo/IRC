@@ -48,6 +48,7 @@ void	TestPrivmsgCommand::RunTest(void) {
 	this->token_list_.push_back("saseo");
 	this->token_list_.push_back("dummy_msg");
 	PrivmsgCommand com5(this->token_list_, this->dummy_server_, this->dummy_client_);
+	IsEqual("401 saseo :No such nick", RunAndReturnRespInTest(&com5));
 	AddClient(this->new_dummy_client_);
 	IsEqual(":wooseoki PRIVMSG saseo :dummy_msg", RunAndReturnRespInTest(&com5));
 }
