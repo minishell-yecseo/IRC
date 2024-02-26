@@ -3,12 +3,18 @@
 TopicCommand::TopicCommand(const std::vector<std::string> &token_list, Server *s, Client *c) : Command(token_list, s, c) {
 }
 
-void	TopicCommand::NoticeTopic(Channel* c, const std::string& topic) {
-	std::string	nick = SearchClientBySock(this->client_sock_);
-	const std::map<int, char>	&member_list = c->get_members();
-
+void	TopicCommand::SetTopic(Channel *chan, const std::string& topic) {
 	this->is_success_ = true;
-	this->resp_ = ":" + nick + " TOPIC " + c->get_name() + " :" + topic;
+	chan->set_mode(MODE_TOPIC, true);
+	chan->set_topic(topic);
+	NoticeTopic(chan, topic);
+}
+
+void	TopicCommand::NoticeTopic(Channel *chan, const std::string& topic) {
+	const std::map<int, char>	&member_list = chan->get_members();
+	std::string	nick = SearchClientBySock(this->client_sock_);
+
+	this->resp_ = ":" + nick + " TOPIC " + chan->get_name() + " :" + topic;
 	for (std::map<int, char>::const_iterator it = member_list.begin(); it != member_list.end(); ++it) {
 		SendResponse(it->first, this->resp_.get_format_str());
 	}
@@ -34,17 +40,11 @@ void	TopicCommand::CheckChannel(const std::string& channel_name, const std::stri
 	else if (((chan->second)->get_mode() & MODE_TOPIC)) {
 		if ((chan->second)->IsOperator(this->client_sock_) == false)
 			this->resp_ = (std::string)ERR_CHANOPRIVSNEEDED + " " + channel_name + " :You're not channel operator";
-		else {
-			chan->second->set_mode(MODE_TOPIC, true);
-			chan->second->set_topic(topic);
-			NoticeTopic(chan->second, topic);
-		}
+		else 
+			SetTopic(chan->second, topic);
 	}
-	else {
-		chan->second->set_mode(MODE_TOPIC, true);
-		chan->second->set_topic(topic);
-		NoticeTopic(chan->second, topic);
-	}
+	else 
+		SetTopic(chan->second, topic);
 	UnlockChannelMutex(chan->first);
 }
 

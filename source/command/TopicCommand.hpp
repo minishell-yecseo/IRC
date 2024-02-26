@@ -9,8 +9,8 @@ class TopicCommand: public Command {
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckChannel(const std::string& channel_name, const std::string& topic);
-		void	NoticeTopic(Channel* c, const std::string& nick);
-
+		void	NoticeTopic(Channel *chan, const std::string& nick);
+		void	SetTopic(Channel *chan, const std::string& topic);
 		friend class	Request;
 		friend class	TestTopicCommand;
 };
