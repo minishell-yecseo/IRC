@@ -9,8 +9,9 @@ class PrivmsgCommand: public Command {
 		void	Run(void);
 		void	AnyOfError(void);
 		void	CheckTarget(void);
-		void	UniCast(const std::string& client_namet);
-		void	BroadCast(const std::string& channel_namet);
+		void	CheckChannel(const std::string& channel_name);
+		void	CheckClient(const std::string& client_name);
+		void	BroadCast(const std::string& channel_name, Channel *chan);
 
 		friend class	Request;
 		friend class	TestPrivmsgCommand;
