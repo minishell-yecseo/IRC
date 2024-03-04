@@ -63,20 +63,6 @@ const std::string& Client::get_nick(void) const {
 	return this->nick_;
 }
 
-bool Client::operator < (const Client& client) const {
-	return (this->sock_ < client.sock_);
-}
-
-bool Client::operator > (const Client& client) const {
-	return (this->sock_ > client.sock_);
-}
-
-bool Client::operator == (const Client& client) const {
-	if ((this->nick_).compare(client.nick_) == 0)
-		return true;
-	return false;
-}
-
 const std::vector<std::string>&	Client::get_channels(void) const {
 	return this->channels_;
 }

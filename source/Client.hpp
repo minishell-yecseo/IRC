@@ -70,11 +70,6 @@ class Client {
 		std::vector<std::string>	channels_;
 		ClientNetInfo		address_;
 
-		//operators
-		bool operator < (const Client& client) const;
-		bool operator > (const Client& client) const;
-		bool operator == (const Client& client) const;
-
 		friend class	Command;
 		friend class	Server;
 };
