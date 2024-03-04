@@ -45,22 +45,6 @@ char	Client::get_auth_flag(const int& flag) const {
 	return ret;
 }
 
-Client Client::operator = (const Client& client) {
-	if (this == &client)
-		return *this;
-
-	this->auth_flag_ = client.auth_flag_;
-	this->sock_ = client.sock_;
-	this->nick_ = client.nick_;
-	this->user_name_ = client.user_name_;
-	this->host_name_ = client.host_name_;
-	this->server_name_ = client.server_name_;
-	this->real_name_ = client.real_name_;
-	this->address_ = client.address_;
-	this->password_ = client.password_;
-	return *this;
-}
-
 int	Client::set_sock(int fd) {
 	if (fd > 0)
 		sock_ = fd;

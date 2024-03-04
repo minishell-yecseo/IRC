@@ -22,6 +22,9 @@ class Client;
 #define MODE_TOPIC		(1 << 1)
 #define MODE_KEY		(1)
 #define CLIENT_LIMIT	9999
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName&);               \
+  void operator=(const TypeName&)
 
 class Channel {
 	public:
@@ -59,6 +62,8 @@ class Channel {
 		void	unset_limit(void);
 
 	private:
+		DISALLOW_COPY_AND_ASSIGN(Channel);
+
 		std::string	name_;
 		std::string	key_;
 		std::string	topic_;

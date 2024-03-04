@@ -17,6 +17,9 @@ class Server;
 #define FT_AUTH_NICK		(1 << 1)
 #define FT_AUTH_USER		(1)
 #define	FT_AUTH_ALL			(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER)
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName&);               \
+  void operator=(const TypeName&)
 
 typedef struct _ClientNetInfo {
 	int 				sock;
@@ -54,6 +57,8 @@ class Client {
 		void	UnsetAuthFlagInTest(void);
 
 	private:
+		DISALLOW_COPY_AND_ASSIGN(Client);
+
 		int		sock_;
 		char	auth_flag_;
 		std::string	nick_;
@@ -66,7 +71,6 @@ class Client {
 		ClientNetInfo		address_;
 
 		//operators
-		Client operator = (const Client& client);
 		bool operator < (const Client& client) const;
 		bool operator > (const Client& client) const;
 		bool operator == (const Client& client) const;

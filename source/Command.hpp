@@ -62,6 +62,8 @@ class Command {
 		Channel	*get_channel_ptr(const std::string& name);
 
 	private:
+		DISALLOW_COPY_AND_ASSIGN(Command);
+
  		friend class	ThreadPool;
 		friend class	TestCommand;
 };
