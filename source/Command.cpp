@@ -1,22 +1,5 @@
 #include "Command.hpp"
 
-Command::~Command(void){
-}
-
-bool	Command::IsRegistered(const int&fd) {
-	LockClientMutex(fd);
-	bool result = this->client_->IsAuth();
-	UnlockClientMutex(fd);
-
-	return result;
-}
-
-void	Command::SendResponse(const int& sock, const std::string& str) {
-	LockClientMutex(sock);
-	send(sock, str.c_str(), str.size(), 0);
-	UnlockClientMutex(sock);
-}
-
 Command::Command(const std::vector<std::string> &token_list, Server *s, Client *c) {
 	size_t	param_index;
 
@@ -37,6 +20,23 @@ Command::Command(const std::vector<std::string> &token_list, Server *s, Client *
 	this->server_ = s;
 	this->client_ = c;
 	this->client_sock_ = c->get_sock();
+}
+
+Command::~Command(void){
+}
+
+bool	Command::IsRegistered(const int&fd) {
+	LockClientMutex(fd);
+	bool result = this->client_->IsAuth();
+	UnlockClientMutex(fd);
+
+	return result;
+}
+
+void	Command::SendResponse(const int& sock, const std::string& str) {
+	LockClientMutex(sock);
+	send(sock, str.c_str(), str.size(), 0);
+	UnlockClientMutex(sock);
 }
 
 void	Command::DisconnectClient(void) {
