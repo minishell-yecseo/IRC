@@ -32,10 +32,10 @@ class Channel {
 		bool	IsBanClient(int sock) const;
 		bool	IsInvited(int sock) const;
 		bool	AuthPassword(const std::string& pw) const;
-		int		Kick(int sock);
 		bool	Join(int sock, char prefix);
 		bool	Invite(int sock);
 		void	Mode(int sock, char prefix);//add
+		int		Kick(int sock);
 
 		/* getter */
 		const std::map<int, char>&	get_members(void) const;
@@ -78,16 +78,16 @@ class Channel {
 
 typedef struct channel_info {
 	Channel		*ch_ptr;
-	std::string name;
+	std::string	name;
 	std::string	topic;
 	std::string	key;
 	std::string	host;
-	int			host_sock;
 	char		mode;
 	char		join_membership;
 	bool		is_auth;
 	bool		is_member;
 	bool		is_banned;
+	int			host_sock;
 } channel_info;
 
 #endif
