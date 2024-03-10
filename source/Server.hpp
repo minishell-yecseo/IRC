@@ -71,6 +71,7 @@ class Server {
 		void	DisconnectClient(const int& sock);//free Client
 		void	DeleteClientInChannel(const int& sock, Client *client);
 		void	DeleteClientEvent(const int& sock);
+		void	ReadSocket(Client *client);
 
 		/* mutex list functions */
 		bool	AddClientMutex(const int& sock);
