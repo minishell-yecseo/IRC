@@ -38,7 +38,7 @@ void	TestUserCommand::RunTest(void) {
 
 	DeleteClient(this->dummy_client_->get_sock());
 	this->token_list_.clear();
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	this->token_list_.push_back("USER");
 	this->token_list_.push_back("test");
 	this->token_list_.push_back("test");

@@ -163,7 +163,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 void	TestJoinCommand::RunTest(void) {
 	//1-1) create channel
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#TEST");
@@ -173,7 +173,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	//1-2.0 defalut mode
 	Client	dc2(100);
-	dc2.SetAuthFlag(FT_AUTH);
+	dc2.SetAuthFlag(AUTH);
 	AddClient(&dc2);
 	JoinCommand	com2(this->token_list_, this->dummy_server_, &dc2);
 	std::string	exp2 = ":unknown!user@host JOIN #TEST\r\n353 unknown = #TEST :@wooseoki unknown \r\n366 unknown #TEST\r\n";
@@ -188,11 +188,11 @@ void	TestJoinCommand::RunTest(void) {
 	//1-2.1 +i
 	Client	dc3(101);
 	dc3.set_nick("dc3");
-	dc3.SetAuthFlag(FT_AUTH);
+	dc3.SetAuthFlag(AUTH);
 	Channel	ch3("#TEST");
 	ch3.set_mode(MODE_INVITE, true);
 	ch3.Invite(dc3.get_sock());
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	AddClient(&dc3);
 	AddChannel(&ch3);
@@ -213,7 +213,7 @@ void	TestJoinCommand::RunTest(void) {
 
 	//1-2.2 +k
 	Client	dc4(102);
-	dc4.SetAuthFlag(FT_AUTH);
+	dc4.SetAuthFlag(AUTH);
 	dc4.set_nick("dc4");
 
 	Channel	ch4("#TEST-KEY");
@@ -275,7 +275,7 @@ void	TestJoinCommand::RunTest(void) {
 	Channel	ch7("&TEST-LIMIT");
 	ch7.set_limit(1);
 	ch7.Join(-1, ' ');
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	AddChannel(&ch7);
 	token_list_.push_back("JOIN");
@@ -291,7 +291,7 @@ void	TestJoinCommand::RunTest(void) {
 	// join failure caused by already joined client's request
 	Channel	ch8("&TEST-MEMBER");
 	ch8.Join(this->dummy_client_->get_sock(), '@');
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	AddChannel(&ch8);
 	this->token_list_.push_back("JOIN");
@@ -305,7 +305,7 @@ void	TestJoinCommand::RunTest(void) {
 	DeleteChannel(ch8.get_name());
 
 	// join failure caused by bad channel mask
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("BAD");
@@ -317,7 +317,7 @@ void	TestJoinCommand::RunTest(void) {
 	DeleteClient(this->dummy_client_->get_sock());
 
 	// join failure caused by bad channel name
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#");
@@ -329,7 +329,7 @@ void	TestJoinCommand::RunTest(void) {
 	DeleteClient(this->dummy_client_->get_sock());
 
 	// join fail with wrong key string
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	this->token_list_.push_back("JOIN");
 	this->token_list_.push_back("#TEST");

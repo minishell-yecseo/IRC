@@ -17,7 +17,7 @@ void	TestInviteCommand::RunTest(void) {
 	AddClient(this->dummy_client_);
 	InviteCommand com(this->token_list_, this->dummy_server_, this->dummy_client_);
 	IsEqual("451 :You have not registered", RunAndReturnRespInTest(&com));
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	IsEqual("461 INVITE :Not enough parameters", RunAndReturnRespInTest(&com));
 
 	this->token_list_.push_back("saseo");
