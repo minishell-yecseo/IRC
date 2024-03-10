@@ -49,7 +49,7 @@ void	UserCommand::SetUserInfo(void) {
 	this->client_->set_host_name(this->params_[1]);
 	this->client_->set_server_name(this->params_[2]);
 	this->client_->set_real_name(this->params_[3]);
-	client_->SetAuthFlag(FT_AUTH_USER);
+	client_->SetAuthFlag(AUTH_USER);
 	UnlockClientMutex(this->client_sock_);
 	AuthCheckReply();
 }

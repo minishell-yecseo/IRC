@@ -32,14 +32,14 @@ class Server;
 #include "Mutex.hpp"
 #include "log.hpp"
 
-#define FT_SOCK_QUEUE_SIZE 100
-#define FT_KQ_EVENT_SIZE 100
-#define FT_TIMEOUT_SEC 5
-#define FT_TIMEOUT_NSEC 0
-#define FT_BUFF_SIZE 1024
-#define FT_THREAD_POOL_SIZE 10
-# ifndef FT_SERVER_NAME
-#  define FT_SERVER_NAME "Happy"
+#define SOCK_QUEUE_SIZE 100
+#define KQ_EVENT_SIZE 100
+#define TIMEOUT_SEC 5
+#define TIMEOUT_NSEC 0
+#define BUFF_SIZE 1024
+#define THREAD_POOL_SIZE 10
+# ifndef SERVER_NAME
+#  define SERVER_NAME "Happy"
 # endif
 # ifndef IRC_VERSION
 #  define IRC_VERSION "0.1"
@@ -134,7 +134,7 @@ class Server {
 		struct timespec		timeout_;
 		struct sockaddr_in	addr_;
 		struct sigaction	act;
-		struct kevent	evlist_[FT_KQ_EVENT_SIZE];
+		struct kevent	evlist_[KQ_EVENT_SIZE];
 		
 		ThreadPool	*pool_;
 		

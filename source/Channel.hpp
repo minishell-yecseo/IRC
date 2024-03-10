@@ -13,9 +13,9 @@ class Client;
 #include "Colors.hpp"
 #include "log.hpp"
 
-#define	FT_CH_OPERATOR	(1 << 3)
-#define	FT_CH_MEMBER	(1 << 2)
-#define	FT_CH_BAN_LIST	(1)
+#define	CH_OPERATOR	(1 << 3)
+#define	CH_MEMBER	(1 << 2)
+#define	CH_BAN_LIST	(1)
 
 #define	MODE_LIMIT		(1 << 3)
 #define MODE_INVITE 	(1 << 2)

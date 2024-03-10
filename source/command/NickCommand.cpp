@@ -30,7 +30,7 @@ bool	NickCommand::IsUniqueNick(const std::string& nick) {
 	int	search_nick_sock;
 
 	search_nick_sock = SearchClientByNick(nick);
-	if (search_nick_sock == FT_INIT_CLIENT_FD)
+	if (search_nick_sock == INIT_CLIENT_FD)
 		return true;
 	return false;
 }
@@ -80,7 +80,7 @@ void	NickCommand::Run() {
 		bool	auth_check = false;
 		LockClientMutex(this->client_sock_);
 		client_->set_nick(params_[0]);
-		client_->SetAuthFlag(FT_AUTH_NICK);
+		client_->SetAuthFlag(AUTH_NICK);
 		auth_check = this->client_->IsAuth();
 		UnlockClientMutex(this->client_sock_);
 	

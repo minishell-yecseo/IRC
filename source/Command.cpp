@@ -53,10 +53,10 @@ void	Command::AuthCheckReply(void) {
 
 	LockClientMutex(this->client_sock_);
 	auth_status = this->client_->IsAuth();
-	flag = this->client_->get_auth_flag(FT_AUTH_ALL);
-	if (auth_status == false && ((flag & FT_AUTH_ALL) == FT_AUTH_ALL)) {
+	flag = this->client_->get_auth_flag(AUTH_ALL);
+	if (auth_status == false && ((flag & AUTH_ALL) == AUTH_ALL)) {
 		send_status = true;
-		this->client_->SetAuthFlag(FT_AUTH);
+		this->client_->SetAuthFlag(AUTH);
 	}
 	UnlockClientMutex(this->client_sock_);//Unlock
 	

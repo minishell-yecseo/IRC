@@ -50,7 +50,7 @@ void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_ind
 				break ;
 			case 'o': {
 				int user = SearchClientByNick(this->params_[(*param_index)++]);
-				if (user == FT_INIT_CLIENT_FD)
+				if (user == INIT_CLIENT_FD)
 					return ;
 				c->Mode(user, '@');
 				break ;
@@ -78,7 +78,7 @@ void	ModeCommand::ModifyChannel(Channel *c, char mode, bool sign, int *param_ind
 				break ;
 			case 'o': {
 				int user = SearchClientByNick(this->params_[(*param_index)++]);
-				if (user == FT_INIT_CLIENT_FD)
+				if (user == INIT_CLIENT_FD)
 					return ;
 				c->Mode(user, ' ');
 				break ;
