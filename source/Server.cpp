@@ -487,8 +487,6 @@ bool	Server::AddChannel(Channel *channel) {
 
 void	Server::CreateChannel(const channel_info& info) {
 	Channel *channel_ptr = new Channel(info.name);
-	if (channel_ptr == NULL)
-		return;
 
 	if (info.mode & MODE_KEY)
 		channel_ptr->set_mode(MODE_KEY, true);
