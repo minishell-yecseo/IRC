@@ -376,10 +376,14 @@ void	Server::ReadSocket(Client *client) {
 	std::string& buffer = buffers_[client->get_sock()];
 	
 	read_byte = read(client->get_sock(), buff, BUFF_SIZE);
-	if (read_byte == -1) 
+	if (read_byte == -1) {
+		UnlockClientMutex(client->get_sock());//unlock
 		log::cout << "client read error\n";
-	else if (read_byte == 0)
+	}
+	else if (read_byte == 0) {
+		UnlockClientMutex(client->get_sock());//unlock
 		DisconnectClient(client->get_sock());
+	}
 	else {
 		std::vector<Command *> *cmds;
 		int	offset;
@@ -387,12 +391,12 @@ void	Server::ReadSocket(Client *client) {
 		buff[read_byte] = '\0';
 		buffer += buff;
 		cmds = Request::ParseRequest(this, client, buffer, &offset);
+		buffer.erase(0, offset);
+		UnlockClientMutex(client->get_sock());//unlock
 		for (size_t i = 0; i < cmds->size(); ++i) 
 			pool_->Enqueue((*cmds)[i]);
 		delete cmds;
-		buffer.erase(0, offset);
 	}
-
 }
 
 void	Server::HandleClientEvent(struct kevent event) {
@@ -405,8 +409,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 		UnlockClientMutex(event.ident);
 		return ;
 	}
-	ReadSocket(client);
-	UnlockClientMutex(event.ident);
+	ReadSocket(client);//unlock
 }
 
 void	Server::ConnectClient(void) {
