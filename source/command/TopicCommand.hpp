@@ -11,6 +11,7 @@ class TopicCommand: public Command {
 		void	CheckChannel(const std::string& channel_name, const std::string& topic);
 		void	NoticeTopic(Channel *chan, const std::string& nick);
 		void	SetTopic(Channel *chan, const std::string& topic);
+
 		friend class	Request;
 		friend class	TestTopicCommand;
 };
