@@ -20,7 +20,7 @@ Internet Relay Chat Server that can connect with IRC Clients like Irssi.
 
 ## Installation
 
-    git clone https://github.com/minishell-yecseo/IRC && make -j && make clean
+    git clone https://github.com/minishell-yecseo/IRC && cd IRC && make -j && make clean
 
 <br>
 
