@@ -372,7 +372,7 @@ void	Server::HandleEvents(int nev) {
 
 void	Server::ReadSocket(Client *client) {
 	int		read_byte;
-	char	buff[BUFF_SIZE];
+	char	buff[BUFF_SIZE + 1];
 	std::string& buffer = buffers_[client->get_sock()];
 	
 	read_byte = read(client->get_sock(), buff, BUFF_SIZE);
