@@ -8,7 +8,7 @@ bool	InviteCommand::SetInfo(void) {
 	this->channel_name_ = this->params_[1];
 	this->client_nick_ = SearchClientBySock(this->client_sock_);
 	this->receiver_ = SearchClientByNick(this->params_[0]);
-	if (this->receiver_ == FT_INIT_CLIENT_FD)
+	if (this->receiver_ == INIT_CLIENT_FD)
 		return false;
 	return true;
 }

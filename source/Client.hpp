@@ -11,15 +11,12 @@
 
 class Server;
 
-#define FT_INIT_CLIENT_FD -1
-#define FT_AUTH				(1 << 3)
-#define FT_AUTH_PASS		(1 << 2)
-#define FT_AUTH_NICK		(1 << 1)
-#define FT_AUTH_USER		(1)
-#define	FT_AUTH_ALL			(FT_AUTH_PASS | FT_AUTH_NICK | FT_AUTH_USER)
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);               \
-  void operator=(const TypeName&)
+#define INIT_CLIENT_FD -1
+#define AUTH			(1 << 3)
+#define AUTH_PASS		(1 << 2)
+#define AUTH_NICK		(1 << 1)
+#define AUTH_USER		(1)
+#define	AUTH_ALL		(AUTH_PASS | AUTH_NICK | AUTH_USER)
 
 typedef struct _ClientNetInfo {
 	int 				sock;
@@ -30,7 +27,7 @@ typedef struct _ClientNetInfo {
 class Client {
 	public:
 		Client(int sock);
-		void	Init(int sock = FT_INIT_CLIENT_FD);
+		void	Init(int sock = INIT_CLIENT_FD);
 
 		bool	IsAuth(void) const;
 		void	SetAuthFlag(const int& flag);
@@ -43,7 +40,7 @@ class Client {
 		const std::string&				get_user_name(void) const;
 		const int&						get_sock(void) const;
 		const std::string&				get_nick(void) const;
-		char							get_auth_flag(const int& flag = FT_AUTH_ALL) const;
+		char							get_auth_flag(const int& flag = AUTH_ALL) const;
 
 		//setters
 		int		set_sock(int fd);

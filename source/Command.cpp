@@ -1,22 +1,5 @@
 #include "Command.hpp"
 
-Command::~Command(void){
-}
-
-bool	Command::IsRegistered(const int&fd) {
-	LockClientMutex(fd);
-	bool result = this->client_->IsAuth();
-	UnlockClientMutex(fd);
-
-	return result;
-}
-
-void	Command::SendResponse(const int& sock, const std::string& str) {
-	LockClientMutex(sock);
-	send(sock, str.c_str(), str.size(), 0);
-	UnlockClientMutex(sock);
-}
-
 Command::Command(const std::vector<std::string> &token_list, Server *s, Client *c) {
 	size_t	param_index;
 
@@ -39,6 +22,23 @@ Command::Command(const std::vector<std::string> &token_list, Server *s, Client *
 	this->client_sock_ = c->get_sock();
 }
 
+Command::~Command(void){
+}
+
+bool	Command::IsRegistered(const int&fd) {
+	LockClientMutex(fd);
+	bool result = this->client_->IsAuth();
+	UnlockClientMutex(fd);
+
+	return result;
+}
+
+void	Command::SendResponse(const int& sock, const std::string& str) {
+	LockClientMutex(sock);
+	send(sock, str.c_str(), str.size(), 0);
+	UnlockClientMutex(sock);
+}
+
 void	Command::DisconnectClient(void) {
 	/* Add to Delete list in Server */
 	AddDeleteClient(this->client_sock_);
@@ -53,10 +53,10 @@ void	Command::AuthCheckReply(void) {
 
 	LockClientMutex(this->client_sock_);
 	auth_status = this->client_->IsAuth();
-	flag = this->client_->get_auth_flag(FT_AUTH_ALL);
-	if (auth_status == false && ((flag & FT_AUTH_ALL) == FT_AUTH_ALL)) {
+	flag = this->client_->get_auth_flag(AUTH_ALL);
+	if (auth_status == false && ((flag & AUTH_ALL) == AUTH_ALL)) {
 		send_status = true;
-		this->client_->SetAuthFlag(FT_AUTH);
+		this->client_->SetAuthFlag(AUTH);
 	}
 	UnlockClientMutex(this->client_sock_);//Unlock
 	

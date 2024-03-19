@@ -16,32 +16,32 @@ void	Client::Init(int sock) {
 }
 
 bool	Client::IsAuth(void) const {
-	if (this->auth_flag_ & FT_AUTH)
+	if (this->auth_flag_ & AUTH)
 		return true;
 	return false;
 }
 
 void	Client::SetAuthFlag(const int& flag) {
-	if (flag & FT_AUTH_PASS)
-		this->auth_flag_ |= FT_AUTH_PASS;
-	if (flag & FT_AUTH_NICK)
-		this->auth_flag_ |= FT_AUTH_NICK;
-	if (flag & FT_AUTH_USER)
-		this->auth_flag_ |= FT_AUTH_USER;
-	if (flag & FT_AUTH)
-		this->auth_flag_ |= FT_AUTH;
+	if (flag & AUTH_PASS)
+		this->auth_flag_ |= AUTH_PASS;
+	if (flag & AUTH_NICK)
+		this->auth_flag_ |= AUTH_NICK;
+	if (flag & AUTH_USER)
+		this->auth_flag_ |= AUTH_USER;
+	if (flag & AUTH)
+		this->auth_flag_ |= AUTH;
 }
 
 char	Client::get_auth_flag(const int& flag) const {
 	char	ret = 0;
-	if ((flag & FT_AUTH) && (this->auth_flag_ & FT_AUTH))
-		ret |= FT_AUTH;
-	if ((flag & FT_AUTH_PASS) && (this->auth_flag_ & FT_AUTH_PASS))
-		ret |= FT_AUTH_PASS;
-	if ((flag & FT_AUTH_NICK) && (this->auth_flag_ & FT_AUTH_NICK))
-		ret |= FT_AUTH_NICK;
-	if ((flag & FT_AUTH_USER) && (this->auth_flag_ & FT_AUTH_USER))
-		ret |= FT_AUTH_USER;
+	if ((flag & AUTH) && (this->auth_flag_ & AUTH))
+		ret |= AUTH;
+	if ((flag & AUTH_PASS) && (this->auth_flag_ & AUTH_PASS))
+		ret |= AUTH_PASS;
+	if ((flag & AUTH_NICK) && (this->auth_flag_ & AUTH_NICK))
+		ret |= AUTH_NICK;
+	if ((flag & AUTH_USER) && (this->auth_flag_ & AUTH_USER))
+		ret |= AUTH_USER;
 	return ret;
 }
 

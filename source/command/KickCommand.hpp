@@ -16,7 +16,7 @@ class KickCommand: public Command {
 		std::string	target_nick_;
 		std::string	channel_name_;
 		std::string	sender_;
-		int	target_;
+		int			target_;
 
 		friend class	Request;
 		friend class	TestKickCommand;

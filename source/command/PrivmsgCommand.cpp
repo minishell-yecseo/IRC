@@ -43,7 +43,7 @@ void	PrivmsgCommand::CheckClient(const std::string& client_name) {
 	int	sock;
 
 	sock = SearchClientByNick(client_name);
-	if (sock == FT_INIT_CLIENT_FD) 
+	if (sock == INIT_CLIENT_FD) 
 		this->resp_ = (std::string)ERR_NOSUCHNICK + " " + client_name + " :No such nick";
 	else {
 		this->is_success_ = true;

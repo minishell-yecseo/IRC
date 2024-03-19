@@ -60,7 +60,7 @@ void	Server::Run(void) {
 	int nev;
 	while (true) {
 		try {
-			nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, FT_KQ_EVENT_SIZE, &timeout_);
+			nev = kevent(kq_, &(chlist_[0]), chlist_.size(), evlist_, KQ_EVENT_SIZE, &timeout_);
 			chlist_.clear();
 			if (nev == -1)
 				error_handling("kevent() error\n");
@@ -81,8 +81,8 @@ void	Server::MutexInit(void) {
 }
 
 void	Server::ServerSocketInit(char **argv) {
-	name_ = FT_SERVER_NAME;
-	pool_ = new ThreadPool(FT_THREAD_POOL_SIZE);
+	name_ = SERVER_NAME;
+	pool_ = new ThreadPool(THREAD_POOL_SIZE);
 	port_ = atoi(argv[1]);
 	version_ = IRC_VERSION;
 	password_ = argv[2];
@@ -100,7 +100,7 @@ void	Server::ServerSocketInit(char **argv) {
 
 	if (bind(sock_, (struct sockaddr*)&addr_, sizeof(addr_)) == -1)
 		error_handling("socket bind() error\n");
-	if (listen(sock_, FT_SOCK_QUEUE_SIZE) == -1)
+	if (listen(sock_, SOCK_QUEUE_SIZE) == -1)
 		error_handling("socket listen() error\n");
 	fcntl(sock_, F_SETFL, O_NONBLOCK);
 }
@@ -111,8 +111,8 @@ void	Server::KqueueInit(void) {
 	struct kevent	server_event;
 	EV_SET(&server_event, sock_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	chlist_.push_back(server_event);
-	timeout_.tv_sec = FT_TIMEOUT_SEC;
-	timeout_.tv_nsec = FT_TIMEOUT_NSEC;
+	timeout_.tv_sec = TIMEOUT_SEC;
+	timeout_.tv_nsec = TIMEOUT_NSEC;
 }
 
 void	Server::SignalInit(void) {
@@ -178,7 +178,7 @@ std::string	Server::SearchClientBySock(const int& sock) {
 }
 
 int	Server::SearchClientByNick(const std::string& nick) {
-	int	ret = FT_INIT_CLIENT_FD;
+	int	ret = INIT_CLIENT_FD;
 	std::string	tmp_nick;
 
 	LockClientListMutex();
@@ -370,6 +370,35 @@ void	Server::HandleEvents(int nev) {
 	}
 }
 
+void	Server::ReadSocket(Client *client) {
+	int		read_byte;
+	char	buff[BUFF_SIZE + 1];
+	std::string& buffer = buffers_[client->get_sock()];
+	
+	read_byte = read(client->get_sock(), buff, BUFF_SIZE);
+	if (read_byte == -1) {
+		UnlockClientMutex(client->get_sock());//unlock
+		log::cout << "client read error\n";
+	}
+	else if (read_byte == 0) {
+		UnlockClientMutex(client->get_sock());//unlock
+		DisconnectClient(client->get_sock());
+	}
+	else {
+		std::vector<Command *> *cmds;
+		int	offset;
+		
+		buff[read_byte] = '\0';
+		buffer += buff;
+		cmds = Request::ParseRequest(this, client, buffer, &offset);
+		buffer.erase(0, offset);
+		UnlockClientMutex(client->get_sock());//unlock
+		for (size_t i = 0; i < cmds->size(); ++i) 
+			pool_->Enqueue((*cmds)[i]);
+		delete cmds;
+	}
+}
+
 void	Server::HandleClientEvent(struct kevent event) {
 	this->clients_mutex_.lock();//lock
 	Client	*client = clients_[event.ident];
@@ -380,30 +409,7 @@ void	Server::HandleClientEvent(struct kevent event) {
 		UnlockClientMutex(event.ident);
 		return ;
 	}
-
-	char	buff[FT_BUFF_SIZE];
-	std::string& buffer = buffers_[client->get_sock()];
-	int read_byte = read(event.ident, buff, sizeof(buff));
-	if (read_byte == -1) {
-		UnlockClientMutex(event.ident);//unlock
-		log::cout << "client read error\n";
-	}
-	else if (read_byte == 0) {
-		UnlockClientMutex(event.ident);//unlock
-		DisconnectClient(event.ident);
-	}
-	else {
-		buff[read_byte] = '\0';
-		buffer += buff;
-		std::vector<Command *> *cmds;
-		int	offset;
-		cmds = Request::ParseRequest(this, client, buffer, &offset);
-		for (size_t i = 0; i < cmds->size(); ++i) 
-			pool_->Enqueue((*cmds)[i]);
-		UnlockClientMutex(event.ident);//unlock
-		delete cmds;
-		buffer.erase(0, offset);
-	}
+	ReadSocket(client);//unlock
 }
 
 void	Server::ConnectClient(void) {
@@ -413,7 +419,7 @@ void	Server::ConnectClient(void) {
 	info = AcceptClient();
 	new_client = new Client(info.sock);
 	
-	if (info.sock == FT_INIT_CLIENT_FD || AddClient(new_client) == false) {
+	if (info.sock == INIT_CLIENT_FD || AddClient(new_client) == false) {
 		delete new_client;
 		return;
 	}
@@ -423,7 +429,7 @@ void	Server::ConnectClient(void) {
 ClientNetInfo	Server::AcceptClient(void) {
 	ClientNetInfo	info;
 
-	info.sock = FT_INIT_CLIENT_FD;
+	info.sock = INIT_CLIENT_FD;
 	info.sock = accept(this->sock_, (struct sockaddr*)&info.addr, &info.addr_size);
 	if (info.sock == -1)
 		error_handling("accept() error\n");

@@ -20,7 +20,7 @@ void	TestPassCommand::RunTest(void) {
 	IsEqual("400 :parameter number error", RunAndReturnRespInTest(&com_no_param));
 	DeleteClient(this->dummy_client_->get_sock());
 
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	IsEqual("451 PASS :already registered", RunAndReturnRespInTest(&com_no_param));
 	DeleteClient(this->dummy_client_->get_sock());

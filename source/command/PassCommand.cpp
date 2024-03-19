@@ -34,7 +34,7 @@ void	PassCommand::Run(void) {
 		}
 	
 		LockClientMutex(this->client_sock_);
-		client_->SetAuthFlag(FT_AUTH_PASS);
+		client_->SetAuthFlag(AUTH_PASS);
 		UnlockClientMutex(this->client_sock_);
 		AuthCheckReply();
 	} catch (std::exception& e) {

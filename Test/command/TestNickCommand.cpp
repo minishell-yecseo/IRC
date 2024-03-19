@@ -41,7 +41,7 @@ void	TestNickCommand::RunTest(void) {
 	IsEqual("431 :No nickname given", RunAndReturnRespInTest(&com));
 	DeleteClient(this->dummy_client_->get_sock());
 
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	IsEqual("431 :No nickname given", RunAndReturnRespInTest(&com));
 	DeleteClient(this->dummy_client_->get_sock());
@@ -59,7 +59,7 @@ void	TestNickCommand::RunTest(void) {
 	IsEqual("433 dup :Nickname is already in use", RunAndReturnRespInTest(&com2));
 	DeleteClient(this->dummy_client_->get_sock());
 
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	IsEqual("433 dup :Nickname is already in use", RunAndReturnRespInTest(&com2));
 	DeleteClient(this->dummy_client_->get_sock());
@@ -75,7 +75,7 @@ void	TestNickCommand::RunTest(void) {
 	IsEqual("432 #tt :Erroneus nickname", RunAndReturnRespInTest(&com3));
 	DeleteClient(this->dummy_client_->get_sock());
 
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	IsEqual("432 #tt :Erroneus nickname", RunAndReturnRespInTest(&com3));
 	DeleteClient(this->dummy_client_->get_sock());
@@ -90,7 +90,7 @@ void	TestNickCommand::RunTest(void) {
 	IsEqual("", RunAndReturnRespInTest(&com4));
 	DeleteClient(this->dummy_client_->get_sock());
 
-	this->dummy_client_->SetAuthFlag(FT_AUTH);
+	this->dummy_client_->SetAuthFlag(AUTH);
 	AddClient(this->dummy_client_);
 	this->token_list_.clear();
 	this->token_list_.push_back("NICK");

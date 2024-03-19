@@ -6,7 +6,7 @@ KickCommand::KickCommand(const std::vector<std::string> &token_list, Server *s, 
 bool	KickCommand::SetInfo(void) {
 	this->sender_ = SearchClientBySock(this->client_sock_);
 	this->target_ = SearchClientByNick(this->params_[1]);
-	if (this->target_ == FT_INIT_CLIENT_FD)
+	if (this->target_ == INIT_CLIENT_FD)
 		return false;
 	this->target_nick_ = this->params_[1];
 	this->channel_name_ = this->params_[0];

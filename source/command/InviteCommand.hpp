@@ -12,9 +12,9 @@ class InviteCommand: public Command {
 		bool	SetInfo(void);
 
 		std::string	channel_name_;
-		std::string receive_nick_;
+		std::string	receive_nick_;
 		std::string	client_nick_;
-		int	receiver_;
+		int			receiver_;
 
 		friend class	Request;
 		friend class	TestInviteCommand;

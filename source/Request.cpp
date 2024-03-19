@@ -2,8 +2,8 @@
 #include "SpecifyCommand.hpp"
 
 std::vector<Command*> *Request::ParseRequest(Server *server, Client *client, std::string request, int *offset) {
-	std::vector<std::string> *message_list;
-	std::vector<Command *> *command_list;
+	std::vector<std::string> *message_list = NULL;
+	std::vector<Command *> *command_list = NULL;
 
 	log::cout << "Request : " << request << "\n";
 	message_list = SplitRequest(request, offset);
@@ -23,9 +23,6 @@ std::vector<std::string>	*Request::SplitRequest(const std::string &request, int 
 		result->push_back(request.substr(start, end - start));
 		start = end + delimiter.length();
 	}
-	// Need log file
-	if (start != request.length())
-		log::cout << "Unvalid message format\n";
 	*offset = start;
 	return result;
 }
