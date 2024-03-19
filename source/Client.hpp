@@ -18,6 +18,10 @@ class Server;
 #define AUTH_USER		(1)
 #define	AUTH_ALL		(AUTH_PASS | AUTH_NICK | AUTH_USER)
 
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+	TypeName(const TypeName&);             \
+	void operator=(const TypeName&)
+
 typedef struct _ClientNetInfo {
 	int 				sock;
 	struct sockaddr_in	addr;
