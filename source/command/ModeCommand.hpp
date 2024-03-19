@@ -4,7 +4,6 @@
 #include <cstring>
 
 #include "Command.hpp"
-#include "NumericDefine.hpp"
 
 class ModeCommand: public Command {
 	private:
