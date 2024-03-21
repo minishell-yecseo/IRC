@@ -3,13 +3,15 @@
 ThreadPool::ThreadPool(int size) {
 	this->count_ = 0;
 	this->thread_count_ = size;
-	pthread_mutex_init(&(this->lock_), NULL);
-	pthread_cond_init(&(this->notify_), NULL);
+	if (pthread_mutex_init(&(this->lock_), NULL) == -1)
+		error_handling("pthread_mutex_init() error\n");
+	if (pthread_cond_init(&(this->notify_), NULL) == -1)
+		error_handling("pthread_cond_init() error\n");
 	this->threads_.resize(size);
 	for (int i = 0; i < this->thread_count_; ++i) {
-		pthread_create(&(this->threads_[i]), NULL,
-						ThreadPool::Worker,
-						(void *)this);
+		if (pthread_create(&(this->threads_[i]), NULL,
+			ThreadPool::Worker, (void *)this) != 0)
+			error_handling("pthread_create() error\n");
 	}
 }
 
@@ -31,7 +33,10 @@ void	ThreadPool::Enqueue(void *arg) {
 
 	c = (Command *)arg;
 
-	pthread_mutex_lock(&(this->lock_));
+	if (pthread_mutex_lock(&(this->lock_)) != 0) {
+		log::cout << "pthread_mutex_lock() error in Enqueue\n";
+		return ;
+	}
 	if (this->shutdown_ == true)
 		return ;
 	this->queue_.push(c);
@@ -55,7 +60,10 @@ void	*ThreadPool::Worker(void *arg) {
 
 	pool->UnblockSignal();
 	for (;;) {
-		pthread_mutex_lock(&(pool->lock_));
+		if (pthread_mutex_lock(&(pool->lock_)) != 0) {
+			log::cout << "pthread_mutex_lock() error in Worker\n";
+			continue ;
+		}
 
 		while ((pool->count_ == 0) && (pool->shutdown_ == false)) {
 			pthread_cond_wait(&(pool->notify_), &(pool->lock_));
