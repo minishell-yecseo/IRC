@@ -95,8 +95,9 @@ void	Server::ServerSocketInit(char **argv) {
 	addr_.sin_family = AF_INET;
 	addr_.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr_.sin_port = htons(port_);
-	int reuse = 1;
+	int reuse = 1, sigpipe = 1;
 	setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+	setsockopt(sock_, SOL_SOCKET, SO_NOSIGPIPE, &sigpipe, sizeof(sigpipe));
 
 	if (bind(sock_, (struct sockaddr*)&addr_, sizeof(addr_)) == -1)
 		error_handling("socket bind() error\n");
