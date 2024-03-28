@@ -1,5 +1,6 @@
 #include "TestRequest.hpp"
 #include "TestResponse.hpp"
+#include "TestChannel.hpp"
 
 Server	*ServerInit(void) {
 	Server *result;
@@ -33,6 +34,7 @@ int main() {
 	print.init(NULL);
 	s = ServerInit();
 	c = ClientInit();
+	TestChannel();
 	TestRequest();
 	TestResponse(s, c);
 
