@@ -1,6 +1,8 @@
 #ifndef TESTCOMMAND_HPP
 # define TESTCOMMAND_HPP
 
+#include <assert.h>
+
 #include "Response.hpp"
 #include "Command.hpp"
 #include "TestUtils.hpp"
