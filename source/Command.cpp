@@ -1,6 +1,6 @@
 #include "Command.hpp"
 
-Command::Command(const std::vector<std::string> &token_list, Server *s, Client *c) {
+Command::Command(const std::vector<std::string> &token_list, ServerInterface *s, Client *c) {
 	size_t	param_index;
 
 	if (token_list[0][0] == ':') {

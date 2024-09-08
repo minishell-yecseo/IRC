@@ -56,7 +56,7 @@ void	NickCommand::AnyOfError(void) {
 		this->is_success_ = true;
 }
 
-void	NickCommand::Run() {
+void	NickCommand::Run(void) {
 	try {
 		sender_nick_ = SearchClientBySock(this->client_sock_);
 		this->is_registered_ = IsRegistered(this->client_sock_);

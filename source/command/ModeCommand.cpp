@@ -174,7 +174,7 @@ void	ModeCommand::AnyOfError(void) {
 		CheckChannel(this->params_[0]);
 }
 
-void	ModeCommand::Run() {
+void	ModeCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)

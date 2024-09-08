@@ -31,6 +31,7 @@ class Server;
 #include "Utils.hpp"
 #include "Mutex.hpp"
 #include "log.hpp"
+#include "ServerInterface.hpp"
 
 #define SOCK_QUEUE_SIZE 100
 #define KQ_EVENT_SIZE 100
@@ -45,7 +46,7 @@ class Server;
 #  define IRC_VERSION "0.1"
 # endif
 
-class Server {
+class Server: public ServerInterface {
 	public:
 		~Server();
 		Server(int argc, char **argv);

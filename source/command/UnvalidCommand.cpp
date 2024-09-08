@@ -7,7 +7,7 @@ void	UnvalidCommand::AnyOfError(void) {
 	;
 }
 
-void	UnvalidCommand::Run() {
+void	UnvalidCommand::Run(void) {
 	this->resp_ = (std::string)ERR_UNKNOWNCOMMAND + " " + this->command_ + " :Unknown command";
 	SendResponse(this->client_sock_, this->resp_.get_format_str());
 }
