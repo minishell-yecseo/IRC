@@ -33,6 +33,17 @@ void	IsIntEqual(int a, int b) {
 	success_count += 1;
 }
 
+void    IsBoolEqual(const bool& a, const bool& b) {
+	if (a != b) {
+		std::cerr << std::boolalpha << a << " != " << b << "\n";
+		std::cerr << std::noboolalpha << RESET;
+		fail_count += 1;
+		return;
+	}
+	std::cout << a << " == " << b << "\n";
+	success_count += 1;
+}
+
 void	IsVectorEqual(const std::vector<std::string> a, const std::vector<std::string>& b) {
 	if (a.size() != b.size()) {
 		std::cerr << RED << "size not same\n" << RESET;
