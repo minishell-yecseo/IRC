@@ -52,7 +52,7 @@ void	InviteCommand::AnyOfError(void) {
 		CheckChannel(this->params_[0], this->params_[1]);
 }
 
-void	InviteCommand::Run() {
+void	InviteCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false) {

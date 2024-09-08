@@ -14,7 +14,7 @@ void	CapCommand::AnyOfError(void) {
 		this->is_success_ = true;
 }
 
-void	CapCommand::Run() {
+void	CapCommand::Run(void) {
 	try {
 		AnyOfError();
 		if (this->is_success_ == false)
