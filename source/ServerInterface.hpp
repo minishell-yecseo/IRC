@@ -38,8 +38,6 @@ class ServerInterface {
 
 		/* Authentication */
 		virtual bool	AuthPassword(const std::string& password) = 0;
-    
-    protected:
         virtual ~ServerInterface(void) {};
 
 		friend class	Command;
